@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "Diario del Pescatore"
+version = "1.0.0"
+id = "artifacts/diario-pescatore"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 22883
+
+[services.development]
+run = "pnpm --filter @workspace/diario-pescatore run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/diario-pescatore", "run", "build" ]
+publicDir = "artifacts/diario-pescatore/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "22883"
+BASE_PATH = "/"

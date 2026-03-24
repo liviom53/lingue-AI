@@ -94,3 +94,21 @@ Generated React Query hooks and fetch client from the OpenAPI spec (e.g. `useHea
 ### `scripts` (`@workspace/scripts`)
 
 Utility scripts package. Each script is a `.ts` file in `src/` with a corresponding npm script in `package.json`. Run scripts via `pnpm --filter @workspace/scripts run <script>`. Scripts can import any workspace package (e.g., `@workspace/db`) by adding it as a dependency in `scripts/package.json`.
+
+### `artifacts/diario-pescatore` (`@workspace/diario-pescatore`)
+
+**Diario del Pescatore v3.5** — A PWA fishing diary for Italian fisherman Livio, targeting the Tyrrhenian/Lazio coast (Porto Badino area). 
+
+- **Frontend-only**: React + Vite, localStorage for all persistence, no backend needed.
+- **Design**: Dark ocean theme — deep navy backgrounds (`220 25% 7%`), teal/cyan primary (`175 65% 42%`), dark cards.
+- **14 sections**: Dashboard, Uscite, Pescato, Spot, Specie, Attrezzatura, Ricette, Meteo, Maree & Luna, Previsioni Pesca, Statistiche, AI Chat, Parco Auto, Finanze.
+- **Data storage keys**: `diario_uscite`, `diario_catture`, `diario_spot`, `diario_attrezzatura`, `diario_ricette`, `diario_veicoli`, `diario_finanze`.
+- **Generic CRUD factory**: `createLocalCrudHooks<T>` in `src/hooks/use-local-data.ts`.
+- **External APIs**: Open-Meteo (no key) for weather + marine; Groq llama-3.3-70b for AI chat; Gemini for species recognition.
+- **Default location**: Porto Badino (lat: 41.28, lng: 13.16); 12 Lazio coastal stations selectable.
+- **Maree**: Pure mathematical harmonic model (M2+K1+M4 tidal harmonics), no external API needed.
+- **specieDB.ts**: 50 Tyrrhenian fish species with detailed descriptions.
+- **Charts**: Recharts used in Statistiche and Finanze.
+- **Animations**: framer-motion for SplashScreen with underwater background.
+- **Export/Import**: JSON backup via browser download/upload in AppLayout sidebar.
+- **Routing**: wouter with lazy-loaded pages, `BASE_URL` aware router base.

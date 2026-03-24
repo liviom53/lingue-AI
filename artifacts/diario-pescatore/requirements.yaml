@@ -1,0 +1,20 @@
+packages:
+  "recharts": "For dashboard, statistics, and finance charts"
+  "framer-motion": "For the splash screen and smooth page transitions"
+  "date-fns": "For formatting and calculating dates and deadlines"
+  "uuid": "For generating unique IDs for localStorage items"
+  "clsx": "For conditional class merging"
+  "tailwind-merge": "For conditional class merging"
+
+images:
+  - path: "artifacts/diario-pescatore/public/images/splash-bg.png"
+    description: "A dark moody ocean background with deep blue and marine green tones, underwater view looking up at the water surface with subtle light rays, cinematic nautical aesthetic, abstract"
+    aspect_ratio: "9:16"
+  - path: "artifacts/diario-pescatore/public/images/hero-dashboard.png"
+    description: "A beautifully silhouetted fishing rod against a dark glowing sunset over the ocean, deep navy blues, vibrant teals, and soft orange glow on the horizon, professional photography, cinematic"
+    aspect_ratio: "16:9"
+
+notes:
+  - This is a frontend-only PWA application using localStorage for all data persistence.
+  - No backend APIs are used. TanStack Query is used to manage localStorage state as if it were a server.
+  - External APIs used via standard fetch: Open-Meteo (free) and Groq (hardcoded key from prompt).
