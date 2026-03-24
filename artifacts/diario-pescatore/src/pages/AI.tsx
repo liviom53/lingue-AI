@@ -18,17 +18,16 @@ export default function AI() {
     setIsTyping(true);
 
     try {
-      // Direct call to Groq as specified in the implementation notes
-      const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      const res = await fetch("https://api.deepseek.com/v1/chat/completions", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": "Bearer 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"
+          "Authorization": "Bearer sk-84b89b428959461e818ad77775913978"
         },
         body: JSON.stringify({
-          model: "llama-3.3-70b-versatile",
+          model: "deepseek-chat",
           messages: [
-            { role: "system", content: "Sei un esperto pescatore del mar tirreno. Rispondi in italiano in modo breve, amichevole e pertinente." },
+            { role: "system", content: "Sei un esperto pescatore del mar tirreno, zona Porto Badino (Lazio). Rispondi in italiano in modo breve, amichevole e pertinente alla pesca." },
             { role: "user", content: userText }
           ]
         })
@@ -55,7 +54,7 @@ export default function AI() {
         </div>
         <div>
           <h2 className="font-bold text-white leading-tight">Assistente Vocale AI</h2>
-          <p className="text-xs text-primary">Groq LLaMA 3.3</p>
+          <p className="text-xs text-primary">DeepSeek Chat</p>
         </div>
       </div>
 

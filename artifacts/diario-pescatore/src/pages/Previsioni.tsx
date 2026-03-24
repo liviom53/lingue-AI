@@ -132,7 +132,7 @@ export default function Previsioni() {
               <p className="text-muted-foreground max-w-md mx-auto mb-6">
                 "Oggi le condizioni sono ottime per la spigola al calasole. La marea in salita spingerà i pesci verso il canale. Consiglierei un coreano o trancio di cefalo a fondo leggero vicino agli scogli del molo."
               </p>
-              <p className="text-xs text-primary/60 font-mono">Generato da Groq (llama-3.3-70b)</p>
+              <p className="text-xs text-primary/60 font-mono">Generato da DeepSeek Chat</p>
             </div>
           )}
 
