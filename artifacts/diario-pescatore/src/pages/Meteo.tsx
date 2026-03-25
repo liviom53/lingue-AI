@@ -1,48 +1,23 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Wind, Droplets, Eye, Thermometer, Waves } from "lucide-react";
-
-const STAZIONI: Record<string, { nome: string; lat: number; lng: number }> = {
-  "porto-badino": { nome: "Porto Badino", lat: 41.28, lng: 13.16 },
-  "terracina": { nome: "Terracina", lat: 41.29, lng: 13.25 },
-  "sabaudia": { nome: "Sabaudia", lat: 41.30, lng: 13.03 },
-  "circeo": { nome: "San Felice Circeo", lat: 41.24, lng: 13.10 },
-  "anzio": { nome: "Anzio", lat: 41.45, lng: 12.63 },
-  "nettuno": { nome: "Nettuno", lat: 41.45, lng: 12.66 },
-  "borgo-grappa": { nome: "Borgo Grappa", lat: 41.49, lng: 12.90 },
-  "sperlonga": { nome: "Sperlonga", lat: 41.26, lng: 13.44 },
-  "gaeta": { nome: "Gaeta", lat: 41.21, lng: 13.57 },
-  "formia": { nome: "Formia", lat: 41.26, lng: 13.62 },
-  "civitavecchia": { nome: "Civitavecchia", lat: 42.10, lng: 11.80 },
-  "fiumicino": { nome: "Fiumicino", lat: 41.77, lng: 12.24 },
-};
+import { Wind, Droplets } from "lucide-react";
+import { STAZIONI, getSharedStation, setSharedStation } from "@/hooks/use-location";
 
 const WMO_CODES: Record<number, { label: string; emoji: string }> = {
-  0: { label: "Sereno", emoji: "☀️" },
-  1: { label: "Prevalentemente sereno", emoji: "🌤️" },
-  2: { label: "Parzialmente nuvoloso", emoji: "⛅" },
-  3: { label: "Coperto", emoji: "☁️" },
-  45: { label: "Nebbia", emoji: "🌫️" },
-  48: { label: "Nebbia gelata", emoji: "🌫️" },
-  51: { label: "Pioviggine leggera", emoji: "🌦️" },
-  53: { label: "Pioviggine moderata", emoji: "🌦️" },
-  55: { label: "Pioviggine intensa", emoji: "🌧️" },
-  61: { label: "Pioggia leggera", emoji: "🌧️" },
-  63: { label: "Pioggia moderata", emoji: "🌧️" },
-  65: { label: "Pioggia intensa", emoji: "🌧️" },
-  80: { label: "Rovesci leggeri", emoji: "🌦️" },
-  81: { label: "Rovesci moderati", emoji: "🌧️" },
-  82: { label: "Rovesci violenti", emoji: "⛈️" },
-  95: { label: "Temporale", emoji: "⛈️" },
-  96: { label: "Temporale con grandine", emoji: "⛈️" },
+  0:{label:"Sereno",emoji:"☀️"},1:{label:"Prevalentemente sereno",emoji:"🌤️"},
+  2:{label:"Parzialmente nuvoloso",emoji:"⛅"},3:{label:"Coperto",emoji:"☁️"},
+  45:{label:"Nebbia",emoji:"🌫️"},48:{label:"Nebbia gelata",emoji:"🌫️"},
+  51:{label:"Pioviggine leggera",emoji:"🌦️"},53:{label:"Pioviggine",emoji:"🌦️"},
+  55:{label:"Pioviggine intensa",emoji:"🌧️"},61:{label:"Pioggia leggera",emoji:"🌧️"},
+  63:{label:"Pioggia moderata",emoji:"🌧️"},65:{label:"Pioggia intensa",emoji:"🌧️"},
+  80:{label:"Rovesci leggeri",emoji:"🌦️"},81:{label:"Rovesci",emoji:"🌧️"},
+  82:{label:"Rovesci violenti",emoji:"⛈️"},95:{label:"Temporale",emoji:"⛈️"},
+  96:{label:"Temporale con grandine",emoji:"⛈️"},
 };
-
-function getWmo(code: number) {
-  return WMO_CODES[code] || { label: "Vario", emoji: "🌈" };
-}
+const getWmo = (c: number) => WMO_CODES[c] || { label: "Vario", emoji: "🌈" };
 
 function useMeteo(stazioneKey: string) {
-  const s = STAZIONI[stazioneKey];
+  const s = STAZIONI[stazioneKey] ?? STAZIONI["porto-badino"];
   return useQuery({
     queryKey: ["meteo", stazioneKey],
     queryFn: async () => {
@@ -55,8 +30,8 @@ function useMeteo(stazioneKey: string) {
   });
 }
 
-const DAYS_IT = ["Dom", "Lun", "Mar", "Mer", "Gio", "Ven", "Sab"];
-const MONTHS_IT = ["Gen", "Feb", "Mar", "Apr", "Mag", "Giu", "Lug", "Ago", "Set", "Ott", "Nov", "Dic"];
+const DAYS_IT = ["Dom","Lun","Mar","Mer","Gio","Ven","Sab"];
+const MONTHS_IT = ["Gen","Feb","Mar","Apr","Mag","Giu","Lug","Ago","Set","Ott","Nov","Dic"];
 
 function formatDate(dateStr: string) {
   const d = new Date(dateStr);
@@ -64,28 +39,30 @@ function formatDate(dateStr: string) {
 }
 
 function WindDir({ deg }: { deg: number }) {
-  const dirs = ["N", "NE", "E", "SE", "S", "SO", "O", "NO"];
-  return <span>{dirs[Math.round(deg / 45) % 8]}</span>;
+  const dirs = ["N","NNE","NE","ENE","E","ESE","SE","SSE","S","SSO","SO","OSO","O","ONO","NO","NNO"];
+  return <span>{dirs[Math.round(deg / 22.5) % 16]}</span>;
 }
 
 export default function Meteo() {
-  const [stazione, setStazione] = useState("porto-badino");
+  const [stazione, setStazione] = useState(() => getSharedStation());
   const { data, isLoading, isError } = useMeteo(stazione);
+
+  const handleChange = (key: string) => {
+    setStazione(key);
+    setSharedStation(key);
+  };
 
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-display font-bold">Meteo</h1>
-        <p className="text-muted-foreground">Previsioni 5 giorni · Stazioni laziali</p>
+        <p className="text-muted-foreground">Previsioni 5 giorni · 13 stazioni laziali</p>
       </div>
 
       <div>
         <label className="block text-xs text-muted-foreground uppercase tracking-wider mb-2">Stazione</label>
-        <select
-          value={stazione}
-          onChange={e => setStazione(e.target.value)}
-          className="bg-card border border-white/10 rounded-xl px-4 py-3 text-white focus:border-primary focus:outline-none"
-        >
+        <select value={stazione} onChange={e => handleChange(e.target.value)}
+          className="bg-card border border-white/10 rounded-xl px-4 py-3 text-white focus:border-primary focus:outline-none">
           {Object.entries(STAZIONI).map(([k, v]) => (
             <option key={k} value={k}>{v.nome}</option>
           ))}
@@ -108,10 +85,11 @@ export default function Meteo() {
 
       {data && (
         <>
-          {/* Current conditions */}
           <div className="bg-card rounded-2xl p-6 border border-white/5 shadow-xl">
-            <h2 className="text-sm text-muted-foreground uppercase tracking-wider mb-4">Condizioni Attuali — {STAZIONI[stazione].nome}</h2>
-            <div className="flex items-center gap-6">
+            <h2 className="text-sm text-muted-foreground uppercase tracking-wider mb-4">
+              Condizioni Attuali — {STAZIONI[stazione]?.nome}
+            </h2>
+            <div className="flex items-center gap-6 flex-wrap">
               <div className="text-6xl">{getWmo(data.current.weather_code).emoji}</div>
               <div>
                 <p className="text-5xl font-bold text-white">{data.current.temperature_2m}°C</p>
@@ -130,18 +108,17 @@ export default function Meteo() {
             </div>
           </div>
 
-          {/* 5-day forecast */}
           <div className="grid gap-3 md:grid-cols-5">
             {data.daily.time.map((date: string, i: number) => {
-              const wmo = getWmo(data.daily.weather_code[i]);
+              const w = getWmo(data.daily.weather_code[i]);
               const isToday = i === 0;
               return (
                 <div key={date} className={`bg-card rounded-2xl p-4 border shadow-lg transition-all ${isToday ? "border-primary/40 shadow-primary/10" : "border-white/5"}`}>
                   <p className={`text-sm font-bold mb-3 ${isToday ? "text-primary" : "text-muted-foreground"}`}>
                     {isToday ? "Oggi" : formatDate(date)}
                   </p>
-                  <div className="text-4xl mb-3 text-center">{wmo.emoji}</div>
-                  <p className="text-xs text-center text-muted-foreground mb-3">{wmo.label}</p>
+                  <div className="text-4xl mb-3 text-center">{w.emoji}</div>
+                  <p className="text-xs text-center text-muted-foreground mb-3">{w.label}</p>
                   <div className="flex justify-between text-sm font-bold mb-3">
                     <span className="text-blue-400">{data.daily.temperature_2m_min[i]}°</span>
                     <span className="text-orange-400">{data.daily.temperature_2m_max[i]}°</span>

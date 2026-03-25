@@ -8,7 +8,7 @@ import {
 import { cn } from "@/lib/utils";
 
 const NAV_ITEMS = [
-  { href: "/", label: "Dashboard", icon: Home, emoji: "🏠" },
+  { href: "/", label: "Home", icon: Home, emoji: "🏠" },
   { href: "/uscite", label: "Uscite", icon: Anchor, emoji: "⚓" },
   { href: "/pescato", label: "Pescato", icon: Fish, emoji: "🐟" },
   { href: "/spot", label: "Spot", icon: MapPin, emoji: "📍" },

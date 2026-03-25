@@ -1,4 +1,23 @@
-# Workspace
+# Workspace — Diario del Pescatore v3.6
+
+## diario-pescatore PWA (artifacts/diario-pescatore)
+
+- **Versione**: v3.6 · **Autore**: Limax · *Ad Maiora Semper*
+- **AI**: DeepSeek Chat (`deepseek-chat`) — unico provider, chiave inclusa
+- **Scan**: scanner manuale (foto + form) → salva cattura nel diario
+- **Pagina Home** (ex Dashboard): FishingForecastCard interattiva, scanner, stats, ultime uscite/catture
+- **Previsioni**: usa stesso `FishingForecastCard` da `components/FishingForecastCard.tsx`
+- **Stazioni (13)**: include Foce Sisto — tutti i moduli usano `use-location.ts` condiviso
+- **Spot**: campi lat/lon + pulsante GPS
+- **AI Chat**: storico conversazione completo inviato a DeepSeek, voce Web Speech API
+- **Componenti chiave**:
+  - `src/components/FishingForecastCard.tsx` — card 6-tab con algoritmo pesca (score 0-100)
+  - `src/hooks/use-location.ts` — STAZIONI (13) + getSharedStation/setSharedStation
+  - `src/hooks/use-local-data.ts` — factory CRUD localStorage
+- **Algoritmo score**: maree M2+K1+M4 (30pt) + luna (25pt) + SST (20pt) + onde (10pt) + vento (9pt) + meteo (6pt) + moltiplicatori + campo
+- **Dati locali**: localStorage; sync JSONBin.io pianificato
+
+
 
 ## Overview
 
