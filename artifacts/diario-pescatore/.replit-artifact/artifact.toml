@@ -22,10 +22,6 @@ build = [ "pnpm", "--filter", "@workspace/diario-pescatore", "run", "build" ]
 publicDir = "artifacts/diario-pescatore/dist/public"
 serve = "static"
 
-[[services.production.rewrites]]
-from = "/*"
-to = "/index.html"
-
 [services.env]
 PORT = "22883"
 BASE_PATH = "/"
