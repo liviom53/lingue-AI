@@ -20,15 +20,4 @@ kind = "web"
   [services.env]
   PORT = "19529"
   BASE_PATH = "/lingua-ai/"
-
-  [services.production]
-  serve = "static"
-  publicDir = "artifacts/lingua-ai/dist/public"
-
-  [services.production.build]
-  args = ["pnpm", "--filter", "@workspace/lingua-ai", "run", "build"]
-
-  [services.production.build.env]
-  NODE_ENV = "production"
-  BASE_PATH = "/lingua-ai/"
   
