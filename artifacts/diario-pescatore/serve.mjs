@@ -7,6 +7,7 @@ import { fileURLToPath } from 'node:url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const publicDir = path.join(__dirname, 'dist/public');
 const port = parseInt(process.env.PORT || '22883');
+const indexHtml = path.join(publicDir, 'index.html');
 
 const MIME = {
   '.html': 'text/html; charset=utf-8',
@@ -25,10 +26,13 @@ const MIME = {
   '.ttf': 'font/ttf',
 };
 
-const indexHtml = path.join(publicDir, 'index.html');
+console.log(`[diario] publicDir: ${publicDir}`);
+console.log(`[diario] index.html exists: ${existsSync(indexHtml)}`);
 
 createServer(async (req, res) => {
   const urlPath = new URL(req.url, 'http://localhost').pathname;
+  console.log(`[diario] ${req.method} ${urlPath}`);
+
   let filePath = path.join(publicDir, urlPath);
 
   try {
@@ -38,18 +42,23 @@ createServer(async (req, res) => {
     filePath = indexHtml;
   }
 
-  if (!existsSync(filePath)) filePath = indexHtml;
+  if (!existsSync(filePath)) {
+    console.log(`[diario] 404: ${filePath}`);
+    res.writeHead(404, { 'Content-Type': 'text/plain' });
+    res.end('Not found');
+    return;
+  }
 
   const ext = path.extname(filePath).toLowerCase();
   const contentType = MIME[ext] || 'application/octet-stream';
 
-  try {
-    res.writeHead(200, { 'Content-Type': contentType });
-    createReadStream(filePath).pipe(res);
-  } catch (e) {
-    res.writeHead(500);
-    res.end('Server error');
-  }
-}).listen(port, () => {
-  console.log(`Diario del Pescatore serving from ${publicDir} on port ${port}`);
+  res.writeHead(200, { 'Content-Type': contentType });
+  const stream = createReadStream(filePath);
+  stream.on('error', (err) => {
+    console.error(`[diario] stream error: ${err.message}`);
+    if (!res.writableEnded) res.end();
+  });
+  stream.pipe(res);
+}).listen(port, '0.0.0.0', () => {
+  console.log(`[diario] serving on 0.0.0.0:${port}`);
 });
