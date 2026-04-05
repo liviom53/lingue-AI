@@ -1,8 +1,7 @@
-import express, { type Express, type Request, type Response } from "express";
+import express, { type Express, type Request, type Response, type NextFunction } from "express";
 import cors from "cors";
 import pinoHttp from "pino-http";
 import path from "path";
-import http from "http";
 import { fileURLToPath } from "url";
 import router from "./routes";
 import { logger } from "./lib/logger";
@@ -35,34 +34,36 @@ if (process.env.NODE_ENV === "production") {
   const diarioDir = path.join(root, "artifacts/diario-pescatore/dist/public");
 
   app.use("/lingua-ai", express.static(linguaDir, { index: "index.html" }));
-  app.get("/lingua-ai/*splat", (_req: Request, res: Response) =>
+  app.get("/lingua-ai/*splat", (_req, res) =>
     res.sendFile(path.join(linguaDir, "index.html")),
   );
   app.use(express.static(diarioDir, { index: "index.html" }));
-  app.get("*splat", (_req: Request, res: Response) =>
+  app.get("*splat", (_req, res) =>
     res.sendFile(path.join(diarioDir, "index.html")),
   );
 } else {
-  function devProxy(targetPort: number) {
-    return (req: Request, res: Response) => {
-      const options: http.RequestOptions = {
-        hostname: "127.0.0.1",
-        port: targetPort,
-        path: req.originalUrl,
-        method: req.method,
-        headers: { ...req.headers, host: `localhost:${targetPort}` },
-      };
-      const proxyReq = http.request(options, (proxyRes) => {
-        res.writeHead(proxyRes.statusCode ?? 502, proxyRes.headers as Record<string, string>);
-        proxyRes.pipe(res);
-      });
-      proxyReq.on("error", () => res.status(502).send("Dev server not ready"));
-      req.pipe(proxyReq);
-    };
-  }
+  const { createProxyMiddleware } = await import("http-proxy-middleware");
 
-  app.use("/lingua-ai", devProxy(19529));
-  app.use("/", devProxy(22883));
+  // Use app.use without path prefix so Express does NOT strip the prefix.
+  // The full original path is forwarded to the Vite dev server as-is.
+  const linguaProxy = createProxyMiddleware({
+    target: "http://127.0.0.1:19529",
+    changeOrigin: true,
+    ws: true,
+  });
+
+  const diarioProxy = createProxyMiddleware({
+    target: "http://127.0.0.1:22883",
+    changeOrigin: true,
+    ws: true,
+  });
+
+  app.use((req: Request, res: Response, next: NextFunction) => {
+    if (req.originalUrl.startsWith("/lingua-ai")) {
+      return linguaProxy(req, res, next);
+    }
+    return diarioProxy(req, res, next);
+  });
 }
 
 export default app;
