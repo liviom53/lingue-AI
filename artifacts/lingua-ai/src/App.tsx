@@ -71,7 +71,8 @@ export default function App() {
   }, [selectedLang]);
 
   const currentLocale = LANGUAGES.find(l => l.code === selectedLang)!.locale;
-  const availableVoices = voices.filter(v => v.lang.startsWith(selectedLang));
+  const langVoices = voices.filter(v => v.lang.startsWith(selectedLang));
+  const availableVoices = langVoices.length > 0 ? langVoices : voices;
 
   const speak = (text: string) => {
     window.speechSynthesis.cancel();
@@ -236,9 +237,11 @@ export default function App() {
         <section style={styles.card}>
           <p style={{ color: '#94a3b8', fontSize: '0.75rem', marginBottom: '10px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Impostazioni voce</p>
 
-          {availableVoices.length > 0 ? (
+          {voices.length > 0 ? (
             <div style={{ marginBottom: '12px' }}>
-              <label style={{ fontSize: '0.8rem', color: '#94a3b8', display: 'block', marginBottom: '4px' }}>Voce</label>
+              <label style={{ fontSize: '0.8rem', color: '#94a3b8', display: 'block', marginBottom: '4px' }}>
+                Voce {langVoices.length > 0 ? `(${langVoices.length} per questa lingua)` : '(tutte disponibili)'}
+              </label>
               <select
                 value={selectedVoiceURI}
                 onChange={e => setSelectedVoiceURI(e.target.value)}
@@ -255,14 +258,14 @@ export default function App() {
                 <option value="">— Voce predefinita —</option>
                 {availableVoices.map(v => (
                   <option key={v.voiceURI} value={v.voiceURI}>
-                    {v.name} ({v.lang})
+                    {v.name} [{v.lang}]
                   </option>
                 ))}
               </select>
             </div>
           ) : (
             <p style={{ fontSize: '0.8rem', color: '#64748b', marginBottom: '12px' }}>
-              Nessuna voce disponibile per questa lingua nel tuo browser.
+              Nessuna voce disponibile nel tuo browser.
             </p>
           )}
 
