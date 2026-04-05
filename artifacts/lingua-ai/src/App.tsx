@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Mic, Volume2, Send, Loader2, AlertCircle, CloudLightning } from 'lucide-react';
+import { Mic, Volume2, Send, Loader2, AlertCircle } from 'lucide-react';
+import appIcon from '@assets/icon-192_1775392140519.png';
 
 const LINGVA_INSTANCES = [
   'https://lingva.ml',
@@ -167,7 +168,7 @@ export default function App() {
     <div style={styles.main}>
       <div style={{ maxWidth: '500px', margin: '0 auto' }}>
         <header style={{ textAlign: 'center', marginBottom: '20px' }}>
-          <CloudLightning size={40} color="#3b82f6" />
+          <img src={appIcon} alt="Impara una Lingua" style={{ width: '120px', height: '120px', borderRadius: '16px', marginBottom: '8px' }} />
           <h1>Impara una Lingua</h1>
           <p style={{ color: '#6366f1', fontSize: '0.8rem' }}>Impara a parlarla male poi si vedrà</p>
         </header>
