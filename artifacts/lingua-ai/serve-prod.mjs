@@ -25,9 +25,16 @@ const MIME = {
   ".ttf": "font/ttf",
 };
 
+const indexExists = fs.existsSync(path.join(distDir, "index.html"));
+console.log(`[lingua-ai] dist dir: ${distDir}`);
+console.log(`[lingua-ai] index.html exists: ${indexExists}`);
+if (indexExists) {
+  const files = fs.readdirSync(path.join(distDir, "assets")).join(", ");
+  console.log(`[lingua-ai] assets: ${files}`);
+}
+
 const server = http.createServer((req, res) => {
   let url = req.url.split("?")[0];
-  console.log(`[lingua-ai] ${req.method} ${url}`);
 
   let stripped = url;
   if (stripped.startsWith(BASE)) {
@@ -36,6 +43,7 @@ const server = http.createServer((req, res) => {
   if (stripped === "") stripped = "/";
 
   let filePath = path.join(distDir, stripped);
+  let status = 200;
 
   try {
     const stat = fs.statSync(filePath);
@@ -45,6 +53,12 @@ const server = http.createServer((req, res) => {
     }
   } catch {
     filePath = path.join(distDir, "index.html");
+    if (!fs.existsSync(filePath)) {
+      console.log(`[lingua-ai] ${req.method} ${url} -> 404 (no dist)`);
+      res.writeHead(404, { "Content-Type": "text/plain" });
+      res.end("Not Found - build may have failed");
+      return;
+    }
   }
 
   const ext = path.extname(filePath).toLowerCase();
@@ -55,12 +69,15 @@ const server = http.createServer((req, res) => {
   try {
     content = fs.readFileSync(filePath);
   } catch {
+    status = 404;
+    console.log(`[lingua-ai] ${req.method} ${url} -> 404`);
     res.writeHead(404, { "Content-Type": "text/plain" });
     res.end("Not Found");
     return;
   }
 
-  res.writeHead(200, {
+  console.log(`[lingua-ai] ${req.method} ${url} -> ${status} (${path.basename(filePath)})`);
+  res.writeHead(status, {
     "Content-Type": contentType,
     "Cache-Control": isHtml
       ? "no-cache, no-store, must-revalidate"
@@ -72,5 +89,4 @@ const server = http.createServer((req, res) => {
 
 server.listen(PORT, "0.0.0.0", () => {
   console.log(`[lingua-ai] serving at http://0.0.0.0:${PORT}/lingua-ai/`);
-  console.log(`[lingua-ai] dist dir: ${distDir}`);
 });
