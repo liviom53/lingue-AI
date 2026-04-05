@@ -8,4 +8,26 @@ kind = "web"
   [[integratedSkills]]
   name = "react-vite"
   version = "1.0.0"
+
+  [[services]]
+  name = "web"
+  paths = ["/lingua-ai/"]
+  localPort = 19529
+
+  [services.development]
+  run = "pnpm --filter @workspace/lingua-ai run dev"
+
+  [services.env]
+  PORT = "19529"
+  BASE_PATH = "/lingua-ai/"
+
+  [services.production]
+  serve = "static"
+
+  [services.production.build]
+  args = ["pnpm", "--filter", "@workspace/lingua-ai", "run", "build"]
+
+  [services.production.build.env]
+  NODE_ENV = "production"
+  BASE_PATH = "/lingua-ai/"
   

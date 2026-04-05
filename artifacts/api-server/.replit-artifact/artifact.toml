@@ -7,7 +7,7 @@ kind = "api"
   [[services]]
   localPort = 8080
   name = "API Server"
-  paths = ["/api", "/lingua-ai/", "/"]
+  paths = ["/api"]
 
   [services.development]
   run = "pnpm --filter @workspace/api-server run dev"
@@ -15,7 +15,7 @@ kind = "api"
   [services.production]
 
   [services.production.build]
-  args = ["sh", "artifacts/api-server/build-all.sh"]
+  args = ["pnpm", "--filter", "@workspace/api-server", "run", "build"]
 
   [services.production.build.env]
   NODE_ENV = "production"
