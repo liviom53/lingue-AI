@@ -73,9 +73,18 @@ export default function App() {
       const ut = new SpeechSynthesisUtterance(text);
       ut.lang = LANGUAGES.find(l => l.code === selectedLang)!.locale;
       window.speechSynthesis.speak(ut);
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      setError("Errore di risposta dal server AI.");
+      const status = err?.status ?? err?.response?.status;
+      if (status === 429) {
+        setError("Limite API raggiunto (quota giornaliera esaurita). Riprova più tardi o verifica la tua chiave API su aistudio.google.com.");
+      } else if (status === 401 || status === 403) {
+        setError("Chiave API non valida o non autorizzata. Controlla il secret VITE_GEMINI_API_KEY.");
+      } else if (status === 404) {
+        setError("Modello AI non trovato. Controlla il nome del modello.");
+      } else {
+        setError(`Errore dal server AI (${status ?? 'sconosciuto'}). Riprova tra qualche secondo.`);
+      }
     } finally {
       setLoading(false);
     }
