@@ -17,6 +17,15 @@ localPort = 19529
 [services.development]
 run = "pnpm --filter @workspace/lingua-ai run dev"
 
+[services.production]
+
+[services.production.build]
+args = ["pnpm", "--filter", "@workspace/lingua-ai", "run", "build"]
+
+[services.production.build.env]
+NODE_ENV = "production"
+BASE_PATH = "/lingua-ai/"
+
 [services.env]
 PORT = "19529"
 BASE_PATH = "/lingua-ai/"
