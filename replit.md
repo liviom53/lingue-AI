@@ -114,6 +114,20 @@ Generated React Query hooks and fetch client from the OpenAPI spec (e.g. `useHea
 
 Utility scripts package. Each script is a `.ts` file in `src/` with a corresponding npm script in `package.json`. Run scripts via `pnpm --filter @workspace/scripts run <script>`. Scripts can import any workspace package (e.g., `@workspace/db`) by adding it as a dependency in `scripts/package.json`.
 
+### `artifacts/lingua-ai` (`@workspace/lingua-ai`)
+
+**Lingua AI Pro** — React + Vite PWA for learning to pronounce foreign languages.
+
+- **Translator**: Lingva API (3 instances with fallback: lingva.ml, garudalinux, plausibility.cloud) for Italian → 6 languages (EN, ES, FR, DE, PT, RU)
+- **AI Translate**: DeepSeek AI via `/api/ai/translate` — richer translation with grammar explanation and example sentence
+- **AI Chat**: DeepSeek AI via `/api/ai/chat` — conversation practice in target language, with gentle corrections
+- **AI backend**: `@workspace/integrations-openrouter-ai` client (OpenRouter managed by Replit AI Integrations), model `deepseek/deepseek-chat`
+- **Speech**: Web Speech API — synthesis (speak translation) + recognition (pronunciation practice scoring)
+- **IPA**: English IPA via dictionaryapi.dev, other langs via Lingva pronunciation field; `ipaToReadable()` converts to Italian-friendly phonetics
+- **Routes**: `GET /lingua-ai/` (static PWA), `POST /api/ai/translate`, `POST /api/ai/chat`
+- **Key file**: `artifacts/lingua-ai/src/App.tsx` (all app logic), `artifacts/api-server/src/routes/ai.ts` (AI routes)
+- **vite.config.ts**: default PORT=19529, BASE_PATH=/lingua-ai/
+
 ### `artifacts/diario-pescatore` (`@workspace/diario-pescatore`)
 
 **Diario del Pescatore v3.5** — A PWA fishing diary for Italian fisherman Livio, targeting the Tyrrhenian/Lazio coast (Porto Badino area). 

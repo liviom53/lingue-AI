@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { Mic, Volume2, Send, Loader2, AlertCircle } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { Mic, Volume2, Send, Loader2, AlertCircle, Bot, X, ChevronDown, ChevronUp } from 'lucide-react';
 import appIcon from '@assets/icon-192_1775392140519.png';
 
 const LINGVA_INSTANCES = [
@@ -86,11 +86,14 @@ const normalizeText = (text: string) => {
     .trim();
 };
 
+type ChatMessage = { role: 'user' | 'assistant'; content: string };
+
 export default function App() {
   const [selectedLang, setSelectedLang] = useState('en');
   const [inputText, setInputText] = useState('');
   const [translatedText, setTranslatedText] = useState('');
   const [loading, setLoading] = useState(false);
+  const [aiLoading, setAiLoading] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const [isPracticing, setIsPracticing] = useState(false);
   const [practiceResult, setPracticeResult] = useState<{
@@ -103,6 +106,12 @@ export default function App() {
   const [selectedVoiceURI, setSelectedVoiceURI] = useState('');
   const [speechRate, setSpeechRate] = useState(1);
   const [ipaText, setIpaText] = useState<string | null>(null);
+  const [aiExplanation, setAiExplanation] = useState<{ explanation: string; example: string } | null>(null);
+  const [showChat, setShowChat] = useState(false);
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+  const [chatInput, setChatInput] = useState('');
+  const [chatLoading, setChatLoading] = useState(false);
+  const chatEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const loadVoices = () => {
@@ -118,7 +127,13 @@ export default function App() {
     setSelectedVoiceURI('');
     setIpaText(null);
     setPracticeResult(null);
+    setAiExplanation(null);
+    setChatMessages([]);
   }, [selectedLang]);
+
+  useEffect(() => {
+    if (showChat) chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [chatMessages, showChat]);
 
   const currentLocale = LANGUAGES.find(l => l.code === selectedLang)!.locale;
   const langVoices = voices.filter(v => v.lang.startsWith(selectedLang));
@@ -152,6 +167,7 @@ export default function App() {
     setError(null);
     setPracticeResult(null);
     setTranslatedText('');
+    setAiExplanation(null);
 
     try {
       const { translation, pronunciation } = await translateText(inputText, selectedLang);
@@ -170,6 +186,35 @@ export default function App() {
       setError(err.message ?? 'Errore durante la traduzione. Riprova.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleAiTranslate = async () => {
+    if (!inputText.trim()) return;
+    setAiLoading(true);
+    setError(null);
+    setPracticeResult(null);
+    setTranslatedText('');
+    setAiExplanation(null);
+    setIpaText(null);
+
+    try {
+      const res = await fetch('/api/ai/translate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: inputText, targetLang: selectedLang }),
+      });
+      if (!res.ok) throw new Error('Errore AI. Riprova.');
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+      setTranslatedText(data.translation ?? '');
+      setAiExplanation({ explanation: data.explanation ?? '', example: data.example ?? '' });
+      speak(data.translation ?? '');
+    } catch (err: any) {
+      console.error(err);
+      setError(err.message ?? 'Errore AI. Riprova.');
+    } finally {
+      setAiLoading(false);
     }
   };
 
@@ -197,6 +242,33 @@ export default function App() {
     };
     recognition.onend = () => setIsPracticing(false);
     recognition.start();
+  };
+
+  const handleChatSend = async () => {
+    if (!chatInput.trim() || chatLoading) return;
+    const userMsg: ChatMessage = { role: 'user', content: chatInput.trim() };
+    const newMessages = [...chatMessages, userMsg];
+    setChatMessages(newMessages);
+    setChatInput('');
+    setChatLoading(true);
+
+    try {
+      const res = await fetch('/api/ai/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages: newMessages, targetLang: selectedLang }),
+      });
+      if (!res.ok) throw new Error('Errore chat AI');
+      const data = await res.json();
+      const assistantMsg: ChatMessage = { role: 'assistant', content: data.reply ?? '' };
+      setChatMessages(prev => [...prev, assistantMsg]);
+      speak(data.reply ?? '');
+    } catch (err: any) {
+      const errMsg: ChatMessage = { role: 'assistant', content: '⚠️ ' + (err.message ?? 'Errore') };
+      setChatMessages(prev => [...prev, errMsg]);
+    } finally {
+      setChatLoading(false);
+    }
   };
 
   const styles: Record<string, React.CSSProperties> = {
@@ -230,6 +302,8 @@ export default function App() {
       gap: '8px',
     },
   };
+
+  const langName = LANGUAGES.find(l => l.code === selectedLang)!.name;
 
   return (
     <div style={styles.main}>
@@ -278,6 +352,7 @@ export default function App() {
             }}
             value={inputText}
             onChange={e => setInputText(e.target.value)}
+            onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleTranslate(); } }}
             placeholder="Scrivi in italiano..."
           />
           <button
@@ -286,13 +361,23 @@ export default function App() {
           >
             <Mic size={18} /> DETTA
           </button>
-          <button
-            style={{ ...styles.btn, backgroundColor: '#6366f1' }}
-            onClick={handleTranslate}
-            disabled={loading}
-          >
-            {loading ? <Loader2 className="animate-spin" size={18} /> : <Send size={18} />} TRADUCI
-          </button>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+            <button
+              style={{ ...styles.btn, backgroundColor: '#6366f1', marginTop: '6px' }}
+              onClick={handleTranslate}
+              disabled={loading || aiLoading}
+            >
+              {loading ? <Loader2 className="animate-spin" size={18} /> : <Send size={18} />} TRADUCI
+            </button>
+            <button
+              style={{ ...styles.btn, backgroundColor: '#7c3aed', marginTop: '6px', fontSize: '0.85rem' }}
+              onClick={handleAiTranslate}
+              disabled={loading || aiLoading}
+              title="Traduzione AI con spiegazione grammaticale"
+            >
+              {aiLoading ? <Loader2 className="animate-spin" size={18} /> : <Bot size={18} />} AI ✨
+            </button>
+          </div>
           {error && (
             <p style={{ color: '#ef4444', fontSize: '0.8rem', marginTop: '10px', display: 'flex', alignItems: 'center', gap: '6px' }}>
               <AlertCircle size={14} /> {error}
@@ -363,7 +448,7 @@ export default function App() {
               <Volume2
                 size={24}
                 color="#10b981"
-                style={{ cursor: 'pointer' }}
+                style={{ cursor: 'pointer', flexShrink: 0, marginLeft: '8px' }}
                 onClick={() => speak(translatedText)}
               />
             </div>
@@ -380,6 +465,17 @@ export default function App() {
               }}>
                 <span style={{ fontStyle: 'normal', fontWeight: 'bold', marginRight: '6px' }}>pronuncia</span>{ipaText}
               </p>
+            )}
+            {aiExplanation && (
+              <div style={{ marginTop: '10px', padding: '8px', backgroundColor: '#0f172a', borderRadius: '8px', border: '1px solid #7c3aed' }}>
+                <p style={{ fontSize: '0.8rem', color: '#a78bfa', margin: '0 0 4px', fontWeight: 'bold' }}>🤖 DeepSeek spiega:</p>
+                <p style={{ fontSize: '0.85rem', color: '#c4b5fd', margin: '0 0 6px' }}>{aiExplanation.explanation}</p>
+                {aiExplanation.example && (
+                  <p style={{ fontSize: '0.8rem', color: '#94a3b8', margin: 0, fontStyle: 'italic' }}>
+                    Es: <em style={{ color: '#e2e8f0' }}>{aiExplanation.example}</em>
+                  </p>
+                )}
+              </div>
             )}
             {isPracticing && (
               <p style={{ fontSize: '0.85rem', color: '#94a3b8', marginTop: '8px' }}>🎙️ Dì la frase...</p>
@@ -422,6 +518,135 @@ export default function App() {
             </button>
           </section>
         )}
+
+        {/* AI Chat Section */}
+        <section style={{ ...styles.card, border: '1px solid #7c3aed' }}>
+          <button
+            onClick={() => setShowChat(!showChat)}
+            style={{
+              width: '100%',
+              background: 'none',
+              border: 'none',
+              color: '#a78bfa',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: 0,
+              fontSize: '0.9rem',
+              fontWeight: 'bold',
+            }}
+          >
+            <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Bot size={18} /> Conversa in {langName} con DeepSeek AI
+            </span>
+            {showChat ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+          </button>
+
+          {showChat && (
+            <div style={{ marginTop: '10px' }}>
+              <div style={{
+                height: '200px',
+                overflowY: 'auto',
+                backgroundColor: '#0f172a',
+                borderRadius: '8px',
+                padding: '8px',
+                marginBottom: '8px',
+                border: '1px solid #334155',
+              }}>
+                {chatMessages.length === 0 && (
+                  <p style={{ color: '#64748b', fontSize: '0.8rem', textAlign: 'center', marginTop: '70px' }}>
+                    Scrivi qualcosa per iniziare a conversare in {langName}...
+                  </p>
+                )}
+                {chatMessages.map((msg, i) => (
+                  <div key={i} style={{
+                    marginBottom: '8px',
+                    display: 'flex',
+                    justifyContent: msg.role === 'user' ? 'flex-end' : 'flex-start',
+                  }}>
+                    <div style={{
+                      maxWidth: '85%',
+                      padding: '6px 10px',
+                      borderRadius: msg.role === 'user' ? '12px 12px 2px 12px' : '12px 12px 12px 2px',
+                      backgroundColor: msg.role === 'user' ? '#6366f1' : '#1e293b',
+                      border: msg.role === 'assistant' ? '1px solid #7c3aed' : 'none',
+                      fontSize: '0.85rem',
+                      lineHeight: '1.4',
+                      color: '#f8fafc',
+                      whiteSpace: 'pre-wrap',
+                    }}>
+                      {msg.content}
+                      {msg.role === 'assistant' && (
+                        <Volume2
+                          size={12}
+                          style={{ cursor: 'pointer', marginLeft: '6px', opacity: 0.6, display: 'inline', verticalAlign: 'middle' }}
+                          onClick={() => speak(msg.content)}
+                        />
+                      )}
+                    </div>
+                  </div>
+                ))}
+                {chatLoading && (
+                  <div style={{ display: 'flex', justifyContent: 'flex-start', marginBottom: '8px' }}>
+                    <div style={{ padding: '6px 10px', backgroundColor: '#1e293b', borderRadius: '12px', border: '1px solid #7c3aed' }}>
+                      <Loader2 size={14} className="animate-spin" style={{ color: '#a78bfa' }} />
+                    </div>
+                  </div>
+                )}
+                <div ref={chatEndRef} />
+              </div>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <input
+                  style={{
+                    flex: 1,
+                    padding: '8px',
+                    backgroundColor: '#0f172a',
+                    color: '#fff',
+                    border: '1px solid #334155',
+                    borderRadius: '8px',
+                    fontSize: '0.9rem',
+                  }}
+                  value={chatInput}
+                  onChange={e => setChatInput(e.target.value)}
+                  onKeyDown={e => { if (e.key === 'Enter') handleChatSend(); }}
+                  placeholder={`Scrivi in ${langName}...`}
+                  disabled={chatLoading}
+                />
+                <button
+                  onClick={handleChatSend}
+                  disabled={chatLoading || !chatInput.trim()}
+                  style={{
+                    padding: '8px 12px',
+                    backgroundColor: '#7c3aed',
+                    color: '#fff',
+                    border: 'none',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                  }}
+                >
+                  <Send size={16} />
+                </button>
+                {chatMessages.length > 0 && (
+                  <button
+                    onClick={() => setChatMessages([])}
+                    style={{
+                      padding: '8px',
+                      backgroundColor: '#334155',
+                      color: '#94a3b8',
+                      border: 'none',
+                      borderRadius: '8px',
+                      cursor: 'pointer',
+                    }}
+                    title="Nuova conversazione"
+                  >
+                    <X size={16} />
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
+        </section>
       </div>
     </div>
   );
