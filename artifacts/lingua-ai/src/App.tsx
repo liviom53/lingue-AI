@@ -141,12 +141,16 @@ export default function App() {
 
   const speak = (text: string) => {
     window.speechSynthesis.cancel();
-    const ut = new SpeechSynthesisUtterance(text);
-    ut.lang = currentLocale;
-    ut.rate = speechRate;
-    const voice = availableVoices.find(v => v.voiceURI === selectedVoiceURI);
-    if (voice) ut.voice = voice;
-    window.speechSynthesis.speak(ut);
+    // Small delay needed for Chrome: cancel() is async and speak() called
+    // immediately after is silently dropped by the browser engine.
+    setTimeout(() => {
+      const ut = new SpeechSynthesisUtterance(text);
+      ut.lang = currentLocale;
+      ut.rate = speechRate;
+      const voice = availableVoices.find(v => v.voiceURI === selectedVoiceURI);
+      if (voice) ut.voice = voice;
+      window.speechSynthesis.speak(ut);
+    }, 50);
   };
 
   const startInputSpeech = () => {
