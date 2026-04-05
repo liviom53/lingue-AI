@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Mic, Volume2, Send, Loader2, AlertCircle, CloudLightning } from 'lucide-react';
 
 const LINGVA_INSTANCES = [
@@ -51,6 +51,36 @@ export default function App() {
   const [isPracticing, setIsPracticing] = useState(false);
   const [practiceFeedback, setPracticeFeedback] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
+  const [selectedVoiceURI, setSelectedVoiceURI] = useState('');
+  const [speechRate, setSpeechRate] = useState(1);
+
+  useEffect(() => {
+    const loadVoices = () => {
+      const all = window.speechSynthesis.getVoices();
+      setVoices(all);
+    };
+    loadVoices();
+    window.speechSynthesis.onvoiceschanged = loadVoices;
+    return () => { window.speechSynthesis.onvoiceschanged = null; };
+  }, []);
+
+  useEffect(() => {
+    setSelectedVoiceURI('');
+  }, [selectedLang]);
+
+  const currentLocale = LANGUAGES.find(l => l.code === selectedLang)!.locale;
+  const availableVoices = voices.filter(v => v.lang.startsWith(selectedLang));
+
+  const speak = (text: string) => {
+    window.speechSynthesis.cancel();
+    const ut = new SpeechSynthesisUtterance(text);
+    ut.lang = currentLocale;
+    ut.rate = speechRate;
+    const voice = availableVoices.find(v => v.voiceURI === selectedVoiceURI);
+    if (voice) ut.voice = voice;
+    window.speechSynthesis.speak(ut);
+  };
 
   const startInputSpeech = () => {
     const SpeechRecognition =
@@ -73,10 +103,7 @@ export default function App() {
     try {
       const text = await translateText(inputText, selectedLang);
       setTranslatedText(text);
-
-      const ut = new SpeechSynthesisUtterance(text);
-      ut.lang = LANGUAGES.find(l => l.code === selectedLang)!.locale;
-      window.speechSynthesis.speak(ut);
+      speak(text);
     } catch (err: any) {
       console.error(err);
       setError(err.message ?? 'Errore durante la traduzione. Riprova.');
@@ -203,6 +230,60 @@ export default function App() {
           )}
         </section>
 
+        <section style={styles.card}>
+          <p style={{ color: '#94a3b8', fontSize: '0.75rem', marginBottom: '10px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Impostazioni voce</p>
+
+          {availableVoices.length > 0 ? (
+            <div style={{ marginBottom: '12px' }}>
+              <label style={{ fontSize: '0.8rem', color: '#94a3b8', display: 'block', marginBottom: '4px' }}>Voce</label>
+              <select
+                value={selectedVoiceURI}
+                onChange={e => setSelectedVoiceURI(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '8px',
+                  backgroundColor: '#0f172a',
+                  color: '#fff',
+                  border: '1px solid #334155',
+                  borderRadius: '6px',
+                  fontSize: '0.9rem',
+                }}
+              >
+                <option value="">— Voce predefinita —</option>
+                {availableVoices.map(v => (
+                  <option key={v.voiceURI} value={v.voiceURI}>
+                    {v.name} ({v.lang})
+                  </option>
+                ))}
+              </select>
+            </div>
+          ) : (
+            <p style={{ fontSize: '0.8rem', color: '#64748b', marginBottom: '12px' }}>
+              Nessuna voce disponibile per questa lingua nel tuo browser.
+            </p>
+          )}
+
+          <div>
+            <label style={{ fontSize: '0.8rem', color: '#94a3b8', display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
+              <span>Velocità</span>
+              <span style={{ color: '#f8fafc' }}>{speechRate.toFixed(1)}x</span>
+            </label>
+            <input
+              type="range"
+              min={0.5}
+              max={2}
+              step={0.1}
+              value={speechRate}
+              onChange={e => setSpeechRate(Number(e.target.value))}
+              style={{ width: '100%', accentColor: '#3b82f6' }}
+            />
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.7rem', color: '#64748b', marginTop: '2px' }}>
+              <span>0.5x (lento)</span>
+              <span>2x (veloce)</span>
+            </div>
+          </div>
+        </section>
+
         {translatedText && (
           <section style={{ ...styles.card, borderLeft: '4px solid #10b981' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -211,11 +292,7 @@ export default function App() {
                 size={24}
                 color="#10b981"
                 style={{ cursor: 'pointer' }}
-                onClick={() => {
-                  const ut = new SpeechSynthesisUtterance(translatedText);
-                  ut.lang = LANGUAGES.find(l => l.code === selectedLang)!.locale;
-                  window.speechSynthesis.speak(ut);
-                }}
+                onClick={() => speak(translatedText)}
               />
             </div>
             <p style={{ fontSize: '0.9rem', color: '#94a3b8', marginTop: '10px' }}>{practiceFeedback}</p>
