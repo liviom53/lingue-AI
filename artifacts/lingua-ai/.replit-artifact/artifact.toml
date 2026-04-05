@@ -11,28 +11,11 @@ version = "1.0.0"
 
 [[services]]
 name = "web"
-paths = ["/lingua-ai/"]
+paths = []
 localPort = 19529
 
 [services.development]
 run = "pnpm --filter @workspace/lingua-ai run dev"
-
-[services.production]
-
-[services.production.build]
-args = ["pnpm", "--filter", "@workspace/lingua-ai", "run", "build"]
-
-[services.production.build.env]
-NODE_ENV = "production"
-BASE_PATH = "/lingua-ai/"
-
-[services.production.run]
-args = ["pnpm", "--filter", "@workspace/lingua-ai", "run", "serve"]
-
-[services.production.run.env]
-PORT = "19529"
-BASE_PATH = "/lingua-ai/"
-NODE_ENV = "production"
 
 [services.env]
 PORT = "19529"
