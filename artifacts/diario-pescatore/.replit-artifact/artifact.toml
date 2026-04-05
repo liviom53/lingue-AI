@@ -12,7 +12,6 @@ kind = "web"
   [[services]]
   name = "web"
   localPort = 22883
-  paths = ["/"]
 
   [services.development]
   run = "pnpm --filter @workspace/diario-pescatore run dev"
