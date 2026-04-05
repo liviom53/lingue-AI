@@ -167,10 +167,12 @@ export default function App() {
   return (
     <div style={styles.main}>
       <div style={{ maxWidth: '500px', margin: '0 auto' }}>
-        <header style={{ textAlign: 'center', marginBottom: '20px' }}>
-          <img src={appIcon} alt="Impara una Lingua" style={{ width: '120px', height: '120px', borderRadius: '16px', marginBottom: '8px' }} />
-          <h1>Impara una Lingua</h1>
-          <p style={{ color: '#6366f1', fontSize: '0.8rem' }}>Impara a parlarla male poi si vedrà</p>
+        <header style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '20px' }}>
+          <img src={appIcon} alt="Impara una Lingua" style={{ width: '90px', height: '90px', borderRadius: '14px', flexShrink: 0 }} />
+          <div style={{ textAlign: 'left' }}>
+            <h1 style={{ margin: 0, fontSize: '1.4rem' }}>Impara una Lingua</h1>
+            <p style={{ color: '#6366f1', fontSize: '0.85rem', margin: '4px 0 0' }}>Impara a parlarla male poi si vedrà</p>
+          </div>
         </header>
 
         <section style={styles.card}>
