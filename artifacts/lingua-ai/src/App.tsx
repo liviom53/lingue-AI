@@ -352,13 +352,13 @@ export default function App() {
                 marginTop: '6px',
                 marginBottom: '2px',
                 fontSize: '0.9rem',
-                color: '#7c3aed',
+                color: '#f97316',
                 fontStyle: 'italic',
                 letterSpacing: '0.03em',
-                borderLeft: '3px solid #7c3aed',
+                borderLeft: '3px solid #f97316',
                 paddingLeft: '8px',
               }}>
-                {ipaText}
+                <span style={{ fontStyle: 'normal', fontWeight: 'bold', marginRight: '6px' }}>pronuncia</span>{ipaText}
               </p>
             )}
             {isPracticing && (
