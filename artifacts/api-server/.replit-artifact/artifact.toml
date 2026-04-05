@@ -7,7 +7,7 @@ kind = "api"
   [[services]]
   localPort = 8080
   name = "API Server"
-  paths = ["/api"]
+  paths = ["/api", "/lingua-ai/", "/"]
 
   [services.development]
   run = "pnpm --filter @workspace/api-server run dev"
@@ -15,10 +15,7 @@ kind = "api"
   [services.production]
 
   [services.production.build]
-  args = ["pnpm", "--filter", "@workspace/api-server", "run", "build"]
-
-  [services.production.build.env]
-  NODE_ENV = "production"
+  args = ["sh", "-c", "NODE_ENV=production BASE_PATH=/lingua-ai/ pnpm --filter @workspace/lingua-ai run build && NODE_ENV=production BASE_PATH=/ pnpm --filter @workspace/diario-pescatore run build && NODE_ENV=production pnpm --filter @workspace/api-server run build"]
 
   [services.production.run]
   args = ["node", "--enable-source-maps", "artifacts/api-server/dist/index.mjs"]
