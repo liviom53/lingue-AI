@@ -1,12 +1,26 @@
 import { useState } from 'react';
 import { Mic, Volume2, Send, Loader2, AlertCircle, CloudLightning } from 'lucide-react';
-import { GoogleGenerativeAI } from "@google/generative-ai";
 
-const API_KEY = import.meta.env.VITE_GEMINI_API_KEY as string;
+const LINGVA_INSTANCES = [
+  'https://lingva.ml',
+  'https://lingva.garudalinux.org',
+  'https://translate.plausibility.cloud',
+];
 
-const genAI = new GoogleGenerativeAI(API_KEY || "");
-
-const gemmaModel = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+async function translateText(text: string, targetLang: string): Promise<string> {
+  const encoded = encodeURIComponent(text);
+  for (const instance of LINGVA_INSTANCES) {
+    try {
+      const res = await fetch(`${instance}/api/v1/it/${targetLang}/${encoded}`);
+      if (!res.ok) continue;
+      const data = await res.json();
+      if (data.translation) return data.translation;
+    } catch {
+      continue;
+    }
+  }
+  throw new Error('Nessun server di traduzione raggiungibile. Riprova tra qualche secondo.');
+}
 
 const LANGUAGES = [
   { code: 'en', name: 'Inglese', flag: '🇬🇧', locale: 'en-US' },
@@ -52,22 +66,12 @@ export default function App() {
 
   const handleTranslate = async () => {
     if (!inputText.trim()) return;
-    if (!API_KEY) {
-      setError("Chiave API non configurata. Contatta l'amministratore.");
-      return;
-    }
     setLoading(true);
     setError(null);
     setPracticeFeedback('');
 
-    const target = LANGUAGES.find(l => l.code === selectedLang)?.name || "Inglese";
-
     try {
-      const promptCompleto = `Sei un traduttore. Traduci dall'italiano al ${target} questa frase: "${inputText}". Scrivi SOLO la traduzione pura.`;
-      const result = await gemmaModel.generateContent(promptCompleto);
-      const response = await result.response;
-      const text = response.text().trim();
-
+      const text = await translateText(inputText, selectedLang);
       setTranslatedText(text);
 
       const ut = new SpeechSynthesisUtterance(text);
@@ -75,16 +79,7 @@ export default function App() {
       window.speechSynthesis.speak(ut);
     } catch (err: any) {
       console.error(err);
-      const status = err?.status ?? err?.response?.status;
-      if (status === 429) {
-        setError("Limite API raggiunto (quota giornaliera esaurita). Riprova più tardi o verifica la tua chiave API su aistudio.google.com.");
-      } else if (status === 401 || status === 403) {
-        setError("Chiave API non valida o non autorizzata. Controlla il secret VITE_GEMINI_API_KEY.");
-      } else if (status === 404) {
-        setError("Modello AI non trovato. Controlla il nome del modello.");
-      } else {
-        setError(`Errore dal server AI (${status ?? 'sconosciuto'}). Riprova tra qualche secondo.`);
-      }
+      setError(err.message ?? 'Errore durante la traduzione. Riprova.');
     } finally {
       setLoading(false);
     }
