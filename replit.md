@@ -121,12 +121,26 @@ Utility scripts package. Each script is a `.ts` file in `src/` with a correspond
 - **Translator**: Lingva API (3 instances with fallback: lingva.ml, garudalinux, plausibility.cloud) for Italian → 6 languages (EN, ES, FR, DE, PT, RU)
 - **AI Translate**: DeepSeek AI via `/api/ai/translate` — richer translation with grammar explanation and example sentence
 - **AI Chat**: DeepSeek AI via `/api/ai/chat` — conversation practice in target language, with gentle corrections
-- **AI backend**: `@workspace/integrations-openrouter-ai` client (OpenRouter managed by Replit AI Integrations), model `deepseek/deepseek-chat`
+- **AI backend**: OpenRouter managed by Replit AI Integrations, model `deepseek/deepseek-chat`
 - **Speech**: Web Speech API — synthesis (speak translation) + recognition (pronunciation practice scoring)
 - **IPA**: English IPA via dictionaryapi.dev, other langs via Lingva pronunciation field; `ipaToReadable()` converts to Italian-friendly phonetics
 - **Routes**: `GET /lingua-ai/` (static PWA), `POST /api/ai/translate`, `POST /api/ai/chat`
 - **Key file**: `artifacts/lingua-ai/src/App.tsx` (all app logic), `artifacts/api-server/src/routes/ai.ts` (AI routes)
 - **vite.config.ts**: default PORT=19529, BASE_PATH=/lingua-ai/
+- **Production**: static files served by api-server Express (`/lingua-ai` → `dist/public/`); no separate production process
+
+## Production Architecture
+
+Single api-server (`artifacts/api-server`, port 8080) handles ALL paths in production:
+- `/api/*` → Express routes (AI translate, AI chat, healthz)
+- `/lingua-ai/*` → `artifacts/lingua-ai/dist/public/` (production Vite build, `BASE_PATH=/lingua-ai/`)
+- `/*` → `artifacts/diario-pescatore/dist/public/` (production Vite build, `BASE_PATH=/`)
+
+**Build step** (`artifacts/api-server/build-all.sh`): builds all three in sequence with correct env vars.
+
+**Why single server**: eliminates Replit sidecar path-routing ambiguity. `dist/public/` for lingua-ai and diario-pescatore are committed (not in `.gitignore`) and rebuilt fresh on every production deploy.
+
+**Dev**: lingua-ai and diario-pescatore each run their own Vite HMR dev server (ports 19529 and 22883). The workspace proxy routes dev preview to those ports. The api-server dev server also serves the built static files at those paths as a fallback.
 
 ### `artifacts/diario-pescatore` (`@workspace/diario-pescatore`)
 
