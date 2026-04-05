@@ -18,9 +18,17 @@ localPort = 22883
 run = "pnpm --filter @workspace/diario-pescatore run dev"
 
 [services.production]
-build = [ "pnpm", "--filter", "@workspace/diario-pescatore", "run", "build" ]
-publicDir = "artifacts/diario-pescatore/dist/public"
-serve = "static"
+
+[services.production.build]
+args = ["pnpm", "--filter", "@workspace/diario-pescatore", "run", "build"]
+
+[services.production.run]
+args = ["pnpm", "--filter", "@workspace/diario-pescatore", "run", "serve"]
+
+[services.production.run.env]
+PORT = "22883"
+BASE_PATH = "/"
+NODE_ENV = "production"
 
 [services.env]
 PORT = "22883"
