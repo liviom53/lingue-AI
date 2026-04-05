@@ -140,17 +140,35 @@ export default function App() {
   const availableVoices = langVoices.length > 0 ? langVoices : voices;
 
   const speak = (text: string) => {
+    // Stop anything currently playing
     window.speechSynthesis.cancel();
-    // Small delay needed for Chrome: cancel() is async and speak() called
-    // immediately after is silently dropped by the browser engine.
-    setTimeout(() => {
+
+    const doSpeak = () => {
       const ut = new SpeechSynthesisUtterance(text);
       ut.lang = currentLocale;
       ut.rate = speechRate;
       const voice = availableVoices.find(v => v.voiceURI === selectedVoiceURI);
       if (voice) ut.voice = voice;
+
+      // Chrome desktop bug: synthesis stalls after ~15s idle.
+      // Keep it alive with a periodic ping while speaking.
+      const keepAlive = setInterval(() => {
+        if (!window.speechSynthesis.speaking) {
+          clearInterval(keepAlive);
+        } else {
+          window.speechSynthesis.pause();
+          window.speechSynthesis.resume();
+        }
+      }, 10000);
+
+      ut.onend = () => clearInterval(keepAlive);
+      ut.onerror = () => clearInterval(keepAlive);
+
       window.speechSynthesis.speak(ut);
-    }, 50);
+    };
+
+    // Small delay so cancel() finishes before the next speak() call (Chrome quirk)
+    setTimeout(doSpeak, 50);
   };
 
   const startInputSpeech = () => {
