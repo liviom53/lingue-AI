@@ -28,6 +28,25 @@ async function translateText(text: string, targetLang: string): Promise<{ transl
   throw new Error('Nessun server di traduzione raggiungibile. Riprova tra qualche secondo.');
 }
 
+function ipaToReadable(ipa: string): string {
+  return ipa
+    .replace(/\//g, '').replace(/\[|\]/g, '').replace(/ˈ|ˌ/g, '')
+    .replace(/tʃ/g, 'c').replace(/dʒ/g, 'g')
+    .replace(/ŋg/g, 'ng').replace(/ŋ/g, 'ng')
+    .replace(/ʃ/g, 'sc').replace(/ʒ/g, 'j')
+    .replace(/θ/g, 'th').replace(/ð/g, 'dh')
+    .replace(/iː/g, 'ii').replace(/uː/g, 'uu')
+    .replace(/ɔː/g, 'or').replace(/ɑː/g, 'ar').replace(/ɜː/g, 'er')
+    .replace(/aɪ/g, 'ai').replace(/eɪ/g, 'ei').replace(/ɔɪ/g, 'oi')
+    .replace(/aʊ/g, 'au').replace(/əʊ/g, 'ou')
+    .replace(/ɪə/g, 'ier').replace(/ɛə/g, 'er').replace(/ʊə/g, 'uer')
+    .replace(/ː/g, '')
+    .replace(/ɔ/g, 'o').replace(/ɛ/g, 'e').replace(/æ/g, 'a')
+    .replace(/ə/g, 'e').replace(/ʌ/g, 'a').replace(/ɪ/g, 'i').replace(/ʊ/g, 'u')
+    .replace(/ɹ/g, 'r').replace(/w/g, 'u').replace(/j/g, 'i')
+    .trim();
+}
+
 async function fetchEnglishIPA(text: string): Promise<string | null> {
   const words = text.replace(/[.,!?;:]/g, '').split(' ').slice(0, 8);
   const results = await Promise.all(
@@ -36,14 +55,15 @@ async function fetchEnglishIPA(text: string): Promise<string | null> {
         const res = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word.toLowerCase()}`);
         if (!res.ok) return null;
         const data = await res.json();
-        return data[0]?.phonetic || data[0]?.phonetics?.find((p: any) => p.text)?.text || null;
+        const raw = data[0]?.phonetic || data[0]?.phonetics?.find((p: any) => p.text)?.text || null;
+        return raw ? ipaToReadable(raw) : null;
       } catch {
         return null;
       }
     })
   );
   if (!results.some(r => r !== null)) return null;
-  return results.map((ipa, i) => ipa ?? `/${words[i]}/`).join('  ');
+  return results.map((ph, i) => ph ?? words[i]).join(' ');
 }
 
 const LANGUAGES = [
