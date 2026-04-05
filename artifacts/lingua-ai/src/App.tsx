@@ -276,16 +276,16 @@ export default function App() {
             </label>
             <input
               type="range"
-              min={0.5}
-              max={2}
+              min={0.7}
+              max={1.5}
               step={0.1}
               value={speechRate}
               onChange={e => setSpeechRate(Number(e.target.value))}
               style={{ width: '100%', accentColor: '#3b82f6' }}
             />
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.7rem', color: '#64748b', marginTop: '2px' }}>
-              <span>0.5x (lento)</span>
-              <span>2x (veloce)</span>
+              <span>0.7x (lento)</span>
+              <span>1.5x (veloce)</span>
             </div>
           </div>
         </section>
