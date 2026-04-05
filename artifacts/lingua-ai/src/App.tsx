@@ -6,10 +6,7 @@ const API_KEY = import.meta.env.VITE_GEMINI_API_KEY as string;
 
 const genAI = new GoogleGenerativeAI(API_KEY || "");
 
-const gemmaModel = genAI.getGenerativeModel(
-  { model: "gemini-1.5-flash" },
-  { apiVersion: 'v1' }
-);
+const gemmaModel = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
 const LANGUAGES = [
   { code: 'en', name: 'Inglese', flag: '🇬🇧', locale: 'en-US' },
