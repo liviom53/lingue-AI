@@ -141,8 +141,8 @@ export default function App() {
       <div style={{ maxWidth: '500px', margin: '0 auto' }}>
         <header style={{ textAlign: 'center', marginBottom: '20px' }}>
           <CloudLightning size={40} color="#3b82f6" />
-          <h1>Lingua AI Pro</h1>
-          <p style={{ color: '#6366f1', fontSize: '0.8rem' }}>STABLE VERSION 1.0</p>
+          <h1>Impara una Lingua</h1>
+          <p style={{ color: '#6366f1', fontSize: '0.8rem' }}>Impara a parlarla male poi si vedrà</p>
         </header>
 
         <section style={styles.card}>
@@ -160,7 +160,7 @@ export default function App() {
                   cursor: 'pointer',
                 }}
               >
-                {l.flag} {l.code.toUpperCase()}
+                {l.flag} {l.name}
               </button>
             ))}
           </div>
