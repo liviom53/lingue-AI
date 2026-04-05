@@ -5,8 +5,7 @@ import path from "path";
 import runtimeErrorOverlay from "@replit/vite-plugin-runtime-error-modal";
 
 const port = Number(process.env.PORT ?? "19529");
-const isProduction = process.env.NODE_ENV === "production";
-const basePath = isProduction ? "./" : (process.env.BASE_PATH ?? "/lingua-ai/");
+const basePath = process.env.BASE_PATH ?? "/lingua-ai/";
 
 export default defineConfig({
   base: basePath,

@@ -28,10 +28,10 @@ args = ["pnpm", "--filter", "@workspace/lingua-ai", "run", "build"]
 
 [services.production.build.env]
 NODE_ENV = "production"
+BASE_PATH = "/lingua-ai/"
 
 [services.production.run]
-args = ["pnpm", "--filter", "@workspace/lingua-ai", "run", "serve"]
+args = ["node", "artifacts/lingua-ai/serve-prod.mjs"]
 
 [services.production.run.env]
 PORT = "19529"
-NODE_ENV = "production"
