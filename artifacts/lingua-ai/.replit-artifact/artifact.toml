@@ -12,6 +12,7 @@ kind = "web"
   [[services]]
   name = "web"
   localPort = 19529
+  paths = ["/lingua-ai/"]
 
   [services.development]
   run = "pnpm --filter @workspace/lingua-ai run dev"
@@ -19,4 +20,20 @@ kind = "web"
   [services.env]
   PORT = "19529"
   BASE_PATH = "/lingua-ai/"
+
+  [services.production]
+
+  [services.production.build]
+  args = ["sh", "-c", "NODE_ENV=production BASE_PATH=/lingua-ai/ pnpm --filter @workspace/lingua-ai run build"]
+
+  [services.production.run]
+  args = ["node", "artifacts/lingua-ai/serve.mjs"]
+
+  [services.production.run.env]
+  PORT = "19529"
+  NODE_ENV = "production"
+  BASE_PATH = "/lingua-ai/"
+
+  [services.production.health.startup]
+  path = "/lingua-ai/"
   
