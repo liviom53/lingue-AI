@@ -2,6 +2,11 @@
 
 # compiled output
 dist
+# Exception: static artifact dist directories must be committed for deployment
+!artifacts/lingua-ai/dist/
+!artifacts/lingua-ai/dist/**
+!artifacts/diario-pescatore/dist/
+!artifacts/diario-pescatore/dist/**
 tmp
 out-tsc
 *.tsbuildinfo
