@@ -22,10 +22,6 @@ build = [ "pnpm", "--filter", "@workspace/lingua-ai", "run", "build" ]
 publicDir = "artifacts/lingua-ai/dist/public"
 serve = "static"
 
-[[services.production.rewrites]]
-from = "/*"
-to = "/index.html"
-
 [services.env]
 PORT = "19529"
 BASE_PATH = "/lingua-ai/"
