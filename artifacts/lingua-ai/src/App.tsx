@@ -8,19 +8,42 @@ const LINGVA_INSTANCES = [
   'https://translate.plausibility.cloud',
 ];
 
-async function translateText(text: string, targetLang: string): Promise<string> {
+async function translateText(text: string, targetLang: string): Promise<{ translation: string; pronunciation?: string }> {
   const encoded = encodeURIComponent(text);
   for (const instance of LINGVA_INSTANCES) {
     try {
       const res = await fetch(`${instance}/api/v1/it/${targetLang}/${encoded}`);
       if (!res.ok) continue;
       const data = await res.json();
-      if (data.translation) return data.translation;
+      if (data.translation) {
+        return {
+          translation: data.translation,
+          pronunciation: data.info?.pronunciation?.translation || undefined,
+        };
+      }
     } catch {
       continue;
     }
   }
   throw new Error('Nessun server di traduzione raggiungibile. Riprova tra qualche secondo.');
+}
+
+async function fetchEnglishIPA(text: string): Promise<string | null> {
+  const words = text.replace(/[.,!?;:]/g, '').split(' ').slice(0, 8);
+  const results = await Promise.all(
+    words.map(async (word) => {
+      try {
+        const res = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word.toLowerCase()}`);
+        if (!res.ok) return null;
+        const data = await res.json();
+        return data[0]?.phonetic || data[0]?.phonetics?.find((p: any) => p.text)?.text || null;
+      } catch {
+        return null;
+      }
+    })
+  );
+  if (!results.some(r => r !== null)) return null;
+  return results.map((ipa, i) => ipa ?? `/${words[i]}/`).join('  ');
 }
 
 const LANGUAGES = [
@@ -59,6 +82,7 @@ export default function App() {
   const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
   const [selectedVoiceURI, setSelectedVoiceURI] = useState('');
   const [speechRate, setSpeechRate] = useState(1);
+  const [ipaText, setIpaText] = useState<string | null>(null);
 
   useEffect(() => {
     const loadVoices = () => {
@@ -72,6 +96,8 @@ export default function App() {
 
   useEffect(() => {
     setSelectedVoiceURI('');
+    setIpaText(null);
+    setPracticeResult(null);
   }, [selectedLang]);
 
   const currentLocale = LANGUAGES.find(l => l.code === selectedLang)!.locale;
@@ -108,9 +134,17 @@ export default function App() {
     setTranslatedText('');
 
     try {
-      const text = await translateText(inputText, selectedLang);
-      setTranslatedText(text);
-      speak(text);
+      const { translation, pronunciation } = await translateText(inputText, selectedLang);
+      setTranslatedText(translation);
+      speak(translation);
+      if (selectedLang === 'en') {
+        const ipa = await fetchEnglishIPA(translation);
+        setIpaText(ipa);
+      } else if (pronunciation) {
+        setIpaText(pronunciation);
+      } else {
+        setIpaText(null);
+      }
     } catch (err: any) {
       console.error(err);
       setError(err.message ?? 'Errore durante la traduzione. Riprova.');
@@ -313,6 +347,20 @@ export default function App() {
                 onClick={() => speak(translatedText)}
               />
             </div>
+            {ipaText && (
+              <p style={{
+                marginTop: '6px',
+                marginBottom: '2px',
+                fontSize: '0.9rem',
+                color: '#7c3aed',
+                fontStyle: 'italic',
+                letterSpacing: '0.03em',
+                borderLeft: '3px solid #7c3aed',
+                paddingLeft: '8px',
+              }}>
+                {ipaText}
+              </p>
+            )}
             {isPracticing && (
               <p style={{ fontSize: '0.85rem', color: '#94a3b8', marginTop: '8px' }}>🎙️ Dì la frase...</p>
             )}
