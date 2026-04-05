@@ -137,26 +137,26 @@ export default function App() {
       minHeight: '100vh',
       backgroundColor: '#0f172a',
       color: '#f8fafc',
-      padding: '20px',
+      padding: '12px',
       fontFamily: 'sans-serif',
     },
     card: {
       backgroundColor: '#1e293b',
-      borderRadius: '15px',
-      padding: '20px',
-      marginBottom: '20px',
+      borderRadius: '12px',
+      padding: '12px',
+      marginBottom: '10px',
       border: '1px solid #334155',
     },
     btn: {
       width: '100%',
-      padding: '12px',
-      borderRadius: '10px',
+      padding: '8px',
+      borderRadius: '8px',
       border: 'none',
       backgroundColor: '#3b82f6',
       color: '#fff',
       fontWeight: 'bold',
       cursor: 'pointer',
-      marginTop: '10px',
+      marginTop: '6px',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
@@ -167,7 +167,7 @@ export default function App() {
   return (
     <div style={styles.main}>
       <div style={{ maxWidth: '500px', margin: '0 auto' }}>
-        <header style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '16px', marginBottom: '20px' }}>
+        <header style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '16px', marginBottom: '10px' }}>
           <img src={appIcon} alt="Impara una Lingua" style={{ width: '90px', height: '90px', borderRadius: '14px', flexShrink: 0 }} />
           <div>
             <h1 style={{ margin: 0, fontSize: '1.9rem', whiteSpace: 'nowrap' }}>Impara una Lingua</h1>
@@ -200,11 +200,11 @@ export default function App() {
           <textarea
             style={{
               width: '100%',
-              height: '80px',
+              height: '60px',
               backgroundColor: '#0f172a',
               color: '#fff',
               border: '1px solid #334155',
-              padding: '10px',
+              padding: '8px',
               borderRadius: '8px',
               resize: 'none',
               boxSizing: 'border-box',
