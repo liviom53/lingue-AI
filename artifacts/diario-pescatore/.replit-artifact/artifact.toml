@@ -11,20 +11,11 @@ version = "1.0.0"
 
 [[services]]
 name = "web"
-paths = []
+paths = ["/"]
 localPort = 22883
 
 [services.development]
 run = "pnpm --filter @workspace/diario-pescatore run dev"
-
-[services.production]
-
-[services.production.build]
-args = ["pnpm", "--filter", "@workspace/diario-pescatore", "run", "build"]
-
-[services.production.build.env]
-NODE_ENV = "production"
-BASE_PATH = "/"
 
 [services.env]
 PORT = "22883"
