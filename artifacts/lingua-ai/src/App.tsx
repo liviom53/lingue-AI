@@ -50,7 +50,11 @@ export default function App() {
   const [loading, setLoading] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const [isPracticing, setIsPracticing] = useState(false);
-  const [practiceFeedback, setPracticeFeedback] = useState('');
+  const [practiceResult, setPracticeResult] = useState<{
+    score: number;
+    spoken: string;
+    wordResults: { expected: string; correct: boolean }[];
+  } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
   const [selectedVoiceURI, setSelectedVoiceURI] = useState('');
@@ -100,7 +104,8 @@ export default function App() {
     if (!inputText.trim()) return;
     setLoading(true);
     setError(null);
-    setPracticeFeedback('');
+    setPracticeResult(null);
+    setTranslatedText('');
 
     try {
       const text = await translateText(inputText, selectedLang);
@@ -122,12 +127,19 @@ export default function App() {
     recognition.lang = LANGUAGES.find(l => l.code === selectedLang)!.locale;
     recognition.onstart = () => {
       setIsPracticing(true);
-      setPracticeFeedback('Dì la frase tradotta...');
+      setPracticeResult(null);
     };
     recognition.onresult = (e: any) => {
       const spoken = e.results[0][0].transcript;
-      const isCorrect = normalizeText(spoken) === normalizeText(translatedText);
-      setPracticeFeedback(isCorrect ? '✅ PERFETTO!' : `❌ HAI DETTO: ${spoken}`);
+      const expectedWords = normalizeText(translatedText).split(' ');
+      const spokenWords = normalizeText(spoken).split(' ');
+      const wordResults = expectedWords.map((word, i) => ({
+        expected: word,
+        correct: spokenWords[i] === word,
+      }));
+      const correctCount = wordResults.filter(w => w.correct).length;
+      const score = Math.round((correctCount / expectedWords.length) * 100);
+      setPracticeResult({ score, spoken, wordResults });
     };
     recognition.onend = () => setIsPracticing(false);
     recognition.start();
@@ -301,12 +313,44 @@ export default function App() {
                 onClick={() => speak(translatedText)}
               />
             </div>
-            <p style={{ fontSize: '0.9rem', color: '#94a3b8', marginTop: '10px' }}>{practiceFeedback}</p>
+            {isPracticing && (
+              <p style={{ fontSize: '0.85rem', color: '#94a3b8', marginTop: '8px' }}>🎙️ Dì la frase...</p>
+            )}
+            {practiceResult && !isPracticing && (
+              <div style={{ marginTop: '10px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
+                  <span style={{
+                    fontSize: '1.4rem', fontWeight: 'bold',
+                    color: practiceResult.score === 100 ? '#10b981' : practiceResult.score >= 60 ? '#f59e0b' : '#ef4444'
+                  }}>
+                    {practiceResult.score}%
+                  </span>
+                  <span style={{ fontSize: '0.85rem', color: '#94a3b8' }}>
+                    {practiceResult.score === 100 ? '🎉 Perfetto!' : practiceResult.score >= 60 ? '👍 Quasi!' : '❌ Riprova'}
+                  </span>
+                </div>
+                <div style={{ fontSize: '0.9rem', lineHeight: '1.8', marginBottom: '6px' }}>
+                  {practiceResult.wordResults.map((w, i) => (
+                    <span key={i} style={{
+                      marginRight: '5px',
+                      color: w.correct ? '#10b981' : '#ef4444',
+                      textDecoration: w.correct ? 'none' : 'underline',
+                      fontWeight: w.correct ? 'normal' : 'bold',
+                    }}>
+                      {w.expected}
+                    </span>
+                  ))}
+                </div>
+                <p style={{ fontSize: '0.75rem', color: '#64748b', margin: 0 }}>
+                  Hai detto: <em>{practiceResult.spoken}</em>
+                </p>
+              </div>
+            )}
             <button
               style={{ ...styles.btn, backgroundColor: isPracticing ? '#f59e0b' : '#10b981' }}
               onClick={startPracticeSession}
             >
-              <Mic size={18} /> PRATICA PRONUNCIA
+              <Mic size={18} /> {practiceResult && !isPracticing ? 'RIPROVA' : 'PRATICA PRONUNCIA'}
             </button>
           </section>
         )}
