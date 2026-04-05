@@ -1,22 +1,41 @@
 kind = "web"
-previewPath = "/lingua-ai/"
-title = "Lingua AI Pro"
-version = "1.0.0"
-id = "artifacts/lingua-ai"
-router = "path"
+  previewPath = "/lingua-ai/"
+  title = "Lingua AI Pro"
+  version = "1.0.0"
+  id = "artifacts/lingua-ai"
+  router = "path"
 
-[[integratedSkills]]
-name = "react-vite"
-version = "1.0.0"
+  [[integratedSkills]]
+  name = "react-vite"
+  version = "1.0.0"
 
-[[services]]
-name = "web"
-paths = ["/lingua-ai/"]
-localPort = 19529
+  [[services]]
+  name = "web"
+  paths = ["/lingua-ai/"]
+  localPort = 19529
 
-[services.development]
-run = "pnpm --filter @workspace/lingua-ai run dev"
+  [services.development]
+  run = "pnpm --filter @workspace/lingua-ai run dev"
 
-[services.env]
-PORT = "19529"
-BASE_PATH = "/lingua-ai/"
+  [services.env]
+  PORT = "19529"
+  BASE_PATH = "/lingua-ai/"
+
+  [services.production]
+
+  [services.production.build]
+  args = ["pnpm", "--filter", "@workspace/lingua-ai", "run", "build"]
+
+  [services.production.build.env]
+  NODE_ENV = "production"
+  BASE_PATH = "/lingua-ai/"
+
+  [services.production.run]
+  args = ["node", "artifacts/lingua-ai/serve-prod.mjs"]
+
+  [services.production.run.env]
+  PORT = "19529"
+
+  [services.production.health.startup]
+  path = "/lingua-ai/"
+  
