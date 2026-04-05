@@ -170,8 +170,8 @@ export default function App() {
         <header style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '16px', marginBottom: '20px' }}>
           <img src={appIcon} alt="Impara una Lingua" style={{ width: '90px', height: '90px', borderRadius: '14px', flexShrink: 0 }} />
           <div>
-            <h1 style={{ margin: 0, fontSize: '1.9rem' }}>Impara una Lingua</h1>
-            <p style={{ color: '#f97316', fontSize: '1.1rem', margin: '4px 0 0' }}>Impara a parlarla male</p>
+            <h1 style={{ margin: 0, fontSize: '1.9rem', whiteSpace: 'nowrap' }}>Impara una Lingua</h1>
+            <p style={{ color: '#f97316', fontSize: '1.55rem', margin: '4px 0 0', whiteSpace: 'nowrap' }}>Impara a parlarla male</p>
           </div>
         </header>
 
