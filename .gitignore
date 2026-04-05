@@ -1,14 +1,13 @@
 # See https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files for more about ignoring files.
 
-# compiled output
-dist
-# Exception: static artifact dist directories must be committed for deployment
-!artifacts/lingua-ai/dist/
-!artifacts/lingua-ai/dist/**
-!artifacts/diario-pescatore/dist/
-!artifacts/diario-pescatore/dist/**
+# compiled output - ignore dist in specific locations, but NOT static artifact public builds
+/dist/
+out-tsc/
+lib/*/dist/
+artifacts/api-server/dist/
+artifacts/mockup-sandbox/dist/
+# lingua-ai and diario-pescatore dist/public are intentionally NOT ignored (needed for deployment)
 tmp
-out-tsc
 *.tsbuildinfo
 .expo
 .expo-shared
