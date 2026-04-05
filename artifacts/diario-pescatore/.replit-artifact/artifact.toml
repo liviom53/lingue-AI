@@ -8,16 +8,4 @@ kind = "web"
   [[integratedSkills]]
   name = "react-vite"
   version = "1.0.0"
-
-  [[services]]
-  name = "web"
-  paths = ["/"]
-  localPort = 22883
-
-  [services.development]
-  run = "pnpm --filter @workspace/diario-pescatore run dev"
-
-  [services.env]
-  PORT = "22883"
-  BASE_PATH = "/"
   

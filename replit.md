@@ -131,16 +131,18 @@ Utility scripts package. Each script is a `.ts` file in `src/` with a correspond
 
 ## Production Architecture
 
-Single api-server (`artifacts/api-server`, port 8080) handles ALL paths in production:
+Single api-server (`artifacts/api-server`, port 8080) handles ALL paths in both dev and production:
 - `/api/*` → Express routes (AI translate, AI chat, healthz)
 - `/lingua-ai/*` → `artifacts/lingua-ai/dist/public/` (production Vite build, `BASE_PATH=/lingua-ai/`)
 - `/*` → `artifacts/diario-pescatore/dist/public/` (production Vite build, `BASE_PATH=/`)
 
-**Build step** (`artifacts/api-server/build-all.sh`): builds all three in sequence with correct env vars.
+**Build step** (`artifacts/api-server/build-all.sh`): builds lingua-ai, diario-pescatore, then api-server.
 
-**Why single server**: eliminates Replit sidecar path-routing ambiguity. `dist/public/` for lingua-ai and diario-pescatore are committed (not in `.gitignore`) and rebuilt fresh on every production deploy.
+**Why single server**: eliminates Replit sidecar path-routing ambiguity. Only api-server registers paths in `artifact.toml`; lingua-ai and diario-pescatore have no `[[services]]` block (no localPort). So the sidecar only waits for port 8080 in production.
 
-**Dev**: lingua-ai and diario-pescatore each run their own Vite HMR dev server (ports 19529 and 22883). The workspace proxy routes dev preview to those ports. The api-server dev server also serves the built static files at those paths as a fallback.
+**Path detection**: `app.ts` uses `findWorkspaceRoot()` to locate static dist dirs — checks `process.cwd()` first, then `../../` (for dev where cwd=`artifacts/api-server`).
+
+**Dev**: api-server builds then starts in dev mode and serves the built static files at the correct paths. Vite dev servers (ports 19529/22883) can be started manually for HMR but are not registered as sidecar routes.
 
 ### `artifacts/diario-pescatore` (`@workspace/diario-pescatore`)
 
