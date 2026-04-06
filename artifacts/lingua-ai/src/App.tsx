@@ -495,7 +495,7 @@ export default function App() {
               {loading ? <Loader2 className="animate-spin" size={18} /> : <Send size={18} />} TRADUCI
             </button>
             <button
-              style={{ ...styles.btn, backgroundColor: '#c8a07a', marginTop: '6px', fontSize: '0.85rem' }}
+              style={{ ...styles.btn, backgroundColor: '#e8d0a0', color: '#1e293b', marginTop: '6px', fontSize: '0.85rem' }}
               onClick={handleAiTranslate}
               disabled={loading || aiLoading}
               title="Traduzione AI con spiegazione grammaticale"
