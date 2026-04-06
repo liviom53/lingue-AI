@@ -1085,13 +1085,13 @@ export default function App() {
             </span>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               {showChat && (
-                <button
+                <span
                   title={chatExpanded ? 'Riduci chat' : 'Espandi chat'}
                   onClick={e => { e.stopPropagation(); setChatExpanded(v => !v); }}
-                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#fbbf24', padding: '2px', display: 'flex' }}
+                  style={{ cursor: 'pointer', color: '#fbbf24', padding: '2px', display: 'flex' }}
                 >
                   {chatExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-                </button>
+                </span>
               )}
               {showChat ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
             </div>
