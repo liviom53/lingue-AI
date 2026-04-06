@@ -439,8 +439,10 @@ export default function App() {
     setQuizSelected(null);
   };
 
-  const handleTranslate = async () => {
+  const handleTranslate = async (langOverride?: string) => {
     if (!inputText.trim()) return;
+    // langOverride permette alle demo di bypassare il closure stale su selectedLang
+    const lang = typeof langOverride === 'string' ? langOverride : selectedLang;
     setLoading(true);
     setError(null);
     setPracticeResult(null);
@@ -450,18 +452,18 @@ export default function App() {
     setBookmarked(false);
 
     try {
-      const { translation, pronunciation } = await translateText(inputText, selectedLang);
+      const { translation, pronunciation } = await translateText(inputText, lang);
       setTranslatedText(translation);
       speak(translation);
       setProgress(prev => {
         const word = translation.toLowerCase().trim();
         const wordsLearned = prev.wordsLearned.includes(word) ? prev.wordsLearned : [...prev.wordsLearned, word];
-        const langStats = { ...prev.langStats, [selectedLang]: (prev.langStats[selectedLang] ?? 0) + 1 };
+        const langStats = { ...prev.langStats, [lang]: (prev.langStats[lang] ?? 0) + 1 };
         const updated = { ...prev, translationCount: prev.translationCount + 1, wordsLearned, langStats };
         saveProgress(updated);
         return updated;
       });
-      if (selectedLang === 'en') {
+      if (lang === 'en') {
         const ipa = await fetchEnglishIPA(translation);
         setIpaText(ipa);
       } else if (pronunciation) {
@@ -845,8 +847,8 @@ export default function App() {
     // t=13000: profilo/tab, t=13600: click, t=17000: fine, t=20000: stop
     const runSequence = () => {
       if (demoNum === 1) {
-        t(() => { setDemoStep(1); narrateDemo(DEMO_STEPS[1].narration); }, 0);
-        t(() => { setDemoStep(2); narrateDemo(DEMO_STEPS[2].narration); handleTranslate(); }, 3000);
+        t(() => { setSelectedLang('en'); setDemoStep(1); narrateDemo(DEMO_STEPS[1].narration); }, 0);
+        t(() => { setDemoStep(2); narrateDemo(DEMO_STEPS[2].narration); handleTranslate('en'); }, 3000);
         t(() => animateDemoCursorClick(), 3600);
         t(() => {
           setDemoStep(3); narrateDemo(DEMO_STEPS[3].narration);
@@ -863,7 +865,7 @@ export default function App() {
         t(() => stopDemo(), 20500);
       } else if (demoNum === 2) {
         t(() => { setSelectedLang('fr'); setDemoStep(1); narrateDemo(DEMO2_STEPS[1].narration); }, 0);
-        t(() => { setDemoStep(2); narrateDemo(DEMO2_STEPS[2].narration); handleTranslate(); }, 3000);
+        t(() => { setDemoStep(2); narrateDemo(DEMO2_STEPS[2].narration); handleTranslate('fr'); }, 3000);
         t(() => animateDemoCursorClick(), 3600);
         t(() => { setDemoStep(3); narrateDemo(DEMO2_STEPS[3].narration); setShowShadow(true); fetchShadowPhrase(); }, 8000);
         scrollDemo('[data-demo="shadow-toggle"]', '[data-demo="shadow-toggle"]', 8400);
@@ -875,7 +877,7 @@ export default function App() {
         t(() => stopDemo(), 20500);
       } else if (demoNum === 3) {
         t(() => { setSelectedLang('ja'); setDemoStep(1); narrateDemo(DEMO3_STEPS[1].narration); }, 0);
-        t(() => { setDemoStep(2); narrateDemo(DEMO3_STEPS[2].narration); handleTranslate(); }, 3000);
+        t(() => { setDemoStep(2); narrateDemo(DEMO3_STEPS[2].narration); handleTranslate('ja'); }, 3000);
         t(() => animateDemoCursorClick(), 3600);
         t(() => { setDemoStep(3); narrateDemo(DEMO3_STEPS[3].narration); setShowChat(true); }, 8000);
         scrollDemo('[data-demo="chat-section"]', '[data-demo="chat-section"]', 8400);
@@ -887,7 +889,7 @@ export default function App() {
         t(() => stopDemo(), 20500);
       } else {
         t(() => { setSelectedLang('es'); setDemoStep(1); narrateDemo(DEMO4_STEPS[1].narration); }, 0);
-        t(() => { setDemoStep(2); narrateDemo(DEMO4_STEPS[2].narration); handleTranslate(); }, 3000);
+        t(() => { setDemoStep(2); narrateDemo(DEMO4_STEPS[2].narration); handleTranslate('es'); }, 3000);
         t(() => animateDemoCursorClick(), 3600);
         t(() => { setDemoStep(3); narrateDemo(DEMO4_STEPS[3].narration); }, 8000);
         scrollDemo('[data-demo="translated-text"]', '[data-demo="translated-text"]', 8350);
@@ -1146,7 +1148,7 @@ export default function App() {
             <button
               data-demo="translate-btn"
               style={{ ...styles.btn, backgroundColor: '#fb923c', marginTop: '6px' }}
-              onClick={handleTranslate}
+              onClick={() => handleTranslate()}
               disabled={loading || aiLoading}
             >
               {loading ? <Loader2 className="animate-spin" size={18} /> : <Send size={18} />} TRADUCI
