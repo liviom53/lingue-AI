@@ -947,10 +947,10 @@ export default function App() {
               display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px',
             }}>
               {([
-                { n: 1 as const, icon: '🌍', label: 'Demo 1', sub: 'Traduzione & X-Ray' },
-                { n: 2 as const, icon: '🎙️', label: 'Demo 2', sub: 'Shadowing' },
-                { n: 3 as const, icon: '🤖', label: 'Demo 3', sub: 'Chat AI' },
-                { n: 4 as const, icon: '⭐', label: 'Demo 4', sub: 'Vocabolario' },
+                { n: 1 as const, icon: '🌍', label: 'Traduzione', sub: 'X-Ray grammaticale' },
+                { n: 2 as const, icon: '🎙️', label: 'Shadowing', sub: 'Ripeti e impara' },
+                { n: 3 as const, icon: '🤖', label: 'Chat AI', sub: 'Conversa con DeepSeek' },
+                { n: 4 as const, icon: '⭐', label: 'Vocabolario', sub: 'Salva e ripassa' },
               ]).map(({ n, icon, label, sub }) => (
                 <button
                   key={n}
