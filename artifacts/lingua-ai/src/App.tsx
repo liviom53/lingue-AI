@@ -933,7 +933,7 @@ export default function App() {
       backgroundColor: '#0f172a',
       color: '#f8fafc',
       padding: '12px',
-      fontFamily: 'sans-serif',
+      fontFamily: "'Inter', system-ui, sans-serif",
     },
     card: {
       backgroundColor: '#1e293b',
@@ -1169,7 +1169,7 @@ export default function App() {
           )}
         </section>
 
-        <section style={styles.card}>
+        <section style={{ ...styles.card, border: '1px solid #3b82f6' }}>
           <button
             onClick={() => setShowVoiceSettings(v => !v)}
             style={{
@@ -1249,7 +1249,7 @@ export default function App() {
         </section>
 
         {translatedText && (
-          <section style={{ ...styles.card, borderLeft: '4px solid #10b981' }}>
+          <section style={{ ...styles.card, border: '2px solid #10b981' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
               <div data-demo="translated-text" style={{ flex: 1, fontSize: '1.2rem', fontWeight: 'bold', lineHeight: '1.7', flexWrap: 'wrap', display: 'flex', gap: '4px' }}>
                 {translatedText.split(' ').map((word, i) => (
@@ -1665,7 +1665,7 @@ export default function App() {
         </section>
 
         {/* Quiz veloce */}
-        <section style={styles.card}>
+        <section style={{ ...styles.card, border: '1px solid #fbbf24' }}>
           <button
             onClick={() => {
               setShowQuiz(v => !v);
@@ -1747,9 +1747,9 @@ export default function App() {
             style={{
               width: '100%',
               background: 'none',
-              border: '1px solid #334155',
-              borderRadius: '10px',
-              color: '#94a3b8',
+              border: '1px solid #60a5fa',
+              borderRadius: showTabPanel ? '10px 10px 0 0' : '10px',
+              color: '#60a5fa',
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
@@ -1765,7 +1765,7 @@ export default function App() {
         </div>
 
         {showTabPanel && (
-        <>
+        <section style={{ border: '1px solid #60a5fa', borderTop: 'none', borderRadius: '0 0 10px 10px', padding: '10px 10px 4px', marginBottom: '8px', backgroundColor: '#1e293b' }}>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px', margin: '0 0 8px' }}>
           {([
             { id: 'profilo',     label: '👤 Profilo' },
@@ -2200,7 +2200,7 @@ export default function App() {
             </div>
           );
         })()}
-        </>
+        </section>
         )}
 
         {/* Footer Privacy */}
