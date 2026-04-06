@@ -1081,6 +1081,18 @@ export default function App() {
                     onChange={e => updateProfile('altro', e.target.value)}
                   />
                 </div>
+                <button
+                  onClick={() => { saveProfile(profile); setProfileSaved(true); setTimeout(() => setProfileSaved(false), 2000); }}
+                  style={{
+                    width: '100%', marginTop: '12px', padding: '10px',
+                    backgroundColor: profileSaved ? '#10b981' : '#fb923c',
+                    color: '#fff', border: 'none', borderRadius: '8px',
+                    cursor: 'pointer', fontWeight: 'bold', fontSize: '0.9rem',
+                    transition: 'background 0.3s',
+                  }}
+                >
+                  {profileSaved ? '✓ Salvato!' : '💾 Salva profilo'}
+                </button>
               </section>
             </div>
           );
