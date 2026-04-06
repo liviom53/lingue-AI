@@ -486,7 +486,7 @@ export default function App() {
               color: activeTab === tab ? '#fff' : '#94a3b8',
               transition: 'background 0.2s',
             }}>
-              {tab === 'traduci' ? '🌍 Traduci' : '📊 Progressi'}
+              {tab === 'traduci' ? '🌍 Traduci' : '👤 Profilo'}
             </button>
           ))}
         </div>
