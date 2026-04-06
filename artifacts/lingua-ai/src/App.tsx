@@ -680,7 +680,7 @@ export default function App() {
           {showChat && (
             <div style={{ marginTop: '10px' }}>
               <div style={{
-                height: '200px',
+                height: '100px',
                 overflowY: 'auto',
                 backgroundColor: '#0f172a',
                 borderRadius: '8px',
