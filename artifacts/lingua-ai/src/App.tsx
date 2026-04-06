@@ -275,6 +275,7 @@ export default function App() {
   const translatedTextRef = useRef('');
   const demoActiveRef = useRef(false);
   const blockSpeakRef = useRef(false);
+  const narrateGenRef = useRef(0);   // contatore generazione — invalida narr. precedenti
   const voicesRef = useRef<SpeechSynthesisVoice[]>([]);
   const [demoCursorPos, setDemoCursorPos] = useState<{x: number, y: number} | null>(null);
   const [demoCursorClicking, setDemoCursorClicking] = useState(false);
@@ -681,9 +682,11 @@ export default function App() {
 
   const narrateDemo = (text: string) => {
     window.speechSynthesis.cancel();
+    // Ogni narrazione ha la sua generazione: i callback stale si autoinvalidano
+    const gen = ++narrateGenRef.current;
 
     const tid = window.setTimeout(() => {
-      if (!demoActiveRef.current) return;
+      if (!demoActiveRef.current || narrateGenRef.current !== gen) return;
 
       const itVoices = voicesRef.current.filter(v => v.lang.startsWith('it'));
       const itVoice =
@@ -698,14 +701,14 @@ export default function App() {
       ut.pitch = 1.05;
       if (itVoice) ut.voice = itVoice;
 
-      // Warm-up silenziosa: "sveglia" il motore Chrome prima di parlare
-      // Questo elimina il troncamento del primo fonema dopo un cancel()
+      // Warm-up silenziosa: sveglia il motore Chrome per evitare troncamenti
       const warmup = new SpeechSynthesisUtterance('\u00A0');
       warmup.volume = 0;
       warmup.lang = 'it-IT';
       if (itVoice) warmup.voice = itVoice;
       warmup.onend = () => {
-        if (!demoActiveRef.current) return;
+        // Controlla ENTRAMBE le guardie: demo attiva E stessa generazione
+        if (!demoActiveRef.current || narrateGenRef.current !== gen) return;
         window.speechSynthesis.speak(ut);
       };
       window.speechSynthesis.speak(warmup);
@@ -722,8 +725,9 @@ export default function App() {
   const stopDemo = () => {
     demoTimersRef.current.forEach(id => clearTimeout(id));
     demoTimersRef.current = [];
-    window.speechSynthesis.cancel();
     demoActiveRef.current = false;
+    narrateGenRef.current++;        // invalida TUTTI i warmup.onend pendenti
+    window.speechSynthesis.cancel();
     blockSpeakRef.current = true;
     setTimeout(() => { blockSpeakRef.current = false; }, 3000);
     setDemoActive(false);
