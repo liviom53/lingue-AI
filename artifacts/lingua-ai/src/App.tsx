@@ -385,7 +385,7 @@ export default function App() {
     window.speechSynthesis.cancel();
 
     const doSpeak = () => {
-      const ut = new SpeechSynthesisUtterance(text);
+      const ut = new SpeechSynthesisUtterance(text.trimEnd() + '\u00A0\u00A0\u00A0');
       ut.lang = currentLocale;
       ut.rate = speechRate;
       const voice = availableVoices.find(v => v.voiceURI === selectedVoiceURI);
@@ -734,7 +734,8 @@ export default function App() {
         itVoices.find(v => v.name.toLowerCase().includes('google')) ||
         itVoices.find(v => !v.localService) ||
         itVoices[0];
-      const ut = new SpeechSynthesisUtterance(text);
+      // Padding invisibile — evita che Chrome tagli i fonemi finali
+      const ut = new SpeechSynthesisUtterance(text.trimEnd() + '\u00A0\u00A0\u00A0');
       ut.lang = 'it-IT';
       ut.rate = 0.82;
       ut.pitch = 1.05;
