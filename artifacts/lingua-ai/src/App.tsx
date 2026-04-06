@@ -1314,6 +1314,21 @@ export default function App() {
             </div>
           );
 
+          const ProgressBar = ({ label, value, max, color, suffix = '' }: { label: string; value: number; max: number; color: string; suffix?: string }) => {
+            const pct = Math.min(100, max > 0 ? Math.round((value / max) * 100) : 0);
+            return (
+              <div style={{ marginBottom: '10px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                  <span style={{ fontSize: '0.78rem', color: '#94a3b8' }}>{label}</span>
+                  <span style={{ fontSize: '0.78rem', color, fontWeight: 600 }}>{value}{suffix} / {max}{suffix}</span>
+                </div>
+                <div style={{ height: '8px', borderRadius: '999px', background: '#1e293b', overflow: 'hidden' }}>
+                  <div style={{ width: `${pct}%`, height: '100%', borderRadius: '999px', background: color, transition: 'width 0.6s ease' }} />
+                </div>
+              </div>
+            );
+          };
+
           const inputStyle: React.CSSProperties = {
             width: '100%', boxSizing: 'border-box', padding: '8px 10px',
             backgroundColor: '#0f172a', border: '1px solid #334155', borderRadius: '8px',
@@ -1442,13 +1457,20 @@ export default function App() {
           return (
             <div style={{ marginBottom: '16px' }}>
               {/* Livello */}
-              <div style={{ ...styles.card, display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
-                <span style={{ fontSize: '1.6rem' }}>{levelInfo.icon}</span>
-                <div>
-                  <p style={{ margin: 0, fontSize: '0.65rem', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Il tuo livello</p>
-                  <p style={{ margin: 0, fontSize: '1rem', fontWeight: 'bold', color: levelInfo.color }}>{levelInfo.label}</p>
+              <div style={{ ...styles.card, marginBottom: '10px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
+                  <span style={{ fontSize: '1.6rem' }}>{levelInfo.icon}</span>
+                  <div>
+                    <p style={{ margin: 0, fontSize: '0.65rem', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Il tuo livello</p>
+                    <p style={{ margin: 0, fontSize: '1rem', fontWeight: 'bold', color: levelInfo.color }}>{levelInfo.label}</p>
+                  </div>
+                  <span style={{ marginLeft: 'auto', fontSize: '0.75rem', color: '#64748b' }}>{Math.round(totalScore)} pt</span>
                 </div>
-                <span style={{ marginLeft: 'auto', fontSize: '0.75rem', color: '#64748b' }}>{Math.round(totalScore)} pt</span>
+                {(() => {
+                  const thresholds = [{ label: 'Base→Intermedio', cur: totalScore, max: 50, color: '#94a3b8' }, { label: 'Intermedio→Avanzato', cur: totalScore, max: 300, color: '#60a5fa' }, { label: 'Avanzato→Esperto', cur: totalScore, max: 1000, color: '#fb923c' }];
+                  const active = totalScore < 50 ? thresholds[0] : totalScore < 300 ? thresholds[1] : thresholds[2];
+                  return <ProgressBar label={active.label} value={Math.min(Math.round(totalScore), active.max)} max={active.max} color={active.color} suffix=" pt" />;
+                })()}
               </div>
 
               {/* Riepilogo rapido */}
@@ -1472,16 +1494,24 @@ export default function App() {
 
               {/* Pronuncia */}
               <p style={{ fontSize: '0.75rem', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 6px' }}>🎙 Pronuncia</p>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px', marginBottom: '12px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px', marginBottom: '10px' }}>
                 <StatCard label="Tentativi" value={`${progress.practiceAttempts}`} />
                 <StatCard label="Media" value={progress.practiceAttempts > 0 ? `${avgScore}%` : '—'} color={avgScore >= 80 ? '#10b981' : avgScore >= 60 ? '#f59e0b' : '#ef4444'} />
                 <StatCard label="Record" value={progress.practiceAttempts > 0 ? `${bestScore}%` : '—'} color="#fbbf24" />
               </div>
+              <div style={{ ...styles.card, paddingTop: '10px', paddingBottom: '6px', marginBottom: '12px' }}>
+                <ProgressBar label="Media pronuncia" value={avgScore} max={100} color={avgScore >= 80 ? '#10b981' : avgScore >= 60 ? '#f59e0b' : '#ef4444'} suffix="%" />
+                <ProgressBar label="Record pronuncia" value={bestScore} max={100} color="#fbbf24" suffix="%" />
+              </div>
 
               {/* Vocabolario */}
               <p style={{ fontSize: '0.75rem', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 6px' }}>📖 Vocabolario</p>
-              <div style={{ marginBottom: '12px' }}>
+              <div style={{ marginBottom: '6px' }}>
                 <StatCard label="Parole imparate" value={`${progress.wordsLearned.length}`} color="#10b981" />
+              </div>
+              <div style={{ ...styles.card, paddingTop: '10px', paddingBottom: '6px', marginBottom: '12px' }}>
+                <ProgressBar label="Verso le 50 parole" value={progress.wordsLearned.length} max={50} color="#10b981" />
+                <ProgressBar label="Verso le 200 parole" value={progress.wordsLearned.length} max={200} color="#34d399" />
               </div>
 
               {/* Consigli */}
