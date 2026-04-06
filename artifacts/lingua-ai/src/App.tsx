@@ -1538,7 +1538,7 @@ export default function App() {
                 { title: 'Dati salvati localmente', body: 'Il profilo utente (nome, lingua, livello) e i progressi sono salvati solo sul tuo dispositivo tramite localStorage. Non vengono mai trasmessi a nessun server esterno.' },
                 { title: 'Testi elaborati da AI', body: 'I testi che scrivi per traduzione, chat e grammatica vengono inviati a DeepSeek AI (via OpenRouter) esclusivamente per generare la risposta. Non vengono conservati o usati per addestrare modelli.' },
                 { title: 'Cookie', body: 'Questa app non utilizza cookie di profilazione, analytics o tracciamento di terze parti.' },
-                { title: 'Titolare', body: 'Livio Mazzocchi — app personale senza fini commerciali.' },
+                { title: 'Titolare', body: 'Livio Mazzocchi — servizio digitale per l\'apprendimento linguistico, con possibili sviluppi commerciali futuri.' },
               ].map(s => (
                 <div key={s.title} style={{ marginBottom: '14px' }}>
                   <p style={{ margin: '0 0 4px', fontWeight: 700, fontSize: '0.82rem', color: '#fb923c' }}>{s.title}</p>
