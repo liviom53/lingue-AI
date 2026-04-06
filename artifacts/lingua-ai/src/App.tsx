@@ -1193,7 +1193,7 @@ export default function App() {
           </div>
         </section>
 
-        <section style={styles.card}>
+        <section className="input-section" style={styles.card}>
           <textarea
             style={{
               width: '100%',
@@ -1213,6 +1213,7 @@ export default function App() {
             placeholder="Scrivi in italiano..."
           />
           <button
+            className="action-btn"
             style={{ ...styles.btn, backgroundColor: isListening ? '#ef4444' : '#334155' }}
             onClick={startInputSpeech}
           >
@@ -1220,6 +1221,7 @@ export default function App() {
           </button>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
             <button
+              className="action-btn"
               data-demo="translate-btn"
               style={{ ...styles.btn, backgroundColor: '#fb923c', marginTop: '6px' }}
               onClick={() => handleTranslate()}
@@ -1228,6 +1230,7 @@ export default function App() {
               {loading ? <Loader2 className="animate-spin" size={18} /> : <Send size={18} />} TRADUCI
             </button>
             <button
+              className="action-btn"
               style={{ ...styles.btn, backgroundColor: '#e8d0a0', color: '#1e293b', marginTop: '6px', fontSize: '0.85rem' }}
               onClick={handleAiTranslate}
               disabled={loading || aiLoading}
