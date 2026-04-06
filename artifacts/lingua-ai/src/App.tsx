@@ -1664,13 +1664,13 @@ export default function App() {
         </section>
 
         {/* Quiz veloce */}
-        <section style={{ ...styles.card, border: '1px solid #fbbf24' }}>
+        <section style={{ ...styles.card, border: '1px solid #10b981' }}>
           <button
             onClick={() => {
               setShowQuiz(v => !v);
               if (!showQuiz && bookmarks.length >= 4) generateQuiz(bookmarks);
             }}
-            style={{ width: '100%', background: 'none', border: 'none', color: '#fbbf24', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: 0, fontSize: '0.9rem', fontWeight: 'bold' }}
+            style={{ width: '100%', background: 'none', border: 'none', color: '#10b981', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: 0, fontSize: '0.9rem', fontWeight: 'bold' }}
           >
             <span>🧠 Quiz veloce — metti alla prova i preferiti</span>
             {showQuiz ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
