@@ -214,7 +214,7 @@ export default function App() {
   const [error, setError] = useState<string | null>(null);
   const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
   const [selectedVoiceURI, setSelectedVoiceURI] = useState('');
-  const [speechRate, setSpeechRate] = useState(1);
+  const [speechRate, setSpeechRate] = useState(0.6);
   const [ipaText, setIpaText] = useState<string | null>(null);
   const [phonetic, setPhonetic] = useState<string | null>(null);
   const [aiExplanation, setAiExplanation] = useState<{ explanation: string; example: string } | null>(null);
