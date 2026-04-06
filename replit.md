@@ -51,7 +51,73 @@ artifacts/
 - **Tab bar in fondo** (due tab):
   - **👤 Profilo**: form campi personali + bottone salva
   - **📊 Progressi**: livello (riga compatta), ore/streak/lingua preferita, traduzioni, pronuncia, vocabolario, consigli, reset
-- Colori: sfondo `#0f172a`, card `#1e293b`, arancione `#fb923c`, crema `#e8d0a0` (TUTOR AI), verde `#10b981`
+- Colori base: sfondo `#080e1c`, arancione `#fb923c`, crema `#e8d0a0` (TUTOR AI), verde `#10b981`
+
+### Sistema 3D visivo (`src/index.css` + `styles` in `App.tsx`)
+
+#### Font
+- `*` selector forza `'Inter', system-ui` su TUTTI gli elementi (inclusi textarea, select, input, button)
+- Inter caricato da Google Fonts in `index.html`
+
+#### Body / Sfondo
+- Tre radial-gradient sovrapposti (`#183060`, `#1c0d44`, `#0d2a1a`) su `#080e1c`
+
+#### Card (`styles.card`)
+- Gradiente: `linear-gradient(140deg, #3d5f82 0%, #1e2d3f 35%, #0e1620 100%)` — luce da alto-sinistra
+- Bordi asimmetrici: `borderTop` azzurrato (`rgba(160,210,255,0.35)`), `borderBottom` scuro, `borderLeft` leggermente lit, `borderRight` scuro
+- **Bevel completo** via `inset` box-shadow:
+  - `inset 0 3px 0 rgba(255,255,255,0.22)` — fascia alta luminosa
+  - `inset 4px 0 0 rgba(255,255,255,0.13)` — bordo sinistro lit
+  - `inset -4px 0 0 rgba(0,0,0,0.35)` — bordo destro scuro
+  - `inset 0 -3px 0 rgba(0,0,0,0.45)` — fascia bassa scura
+- **Faccia inferiore** (spessore fisico): 5 strati `0 2/4/6/8/10px 0` in colori `#0c1624→rgba(3,7,14,0.55)`
+- **Ombre ambientali**: `0 16px 36px rgba(0,0,0,0.70)` + `0 7px 16px rgba(0,0,0,0.55)`
+- `marginBottom: 16px` (spazio per la faccia inferiore)
+
+#### Pulsanti (`styles.btn`)
+- `transform: translateY(-5px)` — flottano di 5px sopra la superficie
+- **Bevel bottone**:
+  - `inset 0 3px 0 rgba(255,255,255,0.42)` — top highlight forte
+  - `inset 4px 0 0 rgba(255,255,255,0.20)` — bordo sinistro lit
+  - `inset -4px 0 0 rgba(0,0,0,0.28)` — bordo destro scuro
+  - `inset 0 -3px 0 rgba(0,0,0,0.35)` — fascia bassa scura
+- **Faccia inferiore colorata**: 4 strati arancione (`#b85a10 → rgba(40,16,0,0.40)`) da 5px a 11px
+- **Glow arancione**: `0 16px 30px rgba(251,146,60,0.24)`
+- `:active` (CSS globale): `translateY(4px)` + inset shadow → sensazione di pressione fisica
+
+#### Classi CSS speciali
+| Classe | Effetto |
+|---|---|
+| `section` | hover: `translateY(-4px)` + `brightness(1.06)` + bevel shadow potenziato |
+| `section.lang-section` | hover disabilitato (`transform: none !important`) |
+| `section.input-section` | hover disabilitato |
+| `.lang-btn` | hover: `translateY(-6px)` + `brightness(1.14)`; active: press-down |
+| `.action-btn` | hover: `translateY(-8px)` + `brightness(1.12)`; active: press-down |
+
+#### Spacing regole
+- Bottoni DETTA/TRADUCI/TUTOR AI in flex column con `gap: 20px`, `marginTop: 16px`
+- Il `marginTop: 16px` compensa visivamente la faccia inferiore della card e il `translateY(-5px)` del bottone
+
+### `handleTranslate` signature
+- `async (langOverride?: string)` — guard è `typeof langOverride === 'string'`
+- Demo passano codice lingua esplicito; il bottone usa wrapper `() => handleTranslate()`
+
+### `localStorage` keys
+- `lingua_ai_progress` — progressi
+- `lingua_ai_profile` — profilo utente
+- `lingua_ai_bookmarks` — segnalibri
+
+### Demo (`STEP_TARGETS`)
+- Step 0 → textarea (azione di digitazione)
+- Step 1 → griglia lingue (lingua selezionata)
+- Step 2 → translate-btn ("Premo Traduci." SOLO)
+- Step 3 → testo tradotto o shadow-toggle (funzionalità visibile)
+- Step 4 → tab-profilo (pannello aperto)
+- Step 5 → completamento
+
+### Note note
+- Warning benigno pre-esistente: attributo `title` duplicato sul bottone condivisione (~riga 1314)
+- Colori sezioni accordion: Blu=Impostazioni voce, Viola=Shadowing, Arancione=Chat AI, Verde=Quiz+Risultato
 
 ---
 
@@ -76,3 +142,12 @@ artifacts/
 - `AI_INTEGRATIONS_OPENROUTER_BASE_URL`
 - `AI_INTEGRATIONS_OPENROUTER_API_KEY`
 - `VITE_GEMINI_API_KEY` (disponibile, non in uso attivo)
+
+## File importanti
+- `artifacts/lingua-ai/src/App.tsx` — frontend principale (~2430 righe): UI, state, 4 script demo, narrazione, cursore, scrollDemo, bookmark, quiz
+- `artifacts/lingua-ai/src/index.css` — stili globali: Inter, sistema 3D, hover sezioni, classi `.lang-btn` `.action-btn` `.lang-section` `.input-section`, `#demo-cursor`
+- `artifacts/lingua-ai/index.html` — caricamento font Inter da Google Fonts
+- `artifacts/api-server/src/routes/ai.ts` — endpoint AI: `/translate`, `/chat`, `/grammar`, `/shadow`
+- `artifacts/api-server/src/middleware/security.ts` — rate limiting, validazione input, controllo origine
+- `artifacts/lingua-ai-demo-video/src/lib/video/hooks.ts` — **NON MODIFICARE**: hook lifecycle registrazione
+- `.replit` — deploymentTarget="vm", porta 8080→80
