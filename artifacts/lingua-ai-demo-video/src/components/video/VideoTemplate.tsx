@@ -7,11 +7,11 @@ import { Scene4 } from './video_scenes/Scene4';
 import { Scene5 } from './video_scenes/Scene5';
 
 const SCENE_DURATIONS = { 
-  hook: 4500, 
-  translate: 5000, 
-  xray: 5000, 
-  practice: 4500, 
-  outro: 4500 
+  hook: 7000, 
+  translate: 8000, 
+  xray: 8000, 
+  practice: 7500, 
+  outro: 7000 
 };
 
 // Background gradient positions per scene for continuous motion

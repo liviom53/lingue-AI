@@ -1398,7 +1398,7 @@ export default function App() {
               fontWeight: 'bold',
             }}
           >
-            <span>👤 Profilo &nbsp;·&nbsp; 📊 Progressi &nbsp;·&nbsp; 🎬 Demo</span>
+            <span>👤 Profilo &nbsp;·&nbsp; 📊 Progressi &nbsp;·&nbsp; 🎬 Funzionalità</span>
             {showTabPanel ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
           </button>
         </div>
@@ -1427,7 +1427,7 @@ export default function App() {
             color: activeTab === 'demo' ? '#fff' : '#94a3b8',
             transition: 'background 0.2s',
           }}>
-            🎬 Demo — scopri come funziona
+            🎬 Funzionalità — scopri il video
           </button>
           {([
             { id: 'calendario', label: '📅 Calendario' },
@@ -1515,7 +1515,7 @@ export default function App() {
                 </div>
                 <button
                   onClick={() => setShowTabPanel(false)}
-                  title="Chiudi demo"
+                  title="Chiudi"
                   style={{ flexShrink: 0, marginLeft: '10px', background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '8px', color: '#94a3b8', cursor: 'pointer', padding: '5px 10px', fontSize: '0.75rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px', transition: 'background 0.2s' }}
                 >
                   ✕ Chiudi
