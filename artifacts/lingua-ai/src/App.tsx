@@ -218,6 +218,7 @@ export default function App() {
   const [showVoiceSettings, setShowVoiceSettings] = useState(false);
   const [copied, setCopied] = useState(false);
   const [activeTab, setActiveTab] = useState<'profilo' | 'progressi'>('profilo');
+  const [showTabPanel, setShowTabPanel] = useState(false);
   const [progress, setProgress] = useState<ProgressStats>(loadProgress);
   const [profile, setProfile] = useState<UserProfile>(loadProfile);
   const [profileSaved, setProfileSaved] = useState(false);
@@ -969,8 +970,33 @@ export default function App() {
           )}
         </section>
 
-        {/* Bottom tab bar */}
-        <div style={{ display: 'flex', borderRadius: '10px', overflow: 'hidden', margin: '16px 0 8px', border: '1px solid #334155' }}>
+        {/* Toggle per profilo/progressi */}
+        <div style={{ margin: '16px 0 8px' }}>
+          <button
+            onClick={() => setShowTabPanel(v => !v)}
+            style={{
+              width: '100%',
+              background: 'none',
+              border: '1px solid #334155',
+              borderRadius: '10px',
+              color: '#94a3b8',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: '10px 14px',
+              fontSize: '0.85rem',
+              fontWeight: 'bold',
+            }}
+          >
+            <span>👤 Profilo &nbsp;·&nbsp; 📊 Progressi</span>
+            {showTabPanel ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+          </button>
+        </div>
+
+        {showTabPanel && (
+        <>
+        <div style={{ display: 'flex', borderRadius: '10px', overflow: 'hidden', margin: '0 0 8px', border: '1px solid #334155' }}>
           {(['profilo', 'progressi'] as const).map(tab => (
             <button key={tab} onClick={() => setActiveTab(tab)} style={{
               flex: 1, padding: '10px', border: 'none', cursor: 'pointer', fontWeight: 'bold', fontSize: '0.95rem',
