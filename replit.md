@@ -6,35 +6,73 @@ pnpm monorepo con due PWA React+Vite e un server API Express condiviso.
 
 ```
 artifacts/
-  lingua-ai/         → PWA traduttore  → /lingua-ai/ (porta 19529 in dev)
-  diario-pescatore/  → PWA diario pesca → /         (porta 22883 in dev)
-  api-server/        → Express API      → /api       (porta 8080)
+  lingua-ai/         → PWA traduttore  → /lingua-ai/
+  diario-pescatore/  → PWA diario pesca → /
+  api-server/        → Express API      → /api/*
 ```
 
-### Routing (sidecar Replit)
-- **Dev**: ogni artifact ha il proprio Vite dev server con HMR
-- **Produzione**: lingua-ai e diario-pescatore vengono serviti come file statici da Replit (serve = "static"), api-server è un processo Node per le rotte `/api/*`
+### Routing
+- **Dev**: ogni artifact ha il proprio Vite dev server con HMR; api-server su porta 8080
+- **Produzione**: `https://web-app-creator--liviomazzocchi.replit.app`
+- lingua-ai e diario-pescatore serviti staticamente, api-server processo Node
 
-### API server (`artifacts/api-server`)
-- Solo rotte `/api/*` — nessun serving di file statici
-- Rotte principali: `GET /api/healthz`, `POST /api/ai/translate`, `POST /api/ai/chat`
-- AI via OpenRouter (DeepSeek): `AI_INTEGRATIONS_OPENROUTER_BASE_URL` + `AI_INTEGRATIONS_OPENROUTER_API_KEY`
+---
 
 ## Lingua AI Pro (`artifacts/lingua-ai`)
-- Traduzione italiano → 6 lingue (EN, ES, FR, DE, PT, RU)
-- Speech synthesis con fix: 50ms delay tra cancel() e speak(), keepalive ogni 10s
-- IPA per la pronuncia
-- Chat DeepSeek AI via `/api/ai/chat`
-- Anti-flash: `background:#0f172a` inline su `<html>` in index.html
-- `BASE_PATH=/lingua-ai/` (Vite base config)
+
+### Funzionalità principali
+- Traduzione **italiano → 29+ lingue** tramite istanze pubbliche Lingva (EN, ES, FR, DE, PT + 24 altre)
+- Flag reali da `flagcdn.com` (compatibili Windows, niente emoji bandiera)
+- **TUTOR AI**: DeepSeek via OpenRouter (`/api/ai/translate`) — restituisce `{translation, pronunciation, explanation, example}`
+  - `pronunciation`: fonetica italiana semplificata con sillaba accentata in maiuscolo (es. "el-LÒ")
+  - `explanation`: nota grammaticale in italiano
+  - `example`: frase d'esempio nella lingua target
+- **Chat DeepSeek** (`/api/ai/chat`): conversazione nella lingua target, correzioni grammaticali inline
+  - Chat window a scorrimento interno (no jump di pagina): usa `chatContainerRef.scrollTop`
+- **Sintesi vocale**: fix Chrome (50ms delay + keepalive ogni 10s), selezione voce, velocità regolabile
+- **Speech recognition**: pratica pronuncia con score; solo Chrome/Edge (avviso su altri browser)
+- **IPA**: per inglese usa `dictionaryapi.dev`, per altre lingue usa il campo `pronunciation` di Lingva
+
+### Profilo utente
+- Campi facoltativi: nome, età, sesso, occupazione, città, altro
+- Salvati in `localStorage` con chiave `lingua_ai_profile`
+- Passati a DeepSeek in ogni chiamata `/api/ai/translate` e `/api/ai/chat` per personalizzare esempi e registro
+- Auto-save ad ogni modifica + bottone **💾 Salva profilo** con feedback verde "✓ Salvato!"
+
+### Sistema progressi
+- Salvati in `localStorage` con chiave `lingua_ai_progress`
+- Traccia: `totalMinutes`, `translationCount`, `aiTranslationCount`, `wordsLearned[]`, `practiceAttempts`, `practiceScores[]`, `streakDays`, `langStats{}`
+- Aggiornato in: `handleTranslate`, `handleAiTranslate`, `startPracticeSession`
+- Livelli: Base (< 50 pt) → Intermedio (< 300) → Avanzato (< 1000) → Esperto
+
+### UI / Layout
+- Header con `clamp()` responsive, logo, sottotitolo arancione
+- **Sempre visibile**: selettore lingua (5 fissi + dropdown "Altre lingue"), textarea, DETTA, TRADUCI, TUTOR AI, impostazioni voce, chat DeepSeek
+- **Tab bar in fondo** (due tab):
+  - **👤 Profilo**: form campi personali + bottone salva
+  - **📊 Progressi**: livello (riga compatta), ore/streak/lingua preferita, traduzioni, pronuncia, vocabolario, consigli, reset
+- Colori: sfondo `#0f172a`, card `#1e293b`, arancione `#fb923c`, crema `#e8d0a0` (TUTOR AI), verde `#10b981`
+
+---
+
+## API Server (`artifacts/api-server`)
+
+- **POST `/api/ai/translate`**: body `{text, targetLang, userProfile?}` → `{translation, pronunciation, explanation, example}`
+- **POST `/api/ai/chat`**: body `{messages, targetLang, userProfile?}` → `{reply}`
+- Modello: `deepseek/deepseek-chat` via OpenRouter
+- `userProfile` viene convertito in contesto testuale e iniettato nel system prompt
+- `LANG_NAMES` copre tutte le 29 lingue supportate dal frontend
+
+---
 
 ## Diario del Pescatore (`artifacts/diario-pescatore`)
-- PWA per registrare uscite di pesca
-- Anti-flash: stesso schema dark inline
-- `BASE_PATH=/` (Vite base config)
 
-## Build in produzione
-Ogni artifact gestisce il proprio build:
-- lingua-ai: `pnpm --filter @workspace/lingua-ai run build` → dist servito staticamente
-- diario-pescatore: `pnpm --filter @workspace/diario-pescatore run build` → dist servito staticamente
-- api-server: `pnpm --filter @workspace/api-server run build` → `node dist/index.mjs`
+- PWA per registrare uscite di pesca
+- `BASE_PATH=/`
+
+---
+
+## Variabili d'ambiente (server-side)
+- `AI_INTEGRATIONS_OPENROUTER_BASE_URL`
+- `AI_INTEGRATIONS_OPENROUTER_API_KEY`
+- `VITE_GEMINI_API_KEY` (disponibile, non in uso attivo)
