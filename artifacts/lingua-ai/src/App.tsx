@@ -933,7 +933,12 @@ export default function App() {
               letterSpacing: '0.04em',
             }}
           >
-            <span>▶ Demo &amp; Funzionalità</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
+              <span style={{ display: 'flex', alignItems: 'center', gap: '3px', padding: '2px 8px', backgroundColor: 'rgba(255,255,255,0.18)', borderRadius: '5px', fontSize: '0.78rem', fontWeight: 600 }}>
+                <FlagImg fc="it" name="Italiano" /> Italiano
+              </span>
+              <span>▶ Demo &amp; Funzionalità</span>
+            </span>
             {showDemoMenu ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
           </button>
           {showDemoMenu && (
@@ -982,12 +987,6 @@ export default function App() {
         </div>
 
         <section style={styles.card}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '4px 10px', backgroundColor: '#334155', borderRadius: '6px', fontSize: '0.8rem', color: '#e2e8f0', fontWeight: 600 }}>
-              <FlagImg fc="it" name="Italiano" /> Italiano
-            </span>
-            <span style={{ color: '#64748b', fontSize: '0.8rem' }}>→ traduco in:</span>
-          </div>
           <div data-demo="lang-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px' }}>
             {LANGUAGES.map(l => (
               <button
