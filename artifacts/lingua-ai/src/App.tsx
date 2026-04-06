@@ -930,35 +930,58 @@ export default function App() {
   const styles: Record<string, React.CSSProperties> = {
     main: {
       minHeight: '100vh',
-      backgroundColor: '#0f172a',
       color: '#f8fafc',
       padding: '12px',
       fontFamily: "'Inter', system-ui, sans-serif",
     },
     card: {
-      background: 'linear-gradient(160deg, #253347 0%, #1e293b 45%)',
+      // Gradiente interno: più chiaro in alto = luce da sopra
+      background: 'linear-gradient(175deg, #2c3f57 0%, #1e2d3f 30%, #1a2535 100%)',
       borderRadius: '14px',
       padding: '12px',
-      marginBottom: '10px',
-      border: '1px solid #334155',
-      boxShadow:
-        '0 4px 14px rgba(0,0,0,0.45), 0 1px 4px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.06)',
+      marginBottom: '14px', // spazio per il piano d'ombra
+      // Bordo superiore luminoso + bordo laterale
+      border: '1px solid rgba(90,120,170,0.30)',
+      borderTop: '1px solid rgba(150,190,255,0.18)',
+      borderBottom: '1px solid rgba(0,0,0,0.60)',
+      // Spessore 3D: 6 layer a 0-blur = piano inferiore visibile
+      boxShadow: [
+        'inset 0 1px 0 rgba(255,255,255,0.12)',   // highlight cima
+        'inset 0 -1px 0 rgba(0,0,0,0.40)',         // ombra interna fondo
+        '0 2px 0 #0b1524',                         // ── strati dello spessore ──
+        '0 4px 0 #091220',
+        '0 6px 0 #070e1a',
+        '0 8px 0 rgba(4,8,16,0.7)',
+        '0 14px 30px rgba(0,0,0,0.65)',            // ombra ambientale
+        '0 6px 14px rgba(0,0,0,0.50)',             // ombra di contatto
+      ].join(','),
     },
     btn: {
       width: '100%',
-      padding: '8px',
-      borderRadius: '8px',
+      padding: '10px 8px',
+      borderRadius: '10px',
       border: 'none',
+      borderTop: '1px solid rgba(255,255,255,0.20)',
       backgroundColor: '#fb923c',
       color: '#fff',
-      fontWeight: 'bold',
+      fontWeight: '700',
       cursor: 'pointer',
-      marginTop: '6px',
+      marginTop: '8px',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
       gap: '8px',
-      boxShadow: '0 4px 0 rgba(0,0,0,0.35), 0 6px 18px rgba(0,0,0,0.25)',
+      // flottante di 5px sulla superficie
+      transform: 'translateY(-5px)',
+      // faccia inferiore colorata (spessore 3D visibile)
+      boxShadow: [
+        'inset 0 1px 0 rgba(255,255,255,0.25)',
+        '0 5px 0 #b85a10',
+        '0 7px 0 #7c3a08',
+        '0 9px 0 rgba(60,20,0,0.40)',
+        '0 14px 28px rgba(251,146,60,0.22)',
+        '0 8px 16px rgba(0,0,0,0.45)',
+      ].join(','),
     },
   };
 
