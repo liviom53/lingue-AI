@@ -940,7 +940,7 @@ export default function App() {
           const mins = progress.totalMinutes % 60;
           const totalScore = progress.translationCount * 5 + progress.wordsLearned.length * 10 + avgScore * (progress.practiceAttempts / 10 || 0);
           const levelInfo =
-            totalScore < 50 ? { label: 'Principiante', icon: '🌱', color: '#94a3b8' } :
+            totalScore < 50 ? { label: 'Base', icon: '🌱', color: '#94a3b8' } :
             totalScore < 300 ? { label: 'Intermedio', icon: '📚', color: '#60a5fa' } :
             totalScore < 1000 ? { label: 'Avanzato', icon: '🎯', color: '#fb923c' } :
             { label: 'Esperto', icon: '🏆', color: '#fbbf24' };
