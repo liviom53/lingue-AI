@@ -126,6 +126,46 @@ const normalizeText = (text: string) => {
 
 type ChatMessage = { role: 'user' | 'assistant'; content: string };
 
+interface ProgressStats {
+  totalMinutes: number;
+  translationCount: number;
+  aiTranslationCount: number;
+  wordsLearned: string[];
+  practiceAttempts: number;
+  practiceScores: number[];
+  lastActiveDate: string;
+  streakDays: number;
+  firstUsedDate: string;
+  langStats: Record<string, number>;
+}
+
+const PROGRESS_KEY = 'lingua_ai_progress';
+
+const defaultProgress = (): ProgressStats => ({
+  totalMinutes: 0,
+  translationCount: 0,
+  aiTranslationCount: 0,
+  wordsLearned: [],
+  practiceAttempts: 0,
+  practiceScores: [],
+  lastActiveDate: '',
+  streakDays: 0,
+  firstUsedDate: new Date().toISOString().split('T')[0],
+  langStats: {},
+});
+
+const loadProgress = (): ProgressStats => {
+  try {
+    const stored = localStorage.getItem(PROGRESS_KEY);
+    if (stored) return { ...defaultProgress(), ...JSON.parse(stored) };
+  } catch {}
+  return defaultProgress();
+};
+
+const saveProgress = (p: ProgressStats) => {
+  try { localStorage.setItem(PROGRESS_KEY, JSON.stringify(p)); } catch {}
+};
+
 export default function App() {
   const [selectedLang, setSelectedLang] = useState('en');
   const [inputText, setInputText] = useState('');
@@ -151,8 +191,30 @@ export default function App() {
   const [chatInput, setChatInput] = useState('');
   const [chatLoading, setChatLoading] = useState(false);
   const [showMoreLangs, setShowMoreLangs] = useState(false);
+  const [activeTab, setActiveTab] = useState<'traduci' | 'progressi'>('traduci');
+  const [progress, setProgress] = useState<ProgressStats>(loadProgress);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const moreLangsRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const today = new Date().toISOString().split('T')[0];
+    setProgress(prev => {
+      if (prev.lastActiveDate === today) return prev;
+      const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
+      const streak = prev.lastActiveDate === yesterday ? prev.streakDays + 1 : 1;
+      const updated = { ...prev, lastActiveDate: today, streakDays: streak };
+      saveProgress(updated);
+      return updated;
+    });
+    const interval = setInterval(() => {
+      setProgress(prev => {
+        const updated = { ...prev, totalMinutes: prev.totalMinutes + 1 };
+        saveProgress(updated);
+        return updated;
+      });
+    }, 60000);
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     if (!showMoreLangs) return;
@@ -248,6 +310,14 @@ export default function App() {
       const { translation, pronunciation } = await translateText(inputText, selectedLang);
       setTranslatedText(translation);
       speak(translation);
+      setProgress(prev => {
+        const word = translation.toLowerCase().trim();
+        const wordsLearned = prev.wordsLearned.includes(word) ? prev.wordsLearned : [...prev.wordsLearned, word];
+        const langStats = { ...prev.langStats, [selectedLang]: (prev.langStats[selectedLang] ?? 0) + 1 };
+        const updated = { ...prev, translationCount: prev.translationCount + 1, wordsLearned, langStats };
+        saveProgress(updated);
+        return updated;
+      });
       if (selectedLang === 'en') {
         const ipa = await fetchEnglishIPA(translation);
         setIpaText(ipa);
@@ -287,6 +357,14 @@ export default function App() {
       setPhonetic(data.pronunciation ?? null);
       setAiExplanation({ explanation: data.explanation ?? '', example: data.example ?? '' });
       speak(data.translation ?? '');
+      setProgress(prev => {
+        const word = (data.translation ?? '').toLowerCase().trim();
+        const wordsLearned = word && !prev.wordsLearned.includes(word) ? [...prev.wordsLearned, word] : prev.wordsLearned;
+        const langStats = { ...prev.langStats, [selectedLang]: (prev.langStats[selectedLang] ?? 0) + 1 };
+        const updated = { ...prev, translationCount: prev.translationCount + 1, aiTranslationCount: prev.aiTranslationCount + 1, wordsLearned, langStats };
+        saveProgress(updated);
+        return updated;
+      });
     } catch (err: any) {
       console.error(err);
       setError(err.message ?? 'Errore AI. Riprova.');
@@ -316,6 +394,12 @@ export default function App() {
       const correctCount = wordResults.filter(w => w.correct).length;
       const score = Math.round((correctCount / expectedWords.length) * 100);
       setPracticeResult({ score, spoken, wordResults });
+      setProgress(prev => {
+        const practiceScores = [...prev.practiceScores, score];
+        const updated = { ...prev, practiceAttempts: prev.practiceAttempts + 1, practiceScores };
+        saveProgress(updated);
+        return updated;
+      });
     };
     recognition.onend = () => setIsPracticing(false);
     recognition.start();
@@ -393,7 +477,112 @@ export default function App() {
           </div>
         </header>
 
-        <section style={styles.card}>
+        {/* Tab bar */}
+        <div style={{ display: 'flex', borderRadius: '10px', overflow: 'hidden', marginBottom: '12px', border: '1px solid #334155' }}>
+          {(['traduci', 'progressi'] as const).map(tab => (
+            <button key={tab} onClick={() => setActiveTab(tab)} style={{
+              flex: 1, padding: '10px', border: 'none', cursor: 'pointer', fontWeight: 'bold', fontSize: '0.95rem',
+              backgroundColor: activeTab === tab ? '#fb923c' : '#1e293b',
+              color: activeTab === tab ? '#fff' : '#94a3b8',
+              transition: 'background 0.2s',
+            }}>
+              {tab === 'traduci' ? '🌍 Traduci' : '📊 Progressi'}
+            </button>
+          ))}
+        </div>
+
+        {activeTab === 'progressi' && (() => {
+          const avgScore = progress.practiceScores.length > 0
+            ? Math.round(progress.practiceScores.reduce((a, b) => a + b, 0) / progress.practiceScores.length) : 0;
+          const bestScore = progress.practiceScores.length > 0 ? Math.max(...progress.practiceScores) : 0;
+          const hours = Math.floor(progress.totalMinutes / 60);
+          const mins = progress.totalMinutes % 60;
+          const totalScore = progress.translationCount * 5 + progress.wordsLearned.length * 10 + avgScore * (progress.practiceAttempts / 10 || 0);
+          const levelInfo =
+            totalScore < 50 ? { label: 'Principiante', icon: '🌱', color: '#94a3b8' } :
+            totalScore < 300 ? { label: 'Intermedio', icon: '📚', color: '#60a5fa' } :
+            totalScore < 1000 ? { label: 'Avanzato', icon: '🎯', color: '#fb923c' } :
+            { label: 'Esperto', icon: '🏆', color: '#fbbf24' };
+          const favLangEntry = Object.entries(progress.langStats).sort((a, b) => b[1] - a[1])[0];
+          const favLangName = favLangEntry ? (ALL_LANGUAGES.find(l => l.code === favLangEntry[0])?.name ?? favLangEntry[0]) : null;
+          const favLangFc = favLangEntry ? (ALL_LANGUAGES.find(l => l.code === favLangEntry[0])?.fc ?? null) : null;
+          const tips: string[] = [];
+          if (progress.practiceAttempts === 0) tips.push('💡 Prova "Pratica Pronuncia" dopo una traduzione per allenarti a parlare!');
+          if (avgScore > 0 && avgScore < 60) tips.push('💡 Parla più lentamente e scandisci ogni sillaba per migliorare il punteggio.');
+          if (progress.translationCount > 0 && progress.aiTranslationCount === 0) tips.push('💡 Usa TUTOR AI per avere spiegazioni grammaticali e pronuncia guidata.');
+          if (progress.streakDays >= 3) tips.push(`🔥 Streak da ${progress.streakDays} giorni — continua così!`);
+          if (progress.wordsLearned.length >= 20) tips.push(`📚 Ottimo! Hai già ${progress.wordsLearned.length} parole in vocabolario.`);
+          if (tips.length === 0) tips.push('💪 Usa l\'app ogni giorno per costruire il tuo vocabolario!');
+
+          const StatCard = ({ label, value, sub, color }: { label: string; value: string; sub?: string; color?: string }) => (
+            <div style={{ backgroundColor: '#1e293b', borderRadius: '10px', padding: '12px', textAlign: 'center' }}>
+              <p style={{ margin: 0, fontSize: '0.7rem', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '4px' }}>{label}</p>
+              <p style={{ margin: 0, fontSize: '1.4rem', fontWeight: 'bold', color: color ?? '#f8fafc' }}>{value}</p>
+              {sub && <p style={{ margin: 0, fontSize: '0.75rem', color: '#94a3b8', marginTop: '2px' }}>{sub}</p>}
+            </div>
+          );
+
+          return (
+            <div>
+              {/* Livello */}
+              <section style={{ ...styles.card, textAlign: 'center', marginBottom: '10px' }}>
+                <p style={{ margin: '0 0 4px', fontSize: '0.75rem', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Il tuo livello</p>
+                <p style={{ margin: 0, fontSize: '2.5rem' }}>{levelInfo.icon}</p>
+                <p style={{ margin: '4px 0 0', fontSize: '1.3rem', fontWeight: 'bold', color: levelInfo.color }}>{levelInfo.label}</p>
+                <p style={{ margin: '2px 0 0', fontSize: '0.8rem', color: '#64748b' }}>Punteggio: {Math.round(totalScore)} pt</p>
+              </section>
+
+              {/* Utilizzo */}
+              <p style={{ fontSize: '0.75rem', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 6px' }}>⏱ Utilizzo</p>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px', marginBottom: '12px' }}>
+                <StatCard label="Ore totali" value={`${hours}h ${mins}m`} />
+                <StatCard label="Streak" value={`${progress.streakDays}gg`} color="#fb923c" />
+                <StatCard label="Sessioni" value={`${progress.translationCount}`} sub="traduzioni" />
+              </div>
+
+              {/* Pronuncia */}
+              <p style={{ fontSize: '0.75rem', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 6px' }}>🎙 Pronuncia</p>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px', marginBottom: '12px' }}>
+                <StatCard label="Tentativi" value={`${progress.practiceAttempts}`} />
+                <StatCard label="Media" value={progress.practiceAttempts > 0 ? `${avgScore}%` : '—'} color={avgScore >= 80 ? '#10b981' : avgScore >= 60 ? '#f59e0b' : '#ef4444'} />
+                <StatCard label="Record" value={progress.practiceAttempts > 0 ? `${bestScore}%` : '—'} color="#fbbf24" />
+              </div>
+
+              {/* Vocabolario */}
+              <p style={{ fontSize: '0.75rem', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 6px' }}>📖 Vocabolario</p>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '12px' }}>
+                <StatCard label="Parole imparate" value={`${progress.wordsLearned.length}`} color="#10b981" />
+                <div style={{ backgroundColor: '#1e293b', borderRadius: '10px', padding: '12px', textAlign: 'center' }}>
+                  <p style={{ margin: '0 0 4px', fontSize: '0.7rem', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Lingua preferita</p>
+                  {favLangName ? (
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', marginTop: '4px' }}>
+                      {favLangFc && <img src={`https://flagcdn.com/20x15/${favLangFc}.png`} width="20" height="15" alt={favLangName} style={{ borderRadius: '2px' }} />}
+                      <span style={{ fontWeight: 'bold', color: '#f8fafc' }}>{favLangName}</span>
+                    </div>
+                  ) : <p style={{ margin: 0, fontSize: '1.2rem', color: '#64748b' }}>—</p>}
+                </div>
+              </div>
+
+              {/* Consigli */}
+              <section style={{ ...styles.card, border: '1px solid #334155' }}>
+                <p style={{ margin: '0 0 8px', fontSize: '0.75rem', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.06em' }}>💬 Consigli personalizzati</p>
+                {tips.map((tip, i) => (
+                  <p key={i} style={{ margin: i > 0 ? '8px 0 0' : 0, fontSize: '0.85rem', color: '#e2e8f0', lineHeight: '1.5' }}>{tip}</p>
+                ))}
+              </section>
+
+              {/* Reset */}
+              <button
+                onClick={() => { if (confirm('Vuoi azzerare tutti i progressi?')) { const p = defaultProgress(); saveProgress(p); setProgress(p); } }}
+                style={{ width: '100%', marginTop: '12px', padding: '10px', backgroundColor: 'transparent', border: '1px solid #ef4444', color: '#ef4444', borderRadius: '8px', cursor: 'pointer', fontSize: '0.8rem' }}
+              >
+                🗑 Azzera progressi
+              </button>
+            </div>
+          );
+        })()}
+
+        {activeTab === 'traduci' && <section style={styles.card}>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px' }}>
             {LANGUAGES.map(l => (
               <button
