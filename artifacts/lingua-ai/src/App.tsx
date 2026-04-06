@@ -1533,6 +1533,7 @@ export default function App() {
 
         {/* Footer Privacy */}
         <footer style={{ textAlign: 'center', marginTop: '18px', paddingBottom: '12px' }}>
+          <p style={{ margin: '0 0 6px', fontSize: '0.7rem', color: '#334155' }}>© 2025 Livio Mazzocchi — Tutti i diritti riservati</p>
           <button
             onClick={() => setShowPrivacy(true)}
             style={{ background: 'none', border: 'none', color: '#475569', fontSize: '0.75rem', cursor: 'pointer', textDecoration: 'underline' }}
