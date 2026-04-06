@@ -1506,11 +1506,20 @@ export default function App() {
 
           if (activeTab === 'demo') return (
             <div style={{ marginBottom: '16px' }}>
-              <div style={{ ...styles.card, marginBottom: '10px', background: 'linear-gradient(135deg, #1e1b4b 0%, #0f172a 100%)', border: '1px solid #4c1d95', padding: '10px 12px' }}>
-                <p style={{ margin: '0 0 2px', fontSize: '0.7rem', color: '#a78bfa', textTransform: 'uppercase', letterSpacing: '0.08em' }}>🎬 Video promozionale</p>
-                <p style={{ margin: 0, fontSize: '0.82rem', color: '#e2e8f0', lineHeight: '1.4' }}>
-                  Scopri tutte le funzionalità di <strong style={{ color: '#fb923c' }}>Lingua AI</strong> in 25 secondi.
-                </p>
+              <div style={{ ...styles.card, marginBottom: '10px', background: 'linear-gradient(135deg, #1e1b4b 0%, #0f172a 100%)', border: '1px solid #4c1d95', padding: '10px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div>
+                  <p style={{ margin: '0 0 2px', fontSize: '0.7rem', color: '#a78bfa', textTransform: 'uppercase', letterSpacing: '0.08em' }}>🎬 Video promozionale</p>
+                  <p style={{ margin: 0, fontSize: '0.82rem', color: '#e2e8f0', lineHeight: '1.4' }}>
+                    Scopri tutte le funzionalità di <strong style={{ color: '#fb923c' }}>Lingua AI</strong> in 25 secondi.
+                  </p>
+                </div>
+                <button
+                  onClick={() => setShowTabPanel(false)}
+                  title="Chiudi demo"
+                  style={{ flexShrink: 0, marginLeft: '10px', background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '8px', color: '#94a3b8', cursor: 'pointer', padding: '5px 10px', fontSize: '0.75rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px', transition: 'background 0.2s' }}
+                >
+                  ✕ Chiudi
+                </button>
               </div>
               <div style={{ borderRadius: '12px', overflow: 'hidden', border: '1px solid #334155', backgroundColor: '#0f172a', marginBottom: '10px' }}>
                 <iframe
