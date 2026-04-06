@@ -241,6 +241,8 @@ export default function App() {
   const [showPrivacy, setShowPrivacy] = useState(false);
   const [activeTab, setActiveTab] = useState<'profilo' | 'progressi' | 'calendario' | 'vocabolario' | 'demo'>('profilo');
   const [showTabPanel, setShowTabPanel] = useState(false);
+  const [showDemoMenu, setShowDemoMenu] = useState(false);
+  const [activeDemoNum, setActiveDemoNum] = useState<1|2|3|4>(1);
   const [progress, setProgress] = useState<ProgressStats>(loadProgress);
   const [profile, setProfile] = useState<UserProfile>(loadProfile);
   const [profileSaved, setProfileSaved] = useState(false);
@@ -670,6 +672,7 @@ export default function App() {
     recognition.start();
   };
 
+  // ── Demo 1: Traduzione & X-Ray ──────────────────────────────────────────
   const DEMO_STEPS = [
     { icon: '✍️', label: '1/6 — Scrittura',   desc: 'Scrivo una frase in italiano...',                    narration: 'Ciao! Guarda come funziona questa app.' },
     { icon: '🌍', label: '2/6 — Lingua',       desc: 'Traduco nella lingua selezionata...',               narration: 'Seleziono la lingua di destinazione.' },
@@ -678,6 +681,36 @@ export default function App() {
     { icon: '🎙️', label: '5/6 — Shadowing',   desc: 'Apro Shadowing — ascolta e ripeti per la pronuncia', narration: 'Con lo Shadowing ascolto e ripeto per migliorare.' },
     { icon: '⭐', label: '6/6 — Funzionalità', desc: 'Profilo, Progressi, Segnalibri, Quiz e altro...',    narration: 'Qui trovo profilo, progressi e segnalibri.' },
     { icon: '🎉', label: 'Demo completata',    desc: 'Esplora liberamente tutte le funzionalità!',         narration: 'Demo completata. Buono studio!' },
+  ];
+
+  // ── Demo 2: Shadowing & Pronuncia ───────────────────────────────────────
+  const DEMO2_STEPS = [
+    { icon: '🎙️', label: '1/5 — Scrittura',   desc: 'Scrivo una frase da imparare a pronunciare...',      narration: 'Guarda come funziona lo Shadowing.' },
+    { icon: '🌍', label: '2/5 — Lingua',       desc: 'Scelgo il francese come lingua target...',           narration: 'Scelgo il francese.' },
+    { icon: '🔄', label: '3/5 — Traduzione',   desc: 'Traduco e ascolto la pronuncia nativa...',           narration: 'Traduco per sentire la pronuncia corretta.' },
+    { icon: '🎙️', label: '4/5 — Shadowing',   desc: 'Attivo Shadowing: ascolto e ripeto la frase...',     narration: 'Con Shadowing ascolto e ripeto la frase.' },
+    { icon: '📊', label: '5/5 — Progressi',    desc: 'Il punteggio migliora ad ogni esercizio!',           narration: 'I progressi vengono salvati automaticamente.' },
+    { icon: '🎉', label: 'Demo completata',    desc: 'Attiva lo Shadowing e inizia a praticare!',          narration: 'Ora tocca a te. Buona pronuncia!' },
+  ];
+
+  // ── Demo 3: Chat AI & Roleplay ───────────────────────────────────────────
+  const DEMO3_STEPS = [
+    { icon: '🤖', label: '1/5 — AI Tutor',     desc: 'Attivo il Tutor AI alimentato da DeepSeek...',       narration: 'Ti mostro il Tutor AI in azione.' },
+    { icon: '🌍', label: '2/5 — Lingua',       desc: 'Scelgo il giapponese come lingua target...',         narration: 'Scelgo il giapponese.' },
+    { icon: '🔄', label: '3/5 — Traduzione',   desc: 'Traduco la frase con analisi integrata...',          narration: 'Traduco e chiedo spiegazioni all\'AI.' },
+    { icon: '💬', label: '4/5 — Chat AI',      desc: 'Apro la chat — l\'AI spiega grammatica ed esempi...', narration: 'L\'AI risponde con esempi pratici in italiano.' },
+    { icon: '🎭', label: '5/5 — Roleplay',     desc: 'Modalità Roleplay: conversazione in contesti reali!', narration: 'Posso simulare conversazioni vere.' },
+    { icon: '🎉', label: 'Demo completata',    desc: 'Inizia a chattare con il tuo Tutor AI!',             narration: 'Prova il Tutor AI. Imparerai velocemente!' },
+  ];
+
+  // ── Demo 4: Segnalibri & Quiz ────────────────────────────────────────────
+  const DEMO4_STEPS = [
+    { icon: '⭐', label: '1/5 — Vocabolario',  desc: 'Ti mostro come costruire il tuo vocabolario...',     narration: 'Guarda come memorizzare il vocabolario.' },
+    { icon: '🌍', label: '2/5 — Lingua',       desc: 'Scelgo lo spagnolo come lingua target...',           narration: 'Scelgo lo spagnolo.' },
+    { icon: '🔄', label: '3/5 — Traduzione',   desc: 'Traduco e salvo la frase che voglio ricordare...',   narration: 'Traduco la frase che voglio ricordare.' },
+    { icon: '📚', label: '4/5 — Segnalibri',   desc: 'Aggiungo ai Segnalibri per ripassare dopo...',       narration: 'Aggiungo ai Segnalibri per ripassare.' },
+    { icon: '📊', label: '5/5 — Progressi',    desc: 'Calendario e Progressi mostrano la costanza!',       narration: 'I Progressi mostrano quanto ho imparato.' },
+    { icon: '🎉', label: 'Demo completata',    desc: 'Studia ogni giorno e diventerai fluente!',           narration: 'Studia ogni giorno. Diventerai fluente!' },
   ];
 
   const narrateDemo = (text: string) => {
@@ -730,8 +763,10 @@ export default function App() {
     setDemoCursorClicking(false);
   };
 
-  const startDemo = () => {
+  const startDemo = (demoNum: 1|2|3|4 = 1) => {
     stopDemo();
+    setShowDemoMenu(false);
+    setActiveDemoNum(demoNum);
     setTranslatedText('');
     setAiExplanation(null);
     setXrayData(null);
@@ -740,6 +775,7 @@ export default function App() {
     setShadowPhrase(null);
     setShadowStep('idle');
     setShowTabPanel(false);
+    setShowChat(false);
     setError(null);
     setInputText('');
     demoActiveRef.current = true;
@@ -751,7 +787,65 @@ export default function App() {
       demoTimersRef.current.push(id);
     };
 
-    const PHRASE = 'Ho perso il treno, ci vediamo dopo?';
+    // Sequenze specifiche per ogni demo (offset dalla fine del typewriter)
+    const runSequence = () => {
+      if (demoNum === 1) {
+        t(() => { setDemoStep(1); narrateDemo(DEMO_STEPS[1].narration); }, 0);
+        t(() => { setDemoStep(2); narrateDemo(DEMO_STEPS[2].narration); handleTranslate(); }, 2500);
+        t(() => animateDemoCursorClick(), 3100);
+        t(() => {
+          setDemoStep(3); narrateDemo(DEMO_STEPS[3].narration);
+          const words = translatedTextRef.current.split(' ').filter(w => w.replace(/[^a-zA-Z]/g, '').length > 2);
+          if (words.length > 0) fetchGrammar(words[0]);
+        }, 7000);
+        t(() => animateDemoCursorClick(), 7600);
+        t(() => { setDemoStep(4); narrateDemo(DEMO_STEPS[4].narration); setShowShadow(true); fetchShadowPhrase(); }, 11500);
+        t(() => animateDemoCursorClick(), 12100);
+        t(() => { setShowShadow(false); setDemoStep(5); narrateDemo(DEMO_STEPS[5].narration); setShowTabPanel(true); setActiveTab('profilo'); }, 16000);
+        t(() => animateDemoCursorClick(), 16600);
+        t(() => { setDemoStep(6); narrateDemo(DEMO_STEPS[6].narration); }, 20000);
+        t(() => stopDemo(), 23500);
+      } else if (demoNum === 2) {
+        t(() => { setSelectedLang('fr'); setDemoStep(1); narrateDemo(DEMO2_STEPS[1].narration); }, 0);
+        t(() => { setDemoStep(2); narrateDemo(DEMO2_STEPS[2].narration); handleTranslate(); }, 2500);
+        t(() => animateDemoCursorClick(), 3100);
+        t(() => { setDemoStep(3); narrateDemo(DEMO2_STEPS[3].narration); setShowShadow(true); fetchShadowPhrase(); }, 7000);
+        t(() => animateDemoCursorClick(), 7600);
+        t(() => { setDemoStep(4); narrateDemo(DEMO2_STEPS[4].narration); setShowTabPanel(true); setActiveTab('progressi'); }, 11500);
+        t(() => animateDemoCursorClick(), 12100);
+        t(() => { setDemoStep(5); narrateDemo(DEMO2_STEPS[5].narration); }, 16000);
+        t(() => stopDemo(), 19000);
+      } else if (demoNum === 3) {
+        t(() => { setSelectedLang('ja'); setDemoStep(1); narrateDemo(DEMO3_STEPS[1].narration); }, 0);
+        t(() => { setDemoStep(2); narrateDemo(DEMO3_STEPS[2].narration); handleTranslate(); }, 2500);
+        t(() => animateDemoCursorClick(), 3100);
+        t(() => { setDemoStep(3); narrateDemo(DEMO3_STEPS[3].narration); setShowChat(true); }, 7000);
+        t(() => animateDemoCursorClick(), 7600);
+        t(() => { setDemoStep(4); narrateDemo(DEMO3_STEPS[4].narration); }, 11500);
+        t(() => { setDemoStep(5); narrateDemo(DEMO3_STEPS[5].narration); }, 16000);
+        t(() => stopDemo(), 19000);
+      } else {
+        t(() => { setSelectedLang('es'); setDemoStep(1); narrateDemo(DEMO4_STEPS[1].narration); }, 0);
+        t(() => { setDemoStep(2); narrateDemo(DEMO4_STEPS[2].narration); handleTranslate(); }, 2500);
+        t(() => animateDemoCursorClick(), 3100);
+        t(() => { setDemoStep(3); narrateDemo(DEMO4_STEPS[3].narration); }, 7000);
+        t(() => animateDemoCursorClick(), 7600);
+        t(() => { setDemoStep(4); narrateDemo(DEMO4_STEPS[4].narration); setShowTabPanel(true); setActiveTab('progressi'); }, 11500);
+        t(() => animateDemoCursorClick(), 12100);
+        t(() => { setDemoStep(5); narrateDemo(DEMO4_STEPS[5].narration); }, 16000);
+        t(() => stopDemo(), 19000);
+      }
+    };
+
+    const phrases: Record<1|2|3|4, string> = {
+      1: 'Ho perso il treno, ci vediamo dopo?',
+      2: 'Il sole tramonta lentamente.',
+      3: 'Come si dice grazie in questa lingua?',
+      4: 'Ogni giorno imparo qualcosa di nuovo.',
+    };
+    const allSteps = [DEMO_STEPS, DEMO2_STEPS, DEMO3_STEPS, DEMO4_STEPS];
+    const PHRASE = phrases[demoNum];
+
     let i = 0;
     const type = () => {
       if (i <= PHRASE.length) {
@@ -760,42 +854,10 @@ export default function App() {
         const id = window.setTimeout(type, 45);
         demoTimersRef.current.push(id);
       } else {
-        // Offsets from when typewriter finishes — spaced to not cut narrations mid-frase
-        t(() => { setDemoStep(1); narrateDemo(DEMO_STEPS[1].narration); }, 0);
-        t(() => {
-          setDemoStep(2);
-          narrateDemo(DEMO_STEPS[2].narration);
-          handleTranslate();
-        }, 2500);
-        t(() => animateDemoCursorClick(), 3100);
-        t(() => {
-          setDemoStep(3);
-          narrateDemo(DEMO_STEPS[3].narration);
-          const words = translatedTextRef.current.split(' ').filter(w => w.replace(/[^a-zA-Z]/g, '').length > 2);
-          if (words.length > 0) fetchGrammar(words[0]);
-        }, 7000);
-        t(() => animateDemoCursorClick(), 7600);
-        t(() => {
-          setDemoStep(4);
-          narrateDemo(DEMO_STEPS[4].narration);
-          setShowShadow(true);
-          fetchShadowPhrase();
-        }, 11500);
-        t(() => animateDemoCursorClick(), 12100);
-        t(() => {
-          setShowShadow(false);
-          setDemoStep(5);
-          narrateDemo(DEMO_STEPS[5].narration);
-          setShowTabPanel(true);
-          setActiveTab('profilo');
-        }, 16000);
-        t(() => animateDemoCursorClick(), 16600);
-        t(() => { setDemoStep(6); narrateDemo(DEMO_STEPS[6].narration); }, 20000);
-        t(() => stopDemo(), 23500);
+        runSequence();
       }
     };
-    // Narrate step 0 first, then start typing after it has time to complete
-    narrateDemo(DEMO_STEPS[0].narration);
+    narrateDemo(allSteps[demoNum - 1][0].narration);
     const startTypingId = window.setTimeout(type, 2400);
     demoTimersRef.current.push(startTypingId);
   };
@@ -845,19 +907,67 @@ export default function App() {
           </div>
         </header>
 
-        <button
-          onClick={startDemo}
-          style={{
-            width: '100%', marginBottom: '10px', padding: '9px 16px',
-            background: 'linear-gradient(90deg, #10b981, #3b82f6)',
-            border: 'none', borderRadius: '10px', color: '#fff',
-            fontWeight: 700, fontSize: '0.88rem', cursor: 'pointer',
-            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
-            letterSpacing: '0.04em',
-          }}
-        >
-          ▶ Avvia Demo guidata — vedi l&apos;app in azione
-        </button>
+        {/* Menu Demo & Funzionalità */}
+        <div style={{ marginBottom: '10px' }}>
+          <button
+            onClick={() => setShowDemoMenu(v => !v)}
+            style={{
+              width: '100%', padding: '9px 16px',
+              background: 'linear-gradient(90deg, #10b981, #3b82f6)',
+              border: 'none',
+              borderRadius: showDemoMenu ? '10px 10px 0 0' : '10px',
+              color: '#fff', fontWeight: 700, fontSize: '0.88rem', cursor: 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              letterSpacing: '0.04em',
+            }}
+          >
+            <span>▶ Demo &amp; Funzionalità</span>
+            {showDemoMenu ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+          </button>
+          {showDemoMenu && (
+            <div style={{
+              padding: '8px', background: '#0a1628',
+              borderRadius: '0 0 10px 10px',
+              border: '1px solid #10b981', borderTop: 'none',
+              display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px',
+            }}>
+              {([
+                { n: 1 as const, icon: '🌍', label: 'Demo 1', sub: 'Traduzione & X-Ray' },
+                { n: 2 as const, icon: '🎙️', label: 'Demo 2', sub: 'Shadowing' },
+                { n: 3 as const, icon: '🤖', label: 'Demo 3', sub: 'Chat AI' },
+                { n: 4 as const, icon: '⭐', label: 'Demo 4', sub: 'Vocabolario' },
+              ]).map(({ n, icon, label, sub }) => (
+                <button
+                  key={n}
+                  onClick={() => startDemo(n)}
+                  style={{
+                    padding: '9px 8px', border: '1px solid #1e3a5f',
+                    borderRadius: '8px', cursor: 'pointer',
+                    fontWeight: 'bold', fontSize: '0.78rem',
+                    backgroundColor: '#1e293b', color: '#e2e8f0',
+                    display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px',
+                  }}
+                >
+                  <span style={{ fontSize: '1.1rem' }}>{icon}</span>
+                  <span>{label}</span>
+                  <span style={{ fontSize: '0.65rem', color: '#64748b', fontWeight: 400 }}>{sub}</span>
+                </button>
+              ))}
+              <button
+                onClick={() => { setShowTabPanel(true); setActiveTab('demo'); setShowDemoMenu(false); }}
+                style={{
+                  gridColumn: '1 / -1', padding: '9px 8px',
+                  border: '1px solid #4c1d95', borderRadius: '8px', cursor: 'pointer',
+                  fontWeight: 'bold', fontSize: '0.82rem',
+                  backgroundColor: '#1e1b4b', color: '#a78bfa',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+                }}
+              >
+                🎬 Funzionalità — scopri il video
+              </button>
+            </div>
+          )}
+        </div>
 
         <section style={styles.card}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
@@ -1598,31 +1708,10 @@ export default function App() {
           {([
             { id: 'profilo',     label: '👤 Profilo' },
             { id: 'progressi',  label: '📊 Progressi' },
-          ] as const).map(({ id, label }) => (
-            <button key={id} data-demo={id === 'profilo' ? 'tab-profilo' : undefined} onClick={() => setActiveTab(id)} style={{
-              padding: '9px 6px', border: '1px solid #334155', borderRadius: '8px', cursor: 'pointer',
-              fontWeight: 'bold', fontSize: '0.82rem',
-              backgroundColor: activeTab === id ? '#fb923c' : '#1e293b',
-              color: activeTab === id ? '#fff' : '#94a3b8',
-              transition: 'background 0.2s',
-            }}>
-              {label}
-            </button>
-          ))}
-          <button onClick={() => setActiveTab('demo')} style={{
-            gridColumn: '1 / -1', padding: '9px 6px', border: activeTab === 'demo' ? '1px solid #7c3aed' : '1px solid #334155',
-            borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', fontSize: '0.82rem',
-            backgroundColor: activeTab === 'demo' ? '#7c3aed' : '#1e293b',
-            color: activeTab === 'demo' ? '#fff' : '#94a3b8',
-            transition: 'background 0.2s',
-          }}>
-            🎬 Funzionalità — scopri il video
-          </button>
-          {([
             { id: 'calendario', label: '📅 Calendario' },
             { id: 'vocabolario',label: '📚 Vocabolario' },
           ] as const).map(({ id, label }) => (
-            <button key={id} onClick={() => setActiveTab(id)} style={{
+            <button key={id} data-demo={id === 'profilo' ? 'tab-profilo' : undefined} onClick={() => setActiveTab(id)} style={{
               padding: '9px 6px', border: '1px solid #334155', borderRadius: '8px', cursor: 'pointer',
               fontWeight: 'bold', fontSize: '0.82rem',
               backgroundColor: activeTab === id ? '#fb923c' : '#1e293b',
@@ -2089,26 +2178,33 @@ export default function App() {
             boxShadow: '0 -8px 32px rgba(0,0,0,0.5)',
           }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <span style={{ fontSize: '1.3rem' }}>{DEMO_STEPS[demoStep]?.icon}</span>
-                <div>
-                  <p style={{ margin: 0, fontSize: '0.68rem', color: '#10b981', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
-                    {DEMO_STEPS[demoStep]?.label}
-                  </p>
-                  <p style={{ margin: 0, fontSize: '0.82rem', color: '#e2e8f0', lineHeight: '1.3' }}>
-                    {DEMO_STEPS[demoStep]?.desc}
-                  </p>
+              {(() => {
+              const allSteps = [DEMO_STEPS, DEMO2_STEPS, DEMO3_STEPS, DEMO4_STEPS];
+              const activeSteps = allSteps[activeDemoNum - 1];
+              const step = activeSteps[demoStep];
+              return <>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <span style={{ fontSize: '1.3rem' }}>{step?.icon}</span>
+                  <div>
+                    <p style={{ margin: 0, fontSize: '0.68rem', color: '#10b981', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+                      Demo {activeDemoNum} &nbsp;·&nbsp; {step?.label}
+                    </p>
+                    <p style={{ margin: 0, fontSize: '0.82rem', color: '#e2e8f0', lineHeight: '1.3' }}>
+                      {step?.desc}
+                    </p>
+                  </div>
                 </div>
-              </div>
-              <button
-                onClick={stopDemo}
-                style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '6px', color: '#94a3b8', cursor: 'pointer', padding: '4px 10px', fontSize: '0.72rem', fontWeight: 600 }}
-              >
-                Salta
-              </button>
+                <button
+                  onClick={stopDemo}
+                  style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '6px', color: '#94a3b8', cursor: 'pointer', padding: '4px 10px', fontSize: '0.72rem', fontWeight: 600, flexShrink: 0 }}
+                >
+                  Salta
+                </button>
+              </>;
+            })()}
             </div>
             <div style={{ display: 'flex', gap: '5px' }}>
-              {DEMO_STEPS.map((_, idx) => (
+              {[DEMO_STEPS, DEMO2_STEPS, DEMO3_STEPS, DEMO4_STEPS][activeDemoNum - 1].map((_, idx) => (
                 <div key={idx} style={{
                   flex: 1, height: '3px', borderRadius: '2px',
                   backgroundColor: idx <= demoStep ? '#10b981' : 'rgba(255,255,255,0.15)',
