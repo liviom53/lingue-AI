@@ -226,6 +226,7 @@ export default function App() {
   const [showMoreLangs, setShowMoreLangs] = useState(false);
   const [showVoiceSettings, setShowVoiceSettings] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [showPrivacy, setShowPrivacy] = useState(false);
   const [activeTab, setActiveTab] = useState<'profilo' | 'progressi'>('profilo');
   const [showTabPanel, setShowTabPanel] = useState(false);
   const [progress, setProgress] = useState<ProgressStats>(loadProgress);
@@ -1503,6 +1504,62 @@ export default function App() {
         })()}
         </>
         )}
+
+        {/* Footer Privacy */}
+        <footer style={{ textAlign: 'center', marginTop: '18px', paddingBottom: '12px' }}>
+          <button
+            onClick={() => setShowPrivacy(true)}
+            style={{ background: 'none', border: 'none', color: '#475569', fontSize: '0.75rem', cursor: 'pointer', textDecoration: 'underline' }}
+          >
+            🔒 Privacy &amp; Cookie
+          </button>
+        </footer>
+
+        {/* Privacy Modal */}
+        {showPrivacy && (
+          <div
+            onClick={() => setShowPrivacy(false)}
+            style={{
+              position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              zIndex: 9999, padding: '20px',
+            }}
+          >
+            <div
+              onClick={e => e.stopPropagation()}
+              style={{
+                background: '#1e293b', border: '1px solid #334155',
+                borderRadius: '14px', padding: '24px', maxWidth: '420px', width: '100%',
+              }}
+            >
+              <h2 style={{ margin: '0 0 14px', fontSize: '1.1rem', color: '#f8fafc' }}>🔒 Informativa Privacy</h2>
+
+              {[
+                { title: 'Dati salvati localmente', body: 'Il profilo utente (nome, lingua, livello) e i progressi sono salvati solo sul tuo dispositivo tramite localStorage. Non vengono mai trasmessi a nessun server esterno.' },
+                { title: 'Testi elaborati da AI', body: 'I testi che scrivi per traduzione, chat e grammatica vengono inviati a DeepSeek AI (via OpenRouter) esclusivamente per generare la risposta. Non vengono conservati o usati per addestrare modelli.' },
+                { title: 'Cookie', body: 'Questa app non utilizza cookie di profilazione, analytics o tracciamento di terze parti.' },
+                { title: 'Titolare', body: 'Livio Mazzocchi — app personale senza fini commerciali.' },
+              ].map(s => (
+                <div key={s.title} style={{ marginBottom: '14px' }}>
+                  <p style={{ margin: '0 0 4px', fontWeight: 700, fontSize: '0.82rem', color: '#fb923c' }}>{s.title}</p>
+                  <p style={{ margin: 0, fontSize: '0.82rem', color: '#cbd5e1', lineHeight: '1.5' }}>{s.body}</p>
+                </div>
+              ))}
+
+              <button
+                onClick={() => setShowPrivacy(false)}
+                style={{
+                  marginTop: '6px', width: '100%', padding: '10px',
+                  background: '#fb923c', border: 'none', borderRadius: '8px',
+                  color: '#fff', fontWeight: 700, cursor: 'pointer', fontSize: '0.9rem',
+                }}
+              >
+                Ho capito
+              </button>
+            </div>
+          </div>
+        )}
+
       </div>
     </div>
   );
