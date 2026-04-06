@@ -814,6 +814,25 @@ export default function App() {
       demoTimersRef.current.push(id);
     };
 
+    // Scrolla l'elemento in vista e ricalcola la posizione cursore dopo lo scroll
+    const scrollDemo = (scrollSel: string, cursorSel: string, delay: number) => {
+      t(() => {
+        const el = document.querySelector(scrollSel) as HTMLElement | null;
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          // Ricalcola cursore dopo che lo smooth-scroll finisce (~600ms)
+          window.setTimeout(() => {
+            if (!demoActiveRef.current) return;
+            const cur = document.querySelector(cursorSel) as HTMLElement | null;
+            if (cur) {
+              const r = cur.getBoundingClientRect();
+              setDemoCursorPos({ x: r.left + r.width / 2, y: r.top + r.height / 2 });
+            }
+          }, 650);
+        }
+      }, delay);
+    };
+
     // Struttura uniforme per tutte le demo:
     // t=0: lingua, t=3000: traduci, t=3600: click, t=8000: feature, t=8600: click,
     // t=13000: profilo/tab, t=13600: click, t=17000: fine, t=20000: stop
@@ -827,41 +846,50 @@ export default function App() {
           const words = translatedTextRef.current.split(' ').filter(w => w.replace(/[^a-zA-Z]/g, '').length > 2);
           if (words.length > 0) fetchGrammar(words[0]);
         }, 8000);
-        t(() => animateDemoCursorClick(), 8600);
+        // scroll→ricalcolo cursore (350ms) + click 100ms dopo ricalcolo (350+650+100=1100ms)
+        scrollDemo('[data-demo="translated-text"]', '[data-demo="translated-text"]', 8350);
+        t(() => animateDemoCursorClick(), 9100);
         t(() => { setDemoStep(4); narrateDemo(DEMO_STEPS[4].narration); setShowTabPanel(true); setActiveTab('profilo'); }, 13000);
-        t(() => animateDemoCursorClick(), 13600);
-        t(() => { setDemoStep(5); narrateDemo(DEMO_STEPS[5].narration); }, 17000);
-        t(() => stopDemo(), 20000);
+        scrollDemo('[data-demo="tab-panel-toggle"]', '[data-demo="tab-profilo"]', 13400);
+        t(() => animateDemoCursorClick(), 14150);
+        t(() => { setDemoStep(5); narrateDemo(DEMO_STEPS[5].narration); }, 17500);
+        t(() => stopDemo(), 20500);
       } else if (demoNum === 2) {
         t(() => { setSelectedLang('fr'); setDemoStep(1); narrateDemo(DEMO2_STEPS[1].narration); }, 0);
         t(() => { setDemoStep(2); narrateDemo(DEMO2_STEPS[2].narration); handleTranslate(); }, 3000);
         t(() => animateDemoCursorClick(), 3600);
         t(() => { setDemoStep(3); narrateDemo(DEMO2_STEPS[3].narration); setShowShadow(true); fetchShadowPhrase(); }, 8000);
-        t(() => animateDemoCursorClick(), 8600);
+        scrollDemo('[data-demo="shadow-toggle"]', '[data-demo="shadow-toggle"]', 8400);
+        t(() => animateDemoCursorClick(), 9150);
         t(() => { setDemoStep(4); narrateDemo(DEMO2_STEPS[4].narration); setShowTabPanel(true); setActiveTab('progressi'); }, 13000);
-        t(() => animateDemoCursorClick(), 13600);
-        t(() => { setDemoStep(5); narrateDemo(DEMO2_STEPS[5].narration); }, 17000);
-        t(() => stopDemo(), 20000);
+        scrollDemo('[data-demo="tab-panel-toggle"]', '[data-demo="tab-profilo"]', 13400);
+        t(() => animateDemoCursorClick(), 14150);
+        t(() => { setDemoStep(5); narrateDemo(DEMO2_STEPS[5].narration); }, 17500);
+        t(() => stopDemo(), 20500);
       } else if (demoNum === 3) {
         t(() => { setSelectedLang('ja'); setDemoStep(1); narrateDemo(DEMO3_STEPS[1].narration); }, 0);
         t(() => { setDemoStep(2); narrateDemo(DEMO3_STEPS[2].narration); handleTranslate(); }, 3000);
         t(() => animateDemoCursorClick(), 3600);
         t(() => { setDemoStep(3); narrateDemo(DEMO3_STEPS[3].narration); setShowChat(true); }, 8000);
-        t(() => animateDemoCursorClick(), 8600);
+        scrollDemo('[data-demo="chat-section"]', '[data-demo="chat-section"]', 8400);
+        t(() => animateDemoCursorClick(), 9150);
         t(() => { setDemoStep(4); narrateDemo(DEMO3_STEPS[4].narration); setShowTabPanel(true); setActiveTab('progressi'); }, 13000);
-        t(() => animateDemoCursorClick(), 13600);
-        t(() => { setDemoStep(5); narrateDemo(DEMO3_STEPS[5].narration); }, 17000);
-        t(() => stopDemo(), 20000);
+        scrollDemo('[data-demo="tab-panel-toggle"]', '[data-demo="tab-profilo"]', 13400);
+        t(() => animateDemoCursorClick(), 14150);
+        t(() => { setDemoStep(5); narrateDemo(DEMO3_STEPS[5].narration); }, 17500);
+        t(() => stopDemo(), 20500);
       } else {
         t(() => { setSelectedLang('es'); setDemoStep(1); narrateDemo(DEMO4_STEPS[1].narration); }, 0);
         t(() => { setDemoStep(2); narrateDemo(DEMO4_STEPS[2].narration); handleTranslate(); }, 3000);
         t(() => animateDemoCursorClick(), 3600);
         t(() => { setDemoStep(3); narrateDemo(DEMO4_STEPS[3].narration); }, 8000);
-        t(() => animateDemoCursorClick(), 8600);
+        scrollDemo('[data-demo="translated-text"]', '[data-demo="translated-text"]', 8350);
+        t(() => animateDemoCursorClick(), 9100);
         t(() => { setDemoStep(4); narrateDemo(DEMO4_STEPS[4].narration); setShowTabPanel(true); setActiveTab('calendario'); }, 13000);
-        t(() => animateDemoCursorClick(), 13600);
-        t(() => { setDemoStep(5); narrateDemo(DEMO4_STEPS[5].narration); }, 17000);
-        t(() => stopDemo(), 20000);
+        scrollDemo('[data-demo="tab-panel-toggle"]', '[data-demo="tab-profilo"]', 13400);
+        t(() => animateDemoCursorClick(), 14150);
+        t(() => { setDemoStep(5); narrateDemo(DEMO4_STEPS[5].narration); }, 17500);
+        t(() => stopDemo(), 20500);
       }
     };
 
@@ -1462,7 +1490,7 @@ export default function App() {
         </section>
 
         {/* AI Chat Section */}
-        <section style={{ ...styles.card, border: '1px solid #fb923c' }}>
+        <section data-demo="chat-section" style={{ ...styles.card, border: '1px solid #fb923c' }}>
           <button
             onClick={() => setShowChat(!showChat)}
             style={{
@@ -1704,7 +1732,7 @@ export default function App() {
         </section>
 
         {/* Toggle per profilo/progressi */}
-        <div style={{ margin: '16px 0 8px' }}>
+        <div data-demo="tab-panel-toggle" style={{ margin: '16px 0 8px' }}>
           <button
             onClick={() => setShowTabPanel(v => !v)}
             style={{
