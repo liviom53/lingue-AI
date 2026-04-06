@@ -1,5 +1,5 @@
 kind = "web"
-  previewPath = "/diario-pescatore/"
+  previewPath = "/"
   title = "Diario del Pescatore"
   version = "1.0.0"
   id = "artifacts/diario-pescatore"
@@ -11,7 +11,7 @@ kind = "web"
 
   [[services]]
   name = "web"
-  localPort = 22883
+  localPort = 8080
 
   [services.development]
   run = "pnpm --filter @workspace/diario-pescatore run dev"
@@ -19,4 +19,19 @@ kind = "web"
   [services.env]
   PORT = "22883"
   BASE_PATH = "/"
+
+  [services.production]
+
+  [services.production.build]
+  args = ["sh", "-c", "NODE_ENV=production BASE_PATH=/lingua-ai/ pnpm --filter @workspace/lingua-ai run build && NODE_ENV=production BASE_PATH=/ pnpm --filter @workspace/diario-pescatore run build && NODE_ENV=production pnpm --filter @workspace/api-server run build"]
+
+  [services.production.run]
+  args = ["node", "--enable-source-maps", "artifacts/api-server/dist/index.mjs"]
+
+  [services.production.run.env]
+  PORT = "8080"
+  NODE_ENV = "production"
+
+  [services.production.health.startup]
+  path = "/api/healthz"
   
