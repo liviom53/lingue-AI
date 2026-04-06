@@ -1473,46 +1473,81 @@ export default function App() {
                 })()}
               </div>
 
-              {/* Riepilogo rapido */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px', marginBottom: '12px' }}>
-                <StatCard label="Ore" value={`${hours}h ${mins}m`} />
-                <StatCard label="Streak" value={`${progress.streakDays}gg`} color="#fb923c" />
-                <div style={{ backgroundColor: '#1e293b', borderRadius: '10px', padding: '10px', textAlign: 'center' }}>
-                  <p style={{ margin: '0 0 4px', fontSize: '0.7rem', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Lingua</p>
-                  {favLangFc
-                    ? <img src={`https://flagcdn.com/20x15/${favLangFc}.png`} width="20" height="15" alt={favLangName ?? ''} style={{ borderRadius: '2px', marginTop: '4px' }} />
-                    : <p style={{ margin: 0, color: '#64748b' }}>—</p>}
-                </div>
-              </div>
-
-              {/* Traduzioni */}
-              <p style={{ fontSize: '0.75rem', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 6px' }}>🌍 Traduzioni</p>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '12px' }}>
-                <StatCard label="Totali" value={`${progress.translationCount}`} />
-                <StatCard label="Con TUTOR AI" value={`${progress.aiTranslationCount}`} color="#e8d0a0" />
-              </div>
-
-              {/* Pronuncia */}
-              <p style={{ fontSize: '0.75rem', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 6px' }}>🎙 Pronuncia</p>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px', marginBottom: '10px' }}>
-                <StatCard label="Tentativi" value={`${progress.practiceAttempts}`} />
-                <StatCard label="Media" value={progress.practiceAttempts > 0 ? `${avgScore}%` : '—'} color={avgScore >= 80 ? '#10b981' : avgScore >= 60 ? '#f59e0b' : '#ef4444'} />
-                <StatCard label="Record" value={progress.practiceAttempts > 0 ? `${bestScore}%` : '—'} color="#fbbf24" />
-              </div>
-              <div style={{ ...styles.card, paddingTop: '10px', paddingBottom: '6px', marginBottom: '12px' }}>
-                <ProgressBar label="Media pronuncia" value={avgScore} max={100} color={avgScore >= 80 ? '#10b981' : avgScore >= 60 ? '#f59e0b' : '#ef4444'} suffix="%" />
-                <ProgressBar label="Record pronuncia" value={bestScore} max={100} color="#fbbf24" suffix="%" />
-              </div>
-
-              {/* Vocabolario */}
-              <p style={{ fontSize: '0.75rem', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 6px' }}>📖 Vocabolario</p>
-              <div style={{ marginBottom: '6px' }}>
-                <StatCard label="Parole imparate" value={`${progress.wordsLearned.length}`} color="#10b981" />
-              </div>
-              <div style={{ ...styles.card, paddingTop: '10px', paddingBottom: '6px', marginBottom: '12px' }}>
-                <ProgressBar label="Verso le 50 parole" value={progress.wordsLearned.length} max={50} color="#10b981" />
-                <ProgressBar label="Verso le 200 parole" value={progress.wordsLearned.length} max={200} color="#34d399" />
-              </div>
+              {/* Grafico Radar */}
+              {(() => {
+                const cx = 150, cy = 150, r = 100;
+                const axes = [
+                  { label: 'Pronuncia', emoji: '🎙', value: Math.min(avgScore / 100, 1), display: avgScore > 0 ? `${avgScore}%` : '—' },
+                  { label: 'Vocabolario', emoji: '📖', value: Math.min(progress.wordsLearned.length / 50, 1), display: `${progress.wordsLearned.length}` },
+                  { label: 'Traduzioni', emoji: '🌍', value: Math.min(progress.translationCount / 50, 1), display: `${progress.translationCount}` },
+                  { label: 'Tutor AI', emoji: '🤖', value: Math.min(progress.aiTranslationCount / 20, 1), display: `${progress.aiTranslationCount}` },
+                  { label: 'Streak', emoji: '🔥', value: Math.min(progress.streakDays / 14, 1), display: `${progress.streakDays}gg` },
+                ];
+                const N = axes.length;
+                const pt = (i: number, pct: number) => {
+                  const a = (2 * Math.PI * i / N) - Math.PI / 2;
+                  return { x: cx + pct * r * Math.cos(a), y: cy + pct * r * Math.sin(a) };
+                };
+                const dataPoints = axes.map((ax, i) => pt(i, Math.max(ax.value, 0.04)));
+                const dataPath = dataPoints.map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ') + 'Z';
+                const gridLevels = [0.25, 0.5, 0.75, 1.0];
+                return (
+                  <div style={{ ...styles.card, marginBottom: '12px' }}>
+                    <p style={{ margin: '0 0 8px', fontSize: '0.75rem', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.06em', textAlign: 'center' }}>📊 Panoramica progressi</p>
+                    <svg viewBox="0 0 300 300" style={{ width: '100%', maxWidth: '280px', display: 'block', margin: '0 auto' }}>
+                      {/* Griglie */}
+                      {gridLevels.map((level, gi) => {
+                        const pts = axes.map((_, i) => pt(i, level));
+                        const d = pts.map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ') + 'Z';
+                        return <path key={gi} d={d} fill="none" stroke={gi === 3 ? '#475569' : '#1e293b'} strokeWidth={gi === 3 ? 1.2 : 0.8} />;
+                      })}
+                      {/* Assi */}
+                      {axes.map((_, i) => {
+                        const end = pt(i, 1);
+                        return <line key={i} x1={cx} y1={cy} x2={end.x.toFixed(1)} y2={end.y.toFixed(1)} stroke="#334155" strokeWidth={0.8} />;
+                      })}
+                      {/* Area dati */}
+                      <path d={dataPath} fill="#fb923c28" stroke="#fb923c" strokeWidth={2} strokeLinejoin="round" />
+                      {/* Punti */}
+                      {dataPoints.map((p, i) => (
+                        <circle key={i} cx={p.x} cy={p.y} r={4} fill="#fb923c" stroke="#0f172a" strokeWidth={1.5} />
+                      ))}
+                      {/* Etichette asse */}
+                      {axes.map((ax, i) => {
+                        const lp = pt(i, 1.32);
+                        return (
+                          <text key={i} x={lp.x.toFixed(1)} y={lp.y.toFixed(1)} textAnchor="middle" dominantBaseline="middle" fontSize="11" fill="#94a3b8">
+                            {ax.emoji} {ax.label}
+                          </text>
+                        );
+                      })}
+                      {/* Valori sui punti */}
+                      {axes.map((ax, i) => {
+                        if (ax.value === 0) return null;
+                        const vp = dataPoints[i];
+                        const offset = pt(i, Math.max(ax.value, 0.04) + 0.18);
+                        return (
+                          <text key={i} x={offset.x.toFixed(1)} y={offset.y.toFixed(1)} textAnchor="middle" dominantBaseline="middle" fontSize="10" fontWeight="bold" fill="#f8fafc">
+                            {ax.display}
+                          </text>
+                        );
+                      })}
+                    </svg>
+                    {/* Legenda compatta sotto */}
+                    <div style={{ display: 'flex', justifyContent: 'center', gap: '12px', flexWrap: 'wrap', marginTop: '10px' }}>
+                      {[
+                        { label: `${hours}h ${mins}m`, icon: '⏱', color: '#60a5fa' },
+                        { label: favLangName ?? '—', icon: '🗺', color: '#a855f7' },
+                        { label: `${bestScore > 0 ? bestScore + '%' : '—'} rec.`, icon: '🏅', color: '#fbbf24' },
+                      ].map(b => (
+                        <span key={b.label} style={{ fontSize: '0.72rem', color: b.color, display: 'flex', alignItems: 'center', gap: '3px' }}>
+                          {b.icon} {b.label}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })()}
 
               {/* Consigli */}
               <section style={{ ...styles.card, border: '1px solid #334155', marginBottom: '10px' }}>
