@@ -1176,20 +1176,19 @@ export default function App() {
               width: '100%',
               background: 'none',
               border: 'none',
-              color: '#94a3b8',
+              color: '#3b82f6',
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
               padding: 0,
-              fontSize: '0.75rem',
-              textTransform: 'uppercase',
-              letterSpacing: '0.05em',
+              fontSize: '0.9rem',
+              fontWeight: 'bold',
               marginBottom: showVoiceSettings ? '10px' : 0,
             }}
           >
             <span>⚙️ Impostazioni voce</span>
-            {showVoiceSettings ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+            {showVoiceSettings ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
           </button>
 
           {showVoiceSettings && (
@@ -1671,7 +1670,7 @@ export default function App() {
               setShowQuiz(v => !v);
               if (!showQuiz && bookmarks.length >= 4) generateQuiz(bookmarks);
             }}
-            style={{ width: '100%', background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: 0, fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}
+            style={{ width: '100%', background: 'none', border: 'none', color: '#fbbf24', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: 0, fontSize: '0.9rem', fontWeight: 'bold' }}
           >
             <span>🧠 Quiz veloce — metti alla prova i preferiti</span>
             {showQuiz ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
