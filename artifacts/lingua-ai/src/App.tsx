@@ -1511,21 +1511,20 @@ export default function App() {
                 );
               })()}
 
-              {/* Consigli */}
+              {/* Reset */}
+              <button
+                onClick={() => { if (confirm('Vuoi azzerare tutti i progressi?')) { const p = defaultProgress(); saveProgress(p); setProgress(p); } }}
+                style={{ width: '100%', padding: '10px', backgroundColor: 'transparent', border: '1px solid #ef4444', color: '#ef4444', borderRadius: '8px', cursor: 'pointer', fontSize: '0.8rem', marginBottom: '10px' }}
+              >
+                🗑 Azzera progressi
+              </button>
+
               <section style={{ ...styles.card, border: '1px solid #334155', marginBottom: '10px' }}>
                 <p style={{ margin: '0 0 8px', fontSize: '0.75rem', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.06em' }}>💬 Consigli personalizzati</p>
                 {tips.map((tip, i) => (
                   <p key={i} style={{ margin: i > 0 ? '8px 0 0' : 0, fontSize: '0.85rem', color: '#e2e8f0', lineHeight: '1.5' }}>{tip}</p>
                 ))}
               </section>
-
-              {/* Reset */}
-              <button
-                onClick={() => { if (confirm('Vuoi azzerare tutti i progressi?')) { const p = defaultProgress(); saveProgress(p); setProgress(p); } }}
-                style={{ width: '100%', padding: '10px', backgroundColor: 'transparent', border: '1px solid #ef4444', color: '#ef4444', borderRadius: '8px', cursor: 'pointer', fontSize: '0.8rem' }}
-              >
-                🗑 Azzera progressi
-              </button>
             </div>
           );
         })()}
