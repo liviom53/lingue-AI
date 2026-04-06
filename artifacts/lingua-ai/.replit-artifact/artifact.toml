@@ -1,6 +1,6 @@
 kind = "web"
   previewPath = "/lingua-ai/"
-  title = "Lingua AI Pro"
+  title = "Lingue & AI"
   version = "1.0.0"
   id = "artifacts/lingua-ai"
   router = "path"

@@ -1,7 +1,7 @@
 {
-  "name": "Impara una Lingua",
-  "short_name": "LinguaAI",
-  "description": "Impara a parlare male una lingua",
+  "name": "Lingue & AI",
+  "short_name": "Lingue & AI",
+  "description": "Impara una lingua con l'AI",
   "start_url": ".",
   "display": "standalone",
   "background_color": "#0f172a",
