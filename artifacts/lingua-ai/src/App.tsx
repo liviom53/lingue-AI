@@ -965,7 +965,7 @@ export default function App() {
                 >
                   <span style={{ fontSize: '1.1rem' }}>{icon}</span>
                   <span>{label}</span>
-                  <span style={{ fontSize: '0.65rem', color: '#64748b', fontWeight: 400 }}>{sub}</span>
+                  <span style={{ fontSize: '0.75rem', color: '#94a3b8', fontWeight: 400 }}>{sub}</span>
                 </button>
               ))}
               <button
