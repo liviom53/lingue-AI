@@ -67,39 +67,49 @@ async function fetchEnglishIPA(text: string): Promise<string | null> {
 }
 
 const LANGUAGES = [
-  { code: 'en', name: 'Inglese', flag: '🇬🇧', locale: 'en-US' },
-  { code: 'es', name: 'Spagnolo', flag: '🇪🇸', locale: 'es-ES' },
-  { code: 'fr', name: 'Francese', flag: '🇫🇷', locale: 'fr-FR' },
-  { code: 'de', name: 'Tedesco', flag: '🇩🇪', locale: 'de-DE' },
-  { code: 'pt', name: 'Portoghese', flag: '🇵🇹', locale: 'pt-PT' },
+  { code: 'en', name: 'Inglese', flag: '🇬🇧', fc: 'gb', locale: 'en-US' },
+  { code: 'es', name: 'Spagnolo', flag: '🇪🇸', fc: 'es', locale: 'es-ES' },
+  { code: 'fr', name: 'Francese', flag: '🇫🇷', fc: 'fr', locale: 'fr-FR' },
+  { code: 'de', name: 'Tedesco', flag: '🇩🇪', fc: 'de', locale: 'de-DE' },
+  { code: 'pt', name: 'Portoghese', flag: '🇵🇹', fc: 'pt', locale: 'pt-PT' },
 ];
 
 const MORE_LANGUAGES = [
-  { code: 'ru', name: 'Russo', flag: '🇷🇺', locale: 'ru-RU' },
-  { code: 'zh', name: 'Cinese', flag: '🇨🇳', locale: 'zh-CN' },
-  { code: 'ja', name: 'Giapponese', flag: '🇯🇵', locale: 'ja-JP' },
-  { code: 'ko', name: 'Coreano', flag: '🇰🇷', locale: 'ko-KR' },
-  { code: 'ar', name: 'Arabo', flag: '🇸🇦', locale: 'ar-SA' },
-  { code: 'hi', name: 'Hindi', flag: '🇮🇳', locale: 'hi-IN' },
-  { code: 'tr', name: 'Turco', flag: '🇹🇷', locale: 'tr-TR' },
-  { code: 'nl', name: 'Olandese', flag: '🇳🇱', locale: 'nl-NL' },
-  { code: 'pl', name: 'Polacco', flag: '🇵🇱', locale: 'pl-PL' },
-  { code: 'uk', name: 'Ucraino', flag: '🇺🇦', locale: 'uk-UA' },
-  { code: 'ro', name: 'Rumeno', flag: '🇷🇴', locale: 'ro-RO' },
-  { code: 'el', name: 'Greco', flag: '🇬🇷', locale: 'el-GR' },
-  { code: 'sv', name: 'Svedese', flag: '🇸🇪', locale: 'sv-SE' },
-  { code: 'da', name: 'Danese', flag: '🇩🇰', locale: 'da-DK' },
-  { code: 'fi', name: 'Finlandese', flag: '🇫🇮', locale: 'fi-FI' },
-  { code: 'cs', name: 'Ceco', flag: '🇨🇿', locale: 'cs-CZ' },
-  { code: 'hu', name: 'Ungherese', flag: '🇭🇺', locale: 'hu-HU' },
-  { code: 'he', name: 'Ebraico', flag: '🇮🇱', locale: 'he-IL' },
-  { code: 'th', name: 'Tailandese', flag: '🇹🇭', locale: 'th-TH' },
-  { code: 'vi', name: 'Vietnamita', flag: '🇻🇳', locale: 'vi-VN' },
-  { code: 'id', name: 'Indonesiano', flag: '🇮🇩', locale: 'id-ID' },
-  { code: 'fa', name: 'Persiano', flag: '🇮🇷', locale: 'fa-IR' },
-  { code: 'ca', name: 'Catalano', flag: '🏴', locale: 'ca-ES' },
-  { code: 'no', name: 'Norvegese', flag: '🇳🇴', locale: 'nb-NO' },
+  { code: 'ru', name: 'Russo', flag: '🇷🇺', fc: 'ru', locale: 'ru-RU' },
+  { code: 'zh', name: 'Cinese', flag: '🇨🇳', fc: 'cn', locale: 'zh-CN' },
+  { code: 'ja', name: 'Giapponese', flag: '🇯🇵', fc: 'jp', locale: 'ja-JP' },
+  { code: 'ko', name: 'Coreano', flag: '🇰🇷', fc: 'kr', locale: 'ko-KR' },
+  { code: 'ar', name: 'Arabo', flag: '🇸🇦', fc: 'sa', locale: 'ar-SA' },
+  { code: 'hi', name: 'Hindi', flag: '🇮🇳', fc: 'in', locale: 'hi-IN' },
+  { code: 'tr', name: 'Turco', flag: '🇹🇷', fc: 'tr', locale: 'tr-TR' },
+  { code: 'nl', name: 'Olandese', flag: '🇳🇱', fc: 'nl', locale: 'nl-NL' },
+  { code: 'pl', name: 'Polacco', flag: '🇵🇱', fc: 'pl', locale: 'pl-PL' },
+  { code: 'uk', name: 'Ucraino', flag: '🇺🇦', fc: 'ua', locale: 'uk-UA' },
+  { code: 'ro', name: 'Rumeno', flag: '🇷🇴', fc: 'ro', locale: 'ro-RO' },
+  { code: 'el', name: 'Greco', flag: '🇬🇷', fc: 'gr', locale: 'el-GR' },
+  { code: 'sv', name: 'Svedese', flag: '🇸🇪', fc: 'se', locale: 'sv-SE' },
+  { code: 'da', name: 'Danese', flag: '🇩🇰', fc: 'dk', locale: 'da-DK' },
+  { code: 'fi', name: 'Finlandese', flag: '🇫🇮', fc: 'fi', locale: 'fi-FI' },
+  { code: 'cs', name: 'Ceco', flag: '🇨🇿', fc: 'cz', locale: 'cs-CZ' },
+  { code: 'hu', name: 'Ungherese', flag: '🇭🇺', fc: 'hu', locale: 'hu-HU' },
+  { code: 'he', name: 'Ebraico', flag: '🇮🇱', fc: 'il', locale: 'he-IL' },
+  { code: 'th', name: 'Tailandese', flag: '🇹🇭', fc: 'th', locale: 'th-TH' },
+  { code: 'vi', name: 'Vietnamita', flag: '🇻🇳', fc: 'vn', locale: 'vi-VN' },
+  { code: 'id', name: 'Indonesiano', flag: '🇮🇩', fc: 'id', locale: 'id-ID' },
+  { code: 'fa', name: 'Persiano', flag: '🇮🇷', fc: 'ir', locale: 'fa-IR' },
+  { code: 'ca', name: 'Catalano', flag: '🏴', fc: 'es', locale: 'ca-ES' },
+  { code: 'no', name: 'Norvegese', flag: '🇳🇴', fc: 'no', locale: 'nb-NO' },
 ];
+
+const FlagImg = ({ fc, name }: { fc: string; name: string }) => (
+  <img
+    src={`https://flagcdn.com/20x15/${fc}.png`}
+    width="20"
+    height="15"
+    alt={name}
+    style={{ display: 'inline-block', verticalAlign: 'middle', borderRadius: '2px', flexShrink: 0 }}
+  />
+);
 
 const ALL_LANGUAGES = [...LANGUAGES, ...MORE_LANGUAGES];
 
@@ -394,7 +404,7 @@ export default function App() {
                   cursor: 'pointer',
                 }}
               >
-                {l.flag} {l.name}
+                <FlagImg fc={l.fc} name={l.name} /> {l.name}
               </button>
             ))}
             <div ref={moreLangsRef} style={{ position: 'relative' }}>
@@ -416,10 +426,7 @@ export default function App() {
                   fontSize: 'clamp(0.7rem, 3.5vw, 1rem)',
                 }}
               >
-                {MORE_LANGUAGES.find(l => l.code === selectedLang)
-                  ? <>{MORE_LANGUAGES.find(l => l.code === selectedLang)!.flag} {MORE_LANGUAGES.find(l => l.code === selectedLang)!.name}</>
-                  : <>🌍 Altre lingue</>
-                }
+                {(() => { const ml = MORE_LANGUAGES.find(l => l.code === selectedLang); return ml ? <><FlagImg fc={ml.fc} name={ml.name} /> {ml.name}</> : <>🌍 Altre lingue</>; })()}
                 <ChevronDown size={14} style={{ marginLeft: '2px', transform: showMoreLangs ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
               </button>
               {showMoreLangs && (
@@ -455,7 +462,7 @@ export default function App() {
                         gap: '8px',
                       }}
                     >
-                      <span style={{ fontSize: '1.1rem' }}>{l.flag}</span> {l.name}
+                      <FlagImg fc={l.fc} name={l.name} /> {l.name}
                     </button>
                   ))}
                 </div>
