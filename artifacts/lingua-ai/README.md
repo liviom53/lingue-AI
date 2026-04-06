@@ -2,13 +2,11 @@
 
 ![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)
 ![Node](https://img.shields.io/badge/Node-%3E%3D18-brightgreen)
-![React](https://img.shields.io/badge/React-18-blue)
-![Vite](https://img.shields.io/badge/Vite-5-purple)
+![React](https://img.shields.io/badge/React-19-blue)
+![Vite](https://img.shields.io/badge/Vite-6-purple)
 ![PWA](https://img.shields.io/badge/PWA-ready-orange)
 
 > PWA per imparare le lingue straniere partendo dall'italiano, con traduzione, AI tutor, shadowing, roleplay e pratica pronuncia.
-
-![Preview](screenshot.png)
 
 ---
 
@@ -45,6 +43,10 @@
 - IPA per inglese via `dictionaryapi.dev`; fonetica Lingva per altre lingue
 - Pratica pronuncia con riconoscimento vocale (Chrome/Edge) e score parola per parola
 
+### Segnalibri & Quiz
+- Salva parole/frasi nei segnalibri (`lingua_ai_bookmarks`)
+- Quiz veloce sulle parole salvate
+
 ### Profilo utente
 - Campi facoltativi: Nome, Età, Sesso, Occupazione, Città, Altro
 - Salvato in `localStorage` (`lingua_ai_profile`)
@@ -54,6 +56,47 @@
 - Tracciamento automatico: minuti totali, streak giorni, conteggio traduzioni, parole imparate, tentativi pronuncia
 - Livelli: Base → Intermedio → Avanzato → Esperto
 - Consigli personalizzati in base all'utilizzo
+
+### Demo interattiva
+- 4 script demo con cursore animato, narrazione in italiano e scroll automatico
+- Attivabile dall'accordion "Demo & Funzionalità" in cima alla pagina
+
+---
+
+## Interfaccia
+
+### Layout
+```
+Header (logo + titolo + sottotitolo arancione)
+🇮🇹 ▶ Demo & Funzionalità   [accordion]
+Selettore lingua (5 fissi + Altre lingue)
+Textarea "Scrivi in italiano..."
+🎙 DETTA  |  ✈ TRADUCI  |  🧳 TUTOR AI
+⚙️  Impostazioni voce        [collassabile]
+🔁  Shadowing                [collassabile]
+💬  Conversa con DeepSeek AI [collassabile]
+Quiz veloce                  [collassabile]
+─────────────────────────────────────────
+Tab: 👤 Profilo · 📊 Progressi
+```
+
+### Sistema 3D visivo
+L'intera UI usa un sistema visivo a tre dimensioni basato su `box-shadow` a strati zero-blur:
+
+- **Sfondo**: tre radial-gradient sovrapposti (`#183060`, `#1c0d44`, `#0d2a1a`) su `#080e1c`
+- **Carte**: gradiente `140deg` da `#3d5f82` (alto-sinistra) a `#0e1620` (basso-destra); bevel completo con fasce luminose/scure su tutti e 4 i bordi; faccia inferiore a 5 strati (fino a 10px di spessore fisico)
+- **Bottoni**: flottano di 5px (`translateY(-5px)`); bevel con top highlight al 42%; faccia inferiore colorata (arancione per TRADUCI/TUTOR AI, slate per DETTA); pressione fisica su `:active`
+- **Hover sezioni**: lift a -4px + `brightness(1.06)` + bevel potenziato
+- **Hover bottoni lingua**: lift a -6px + `brightness(1.14)`
+- **Hover bottoni azione**: lift a -8px + `brightness(1.12)`
+
+### Colori sezioni accordion
+| Sezione | Colore |
+|---|---|
+| Impostazioni voce | `#3b82f6` (blu) |
+| Shadowing | `#a855f7` (viola) |
+| Chat AI / Roleplay | `#fb923c` (arancione) |
+| Quiz + Risultato traduzione | `#10b981` (verde) |
 
 ---
 
@@ -78,27 +121,13 @@ Apri `http://localhost:<PORT>/lingua-ai/` nel browser.
 
 ---
 
-## Struttura UI
-
-```
-Header (logo + titolo)
-Selettore lingua (5 fissi + Altre lingue)
-Textarea input italiano
-Pulsanti: DETTA | TRADUCI | TUTOR AI
-⚙️ Impostazioni voce  [collassabile]
-🔁 Shadowing          [collassabile]
-💬 Chat + Roleplay    [collassabile]
-👤 Profilo · 📊 Progressi [collassabile]
-```
-
----
-
 ## Tecnologie
 
 | Categoria | Tecnologia |
 |---|---|
-| Frontend | React 18 + TypeScript + Vite |
-| Styling | Inline styles (React.CSSProperties) |
+| Frontend | React 19 + TypeScript + Vite 6 |
+| Styling | Inline styles (React.CSSProperties) + index.css |
+| Font | Inter (Google Fonts) |
 | AI | DeepSeek via OpenRouter |
 | Traduzione | Lingva API (gratuita, no chiave) |
 | Voce | Web Speech API |
@@ -116,9 +145,21 @@ Pulsanti: DETTA | TRADUCI | TUTOR AI
 
 ---
 
+## File principali
+
+| File | Descrizione |
+|---|---|
+| `src/App.tsx` | Frontend (~2430 righe): UI, state, demo, quiz, bookmark |
+| `src/index.css` | Sistema 3D: hover sezioni, `.lang-btn`, `.action-btn`, cursore demo |
+| `index.html` | Caricamento font Inter da Google Fonts |
+
+---
+
 ## Percorso produzione
 
 `/lingua-ai/` — file statici serviti dall'API server Express
+
+Produzione: `https://web-app-creator--liviomazzocchi.replit.app/lingua-ai/`
 
 ---
 

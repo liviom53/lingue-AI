@@ -1,6 +1,12 @@
 # Diario del Pescatore
 
-PWA per tenere traccia delle uscite di pesca, con statistiche, gestione attrezzatura, meteo, maree e molto altro.
+![PWA](https://img.shields.io/badge/PWA-ready-blue)
+![React](https://img.shields.io/badge/React-19-blue)
+![Vite](https://img.shields.io/badge/Vite-6-purple)
+
+> PWA per tenere traccia delle uscite di pesca, con statistiche, gestione attrezzatura, meteo, maree e molto altro.
+
+---
 
 ## Funzionalità
 
@@ -56,13 +62,37 @@ PWA per tenere traccia delle uscite di pesca, con statistiche, gestione attrezza
 ### AI
 - Assistente AI per consigli di pesca
 
+---
+
+## Come avviare in locale
+
+### Prerequisiti
+- Node.js ≥ 18
+- pnpm
+
+```bash
+# Installa le dipendenze (dalla root del monorepo)
+pnpm install
+
+# Avvia il frontend
+pnpm --filter @workspace/diario-pescatore run dev
+```
+
+---
+
 ## Tecnologie
 
-- React 18 + TypeScript + Vite
-- Tailwind CSS + shadcn/ui
-- localStorage per persistenza dati
-- PWA: manifest + icona
+| Categoria | Tecnologia |
+|---|---|
+| Frontend | React 19 + TypeScript + Vite 6 |
+| Styling | Tailwind CSS + shadcn/ui |
+| Persistenza | localStorage |
+| Deploy | PWA (`manifest.json` + icona) |
 
-## Percorso
+---
+
+## Percorso produzione
 
 `/` — servito come file statici in produzione
+
+Produzione: `https://web-app-creator--liviomazzocchi.replit.app/`
