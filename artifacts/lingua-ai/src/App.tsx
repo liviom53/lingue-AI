@@ -229,7 +229,7 @@ export default function App() {
   const [showVoiceSettings, setShowVoiceSettings] = useState(false);
   const [copied, setCopied] = useState(false);
   const [showPrivacy, setShowPrivacy] = useState(false);
-  const [activeTab, setActiveTab] = useState<'profilo' | 'progressi'>('profilo');
+  const [activeTab, setActiveTab] = useState<'profilo' | 'progressi' | 'calendario' | 'vocabolario'>('profilo');
   const [showTabPanel, setShowTabPanel] = useState(false);
   const [progress, setProgress] = useState<ProgressStats>(loadProgress);
   const [profile, setProfile] = useState<UserProfile>(loadProfile);
@@ -1258,15 +1258,21 @@ export default function App() {
 
         {showTabPanel && (
         <>
-        <div style={{ display: 'flex', borderRadius: '10px', overflow: 'hidden', margin: '0 0 8px', border: '1px solid #334155' }}>
-          {(['profilo', 'progressi'] as const).map(tab => (
-            <button key={tab} onClick={() => setActiveTab(tab)} style={{
-              flex: 1, padding: '10px', border: 'none', cursor: 'pointer', fontWeight: 'bold', fontSize: '0.95rem',
-              backgroundColor: activeTab === tab ? '#fb923c' : '#1e293b',
-              color: activeTab === tab ? '#fff' : '#94a3b8',
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px', margin: '0 0 8px' }}>
+          {([
+            { id: 'profilo',     label: '👤 Profilo' },
+            { id: 'progressi',  label: '📊 Progressi' },
+            { id: 'calendario', label: '📅 Calendario' },
+            { id: 'vocabolario',label: '📚 Vocabolario' },
+          ] as const).map(({ id, label }) => (
+            <button key={id} onClick={() => setActiveTab(id)} style={{
+              padding: '9px 6px', border: '1px solid #334155', borderRadius: '8px', cursor: 'pointer',
+              fontWeight: 'bold', fontSize: '0.82rem',
+              backgroundColor: activeTab === id ? '#fb923c' : '#1e293b',
+              color: activeTab === id ? '#fff' : '#94a3b8',
               transition: 'background 0.2s',
             }}>
-              {tab === 'profilo' ? '👤 Profilo' : '📊 Progressi'}
+              {label}
             </button>
           ))}
         </div>
@@ -1426,6 +1432,88 @@ export default function App() {
             </div>
           );
 
+          if (activeTab === 'calendario') {
+            const today = new Date();
+            const todayStr = today.toISOString().split('T')[0];
+            const days = Array.from({ length: 28 }, (_, i) => {
+              const d = new Date(today);
+              d.setDate(today.getDate() - (27 - i));
+              return d.toISOString().split('T')[0];
+            });
+            const actSet = new Set(progress.activityDates ?? []);
+            const weekLabels = ['L', 'M', 'M', 'G', 'V', 'S', 'D'];
+            return (
+              <div style={{ marginBottom: '16px' }}>
+                <div style={{ ...styles.card, marginBottom: '12px' }}>
+                  <p style={{ margin: '0 0 4px', fontSize: '0.75rem', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.06em' }}>📅 Attività — ultimi 28 giorni</p>
+                  <p style={{ margin: '0 0 14px', fontSize: '0.8rem', color: '#94a3b8' }}>
+                    {actSet.size} {actSet.size === 1 ? 'giorno attivo' : 'giorni attivi'} • Streak: <span style={{ color: '#fb923c', fontWeight: 700 }}>{progress.streakDays} gg 🔥</span>
+                  </p>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '4px', marginBottom: '6px' }}>
+                    {weekLabels.map((l, i) => (
+                      <div key={i} style={{ textAlign: 'center', fontSize: '0.62rem', color: '#475569', fontWeight: 600 }}>{l}</div>
+                    ))}
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '4px' }}>
+                    {days.map(date => {
+                      const isToday = date === todayStr;
+                      const active = actSet.has(date);
+                      return (
+                        <div key={date} title={date} style={{
+                          aspectRatio: '1', borderRadius: '4px',
+                          background: active ? '#fb923c' : '#1e293b',
+                          border: isToday ? '2px solid #fb923c' : '1px solid transparent',
+                          opacity: active ? 1 : 0.35,
+                        }} />
+                      );
+                    })}
+                  </div>
+                  <div style={{ display: 'flex', gap: '14px', marginTop: '10px', fontSize: '0.7rem', color: '#64748b' }}>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <span style={{ width: '10px', height: '10px', borderRadius: '2px', background: '#fb923c', display: 'inline-block' }} /> Attivo
+                    </span>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <span style={{ width: '10px', height: '10px', borderRadius: '2px', background: '#1e293b', border: '1px solid #475569', display: 'inline-block', opacity: 0.5 }} /> Inattivo
+                    </span>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <span style={{ width: '10px', height: '10px', borderRadius: '2px', background: 'transparent', border: '2px solid #fb923c', display: 'inline-block' }} /> Oggi
+                    </span>
+                  </div>
+                </div>
+              </div>
+            );
+          }
+
+          if (activeTab === 'vocabolario') {
+            const words = [...progress.wordsLearned].reverse();
+            return (
+              <div style={{ marginBottom: '16px' }}>
+                <div style={{ ...styles.card, marginBottom: '12px' }}>
+                  <p style={{ margin: '0 0 4px', fontSize: '0.75rem', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.06em' }}>📚 Vocabolario imparato</p>
+                  <p style={{ margin: '0 0 12px', fontSize: '0.8rem', color: '#94a3b8' }}>
+                    <span style={{ color: '#10b981', fontWeight: 700 }}>{words.length}</span> {words.length === 1 ? 'elemento' : 'elementi'} salvati
+                  </p>
+                  {words.length === 0 ? (
+                    <p style={{ fontSize: '0.85rem', color: '#475569', textAlign: 'center', padding: '24px 0' }}>
+                      Nessuna parola ancora. Fai una traduzione per iniziare!
+                    </p>
+                  ) : (
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '7px', maxHeight: '320px', overflowY: 'auto' }}>
+                      {words.map((w, i) => (
+                        <span key={i} title={w} style={{
+                          fontSize: '0.78rem', padding: '4px 12px', borderRadius: '999px',
+                          background: '#0f172a', border: '1px solid #334155',
+                          color: '#e2e8f0', whiteSpace: 'nowrap', maxWidth: '220px',
+                          overflow: 'hidden', textOverflow: 'ellipsis',
+                        }}>{w}</span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          }
+
           // activeTab === 'progressi'
           const tips: string[] = [];
           if (progress.practiceAttempts === 0) tips.push('💡 Prova "Pratica Pronuncia" dopo una traduzione per allenarti a parlare!');
@@ -1488,77 +1576,6 @@ export default function App() {
                         );
                       })}
                     </svg>
-                  </div>
-                );
-              })()}
-
-              {/* Calendario Streak */}
-              {(() => {
-                const today = new Date();
-                const days = Array.from({ length: 28 }, (_, i) => {
-                  const d = new Date(today);
-                  d.setDate(today.getDate() - (27 - i));
-                  return d.toISOString().split('T')[0];
-                });
-                const actSet = new Set(progress.activityDates ?? []);
-                const weekLabels = ['L', 'M', 'M', 'G', 'V', 'S', 'D'];
-                return (
-                  <div style={{ ...styles.card, marginBottom: '12px' }}>
-                    <p style={{ margin: '0 0 10px', fontSize: '0.75rem', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.06em' }}>📅 Calendario attività — ultimi 28 giorni</p>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '4px', marginBottom: '6px' }}>
-                      {weekLabels.map((l, i) => (
-                        <div key={i} style={{ textAlign: 'center', fontSize: '0.62rem', color: '#475569', fontWeight: 600 }}>{l}</div>
-                      ))}
-                    </div>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '4px' }}>
-                      {days.map(date => {
-                        const isToday = date === today.toISOString().split('T')[0];
-                        const active = actSet.has(date);
-                        return (
-                          <div key={date} title={date} style={{
-                            aspectRatio: '1', borderRadius: '4px',
-                            background: active ? '#fb923c' : '#1e293b',
-                            border: isToday ? '1px solid #fb923c' : '1px solid transparent',
-                            opacity: active ? 1 : 0.4,
-                          }} />
-                        );
-                      })}
-                    </div>
-                    <div style={{ display: 'flex', gap: '12px', marginTop: '8px', fontSize: '0.7rem', color: '#64748b' }}>
-                      <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                        <span style={{ width: '10px', height: '10px', borderRadius: '2px', background: '#fb923c', display: 'inline-block' }} /> Attivo
-                      </span>
-                      <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                        <span style={{ width: '10px', height: '10px', borderRadius: '2px', background: '#1e293b', border: '1px solid #334155', display: 'inline-block', opacity: 0.4 }} /> Inattivo
-                      </span>
-                    </div>
-                  </div>
-                );
-              })()}
-
-              {/* Vocabolario imparato */}
-              {progress.wordsLearned.length > 0 && (() => {
-                const words = [...progress.wordsLearned].reverse().slice(0, 40);
-                return (
-                  <div style={{ ...styles.card, marginBottom: '12px' }}>
-                    <p style={{ margin: '0 0 10px', fontSize: '0.75rem', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-                      📚 Vocabolario imparato <span style={{ color: '#10b981', fontWeight: 700 }}>{progress.wordsLearned.length}</span>
-                    </p>
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', maxHeight: '160px', overflowY: 'auto' }}>
-                      {words.map((w, i) => (
-                        <span key={i} style={{
-                          fontSize: '0.75rem', padding: '3px 10px', borderRadius: '999px',
-                          background: '#0f172a', border: '1px solid #334155',
-                          color: '#e2e8f0', whiteSpace: 'nowrap', maxWidth: '180px',
-                          overflow: 'hidden', textOverflow: 'ellipsis',
-                        }} title={w}>{w}</span>
-                      ))}
-                    </div>
-                    {progress.wordsLearned.length > 40 && (
-                      <p style={{ margin: '8px 0 0', fontSize: '0.7rem', color: '#475569', textAlign: 'center' }}>
-                        + altri {progress.wordsLearned.length - 40} elementi
-                      </p>
-                    )}
                   </div>
                 );
               })()}
