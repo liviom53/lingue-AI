@@ -72,8 +72,36 @@ const LANGUAGES = [
   { code: 'fr', name: 'Francese', flag: '🇫🇷', locale: 'fr-FR' },
   { code: 'de', name: 'Tedesco', flag: '🇩🇪', locale: 'de-DE' },
   { code: 'pt', name: 'Portoghese', flag: '🇵🇹', locale: 'pt-PT' },
-  { code: 'ru', name: 'Russo', flag: '🇷🇺', locale: 'ru-RU' },
 ];
+
+const MORE_LANGUAGES = [
+  { code: 'ru', name: 'Russo', flag: '🇷🇺', locale: 'ru-RU' },
+  { code: 'zh', name: 'Cinese', flag: '🇨🇳', locale: 'zh-CN' },
+  { code: 'ja', name: 'Giapponese', flag: '🇯🇵', locale: 'ja-JP' },
+  { code: 'ko', name: 'Coreano', flag: '🇰🇷', locale: 'ko-KR' },
+  { code: 'ar', name: 'Arabo', flag: '🇸🇦', locale: 'ar-SA' },
+  { code: 'hi', name: 'Hindi', flag: '🇮🇳', locale: 'hi-IN' },
+  { code: 'tr', name: 'Turco', flag: '🇹🇷', locale: 'tr-TR' },
+  { code: 'nl', name: 'Olandese', flag: '🇳🇱', locale: 'nl-NL' },
+  { code: 'pl', name: 'Polacco', flag: '🇵🇱', locale: 'pl-PL' },
+  { code: 'uk', name: 'Ucraino', flag: '🇺🇦', locale: 'uk-UA' },
+  { code: 'ro', name: 'Rumeno', flag: '🇷🇴', locale: 'ro-RO' },
+  { code: 'el', name: 'Greco', flag: '🇬🇷', locale: 'el-GR' },
+  { code: 'sv', name: 'Svedese', flag: '🇸🇪', locale: 'sv-SE' },
+  { code: 'da', name: 'Danese', flag: '🇩🇰', locale: 'da-DK' },
+  { code: 'fi', name: 'Finlandese', flag: '🇫🇮', locale: 'fi-FI' },
+  { code: 'cs', name: 'Ceco', flag: '🇨🇿', locale: 'cs-CZ' },
+  { code: 'hu', name: 'Ungherese', flag: '🇭🇺', locale: 'hu-HU' },
+  { code: 'he', name: 'Ebraico', flag: '🇮🇱', locale: 'he-IL' },
+  { code: 'th', name: 'Tailandese', flag: '🇹🇭', locale: 'th-TH' },
+  { code: 'vi', name: 'Vietnamita', flag: '🇻🇳', locale: 'vi-VN' },
+  { code: 'id', name: 'Indonesiano', flag: '🇮🇩', locale: 'id-ID' },
+  { code: 'fa', name: 'Persiano', flag: '🇮🇷', locale: 'fa-IR' },
+  { code: 'ca', name: 'Catalano', flag: '🏴', locale: 'ca-ES' },
+  { code: 'no', name: 'Norvegese', flag: '🇳🇴', locale: 'nb-NO' },
+];
+
+const ALL_LANGUAGES = [...LANGUAGES, ...MORE_LANGUAGES];
 
 const normalizeText = (text: string) => {
   if (!text) return "";
@@ -111,7 +139,20 @@ export default function App() {
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [chatInput, setChatInput] = useState('');
   const [chatLoading, setChatLoading] = useState(false);
+  const [showMoreLangs, setShowMoreLangs] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
+  const moreLangsRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!showMoreLangs) return;
+    const handleClick = (e: MouseEvent) => {
+      if (moreLangsRef.current && !moreLangsRef.current.contains(e.target as Node)) {
+        setShowMoreLangs(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, [showMoreLangs]);
 
   useEffect(() => {
     const loadVoices = () => {
@@ -135,7 +176,7 @@ export default function App() {
     if (showChat) chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [chatMessages, showChat]);
 
-  const currentLocale = LANGUAGES.find(l => l.code === selectedLang)!.locale;
+  const currentLocale = (ALL_LANGUAGES.find(l => l.code === selectedLang) ?? ALL_LANGUAGES[0]).locale;
   const langVoices = voices.filter(v => v.lang.startsWith(selectedLang));
   const availableVoices = langVoices.length > 0 ? langVoices : voices;
 
@@ -245,7 +286,7 @@ export default function App() {
       (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     if (!SpeechRecognition) return;
     const recognition = new SpeechRecognition();
-    recognition.lang = LANGUAGES.find(l => l.code === selectedLang)!.locale;
+    recognition.lang = (ALL_LANGUAGES.find(l => l.code === selectedLang) ?? ALL_LANGUAGES[0]).locale;
     recognition.onstart = () => {
       setIsPracticing(true);
       setPracticeResult(null);
@@ -325,7 +366,7 @@ export default function App() {
     },
   };
 
-  const langName = LANGUAGES.find(l => l.code === selectedLang)!.name;
+  const langName = (ALL_LANGUAGES.find(l => l.code === selectedLang) ?? ALL_LANGUAGES[0]).name;
 
   return (
     <div style={styles.main}>
@@ -343,7 +384,7 @@ export default function App() {
             {LANGUAGES.map(l => (
               <button
                 key={l.code}
-                onClick={() => setSelectedLang(l.code)}
+                onClick={() => { setSelectedLang(l.code); setShowMoreLangs(false); }}
                 style={{
                   padding: '8px',
                   backgroundColor: selectedLang === l.code ? '#3b82f6' : '#334155',
@@ -356,6 +397,68 @@ export default function App() {
                 {l.flag} {l.name}
               </button>
             ))}
+            <div ref={moreLangsRef} style={{ position: 'relative' }}>
+              <button
+                onClick={() => setShowMoreLangs(v => !v)}
+                style={{
+                  width: '100%',
+                  padding: '8px',
+                  backgroundColor: MORE_LANGUAGES.some(l => l.code === selectedLang) ? '#3b82f6' : '#334155',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: '5px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '4px',
+                }}
+              >
+                {MORE_LANGUAGES.find(l => l.code === selectedLang)
+                  ? <>{MORE_LANGUAGES.find(l => l.code === selectedLang)!.flag} {MORE_LANGUAGES.find(l => l.code === selectedLang)!.name}</>
+                  : <>🌍 Altre lingue</>
+                }
+                <ChevronDown size={14} style={{ marginLeft: '2px', transform: showMoreLangs ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
+              </button>
+              {showMoreLangs && (
+                <div style={{
+                  position: 'absolute',
+                  top: '100%',
+                  right: 0,
+                  zIndex: 100,
+                  backgroundColor: '#1e293b',
+                  border: '1px solid #334155',
+                  borderRadius: '8px',
+                  marginTop: '4px',
+                  width: '200px',
+                  maxHeight: '280px',
+                  overflowY: 'auto',
+                  boxShadow: '0 8px 24px rgba(0,0,0,0.4)',
+                }}>
+                  {MORE_LANGUAGES.map(l => (
+                    <button
+                      key={l.code}
+                      onClick={() => { setSelectedLang(l.code); setShowMoreLangs(false); }}
+                      style={{
+                        width: '100%',
+                        padding: '9px 14px',
+                        backgroundColor: selectedLang === l.code ? '#3b82f6' : 'transparent',
+                        color: '#fff',
+                        border: 'none',
+                        cursor: 'pointer',
+                        textAlign: 'left',
+                        fontSize: '0.95rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                      }}
+                    >
+                      <span style={{ fontSize: '1.1rem' }}>{l.flag}</span> {l.name}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </section>
 
