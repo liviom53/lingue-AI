@@ -1,0 +1,144 @@
+2026-04-05T22:26:21Z info: Deployment: 4a097345-df93-404d-b7a6-9cf537747627
+2026-04-05T22:26:21Z info: Build: 2c9b896e-abd3-41f2-9fb3-6a6b4d1141ad
+2026-04-05T22:26:22Z info: Running Security Scan
+2026-04-05T22:26:31Z info: Security Scan Complete
+2026-04-05T22:26:34Z info: Installing packages
+--> pnpm install
+
+Scope: all 11 workspace projects
+
+
+   ╭──────────────────────────────────────────╮
+   │                                          │
+   │   Update available! 10.26.1 → 10.33.0.   │
+   │   Changelog: https://pnpm.io/v/10.33.0   │
+   │     To update, run: pnpm add -g pnpm     │
+   │                                          │
+   ╰──────────────────────────────────────────╯
+
+
+Lockfile is up to date, resolution step is skipped
+
+Already up to date
+
+. preinstall$ sh -c 'rm -f package-lock.json yarn.lock; case "$npm_config_user_agent" in pnpm/*) ;; *) echo "Use pnpm instead" >&2; exit 1 ;; esac'
+
+. preinstall: Done
+
+Done in 2.9s using pnpm v10.26.1
+
+2026-04-05T22:26:38Z info: Starting Build
+
+> @workspace/lingua-ai@0.0.0 build /home/runner/workspace/artifacts/lingua-ai
+> vite build --config vite.config.ts
+
+
+vite v7.3.1 building client environment for production...
+
+transforming...
+
+✓ 1674 modules transformed.
+
+rendering chunks...
+
+computing gzip size...
+
+dist/public/index.html                                    1.44 kB │ gzip:  0.68 kB
+
+dist/public/assets/icon-192_1775392140519-TJ_3LFP8.png  201.06 kB
+dist/public/assets/index-B_PjecK5.css                    63.52 kB │ gzip: 11.20 kB
+dist/public/assets/index-2TCH5xxE.js                    203.40 kB │ gzip: 64.62 kB
+
+✓ built in 1.81s
+
+
+> @workspace/diario-pescatore@0.0.0 build /home/runner/workspace/artifacts/diario-pescatore
+> vite build --config vite.config.ts
+
+
+vite v7.3.1 building client environment for production...
+
+transforming...
+
+src/components/ui/tooltip.tsx (2:0): Error when using sourcemap for reporting an error: Can't resolve original location of error.
+
+✓ 3633 modules transformed.
+
+rendering chunks...
+
+computing gzip size...
+
+dist/public/index.html                                0.88 kB │ gzip:   0.49 kB
+
+dist/public/assets/Spot-CIGW-MKW.css                 15.61 kB │ gzip:   6.46 kB
+dist/public/assets/index-D2ZZdkuJ.css               152.95 kB │ gzip:  23.10 kB
+dist/public/assets/chevron-down-CD56OyYj.js           0.13 kB │ gzip:   0.14 kB
+dist/public/assets/plus-DEJ6DUqI.js                   0.15 kB │ gzip:   0.15 kB
+dist/public/assets/pen-BoU-Mn-4.js                    0.24 kB │ gzip:   0.20 kB
+dist/public/assets/wind-D3CLhqgZ.js                   0.25 kB │ gzip:   0.19 kB
+dist/public/assets/triangle-alert-BUgzn6y1.js         0.27 kB │ gzip:   0.22 kB
+dist/public/assets/trash-2-CBuwW0tS.js                0.33 kB │ gzip:   0.22 kB
+dist/public/assets/camera-BtT051LP.js                 0.34 kB │ gzip:   0.25 kB
+dist/public/assets/scale-tmmGfSYo.js                  0.36 kB │ gzip:   0.24 kB
+dist/public/assets/use-location-DSsLc3Bm.js           0.80 kB │ gzip:   0.40 kB
+dist/public/assets/Previsioni-NsZKufMn.js             1.90 kB │ gzip:   0.92 kB
+dist/public/assets/use-local-data-ae0SQ3Me.js         3.14 kB │ gzip:   1.22 kB
+
+dist/public/assets/Statistiche-D06yfplu.js            4.45 kB │ gzip:   1.66 kB
+dist/public/assets/Specie-BPxYZ-IM.js                 5.06 kB │ gzip:   2.00 kB
+dist/public/assets/Meteo-C21fpvdL.js                  5.80 kB │ gzip:   2.18 kB
+dist/public/assets/it-BNzIqO92.js                     6.15 kB │ gzip:   2.06 kB
+dist/public/assets/AI-_ayMKo_D.js                     6.44 kB │ gzip:   2.78 kB
+dist/public/assets/Uscite-BtaDMpz0.js                 6.96 kB │ gzip:   2.04 kB
+dist/public/assets/Maree-DoeYBhfd.js                  7.00 kB │ gzip:   2.46 kB
+dist/public/assets/Attrezzatura-Bpa6x_tt.js           7.72 kB │ gzip:   2.33 kB
+dist/public/assets/Ricette-DL_4JzdA.js                7.82 kB │ gzip:   2.35 kB
+dist/public/assets/useQuery-f5pVbI12.js               8.79 kB │ gzip:   3.20 kB
+dist/public/assets/Finanze-Db86usn2.js               10.07 kB │ gzip:   3.04 kB
+dist/public/assets/Dashboard-ByxfNEIK.js             10.24 kB │ gzip:   3.05 kB
+dist/public/assets/Pescato-Dv3YLwFi.js               10.87 kB │ gzip:   3.27 kB
+dist/public/assets/ParcoAuto-BPFg3LgC.js             16.32 kB │ gzip:   4.66 kB
+dist/public/assets/format-CK-jRdoM.js                19.76 kB │ gzip:   5.57 kB
+dist/public/assets/FishingForecastCard-BNKqqIqp.js   23.73 kB │ gzip:   8.05 kB
+dist/public/assets/Spot-DFcKQC_r.js                 171.11 kB │ gzip:  53.55 kB
+dist/public/assets/PieChart-MVsp5-ez.js             401.98 kB │ gzip: 108.72 kB
+
+dist/public/assets/index-fl91zFYW.js                447.53 kB │ gzip: 145.56 kB
+
+✓ built in 5.55s
+
+
+> @workspace/api-server@0.0.0 build /home/runner/workspace/artifacts/api-server
+> node ./build.mjs
+
+
+
+  dist/index.mjs                       1.8mb ⚠️
+  dist/pino-worker.mjs               153.4kb
+  dist/pino-file.mjs                 142.1kb
+  dist/pino-pretty.mjs               114.6kb
+  dist/thread-stream-worker.mjs        7.3kb
+  dist/index.mjs.map                   4.1mb
+  dist/pino-worker.mjs.map           256.9kb
+  dist/pino-file.mjs.map             229.0kb
+  dist/pino-pretty.mjs.map           203.9kb
+  dist/thread-stream-worker.mjs.map   12.0kb
+
+⚡ Done in 292ms
+
+Removed all cached metadata files
+
+Removed 31738 files
+
+Removed 513 packages
+
+2026-04-05T22:26:51Z info: Pushing pid1 binary layer...
+2026-04-05T22:26:52Z info: Pushing Repl layer...
+2026-04-05T22:26:52Z info: Pushing hosting layer...
+2026-04-05T22:26:53Z info: Created hosting layer
+2026-04-05T22:26:55Z info: Created pid1 binary layer
+2026-04-05T22:27:37Z info: Created Repl layer
+2026-04-05T22:27:46Z info: Creating Autoscale service
+2026-04-05T22:27:58Z info: upsertCloudRunService completed
+2026-04-05T22:27:58Z info: Waiting for service to be ready
+2026-04-05T22:28:00Z info: Deployment successful
