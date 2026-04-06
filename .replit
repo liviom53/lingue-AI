@@ -3,7 +3,6 @@ modules = ["nodejs-24"]
 [[artifacts]]
 id = "artifacts/api-server"
 
-
 [deployment]
 router = "application"
 deploymentTarget = "vm"
