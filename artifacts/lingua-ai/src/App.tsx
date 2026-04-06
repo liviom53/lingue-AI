@@ -681,39 +681,33 @@ export default function App() {
   ];
 
   const narrateDemo = (text: string) => {
-    window.speechSynthesis.cancel();
-    // Ogni narrazione ha la sua generazione: i callback stale si autoinvalidano
+    // Nuova generazione — invalida callback stale
     const gen = ++narrateGenRef.current;
 
-    const tid = window.setTimeout(() => {
+    const doSpeak = () => {
       if (!demoActiveRef.current || narrateGenRef.current !== gen) return;
-
       const itVoices = voicesRef.current.filter(v => v.lang.startsWith('it'));
       const itVoice =
         itVoices.find(v => v.name.toLowerCase().includes('google')) ||
         itVoices.find(v => !v.localService) ||
         itVoices[0];
-
-      // Utterance reale
       const ut = new SpeechSynthesisUtterance(text);
       ut.lang = 'it-IT';
       ut.rate = 0.82;
       ut.pitch = 1.05;
       if (itVoice) ut.voice = itVoice;
+      window.speechSynthesis.speak(ut);
+    };
 
-      // Warm-up silenziosa: sveglia il motore Chrome per evitare troncamenti
-      const warmup = new SpeechSynthesisUtterance('\u00A0');
-      warmup.volume = 0;
-      warmup.lang = 'it-IT';
-      if (itVoice) warmup.voice = itVoice;
-      warmup.onend = () => {
-        // Controlla ENTRAMBE le guardie: demo attiva E stessa generazione
-        if (!demoActiveRef.current || narrateGenRef.current !== gen) return;
-        window.speechSynthesis.speak(ut);
-      };
-      window.speechSynthesis.speak(warmup);
-    }, 250);
-    demoTimersRef.current.push(tid);
+    if (window.speechSynthesis.speaking || window.speechSynthesis.pending) {
+      // Sovrapposizione: cancel + pausa minima per evitare troncamenti
+      window.speechSynthesis.cancel();
+      const tid = window.setTimeout(doSpeak, 150);
+      demoTimersRef.current.push(tid);
+    } else {
+      // Niente in coda: parla subito, zero ritardo, zero troncamenti
+      doSpeak();
+    }
   };
 
   const animateDemoCursorClick = () => {
