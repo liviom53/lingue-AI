@@ -279,6 +279,7 @@ export default function App() {
   const blockSpeakRef = useRef(false);
   const narrateGenRef = useRef(0);   // contatore generazione — invalida narr. precedenti
   const voicesRef = useRef<SpeechSynthesisVoice[]>([]);
+  const currentUtRef = useRef<SpeechSynthesisUtterance | null>(null);
   const [demoCursorPos, setDemoCursorPos] = useState<{x: number, y: number} | null>(null);
   const [demoCursorClicking, setDemoCursorClicking] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
@@ -734,22 +735,34 @@ export default function App() {
         itVoices.find(v => v.name.toLowerCase().includes('google')) ||
         itVoices.find(v => !v.localService) ||
         itVoices[0];
-      // Padding invisibile — evita che Chrome tagli i fonemi finali
-      const ut = new SpeechSynthesisUtterance(text.trimEnd() + '\u00A0\u00A0\u00A0');
+      // Padding di spazi invisibili: mantiene lo stream audio aperto per evitare
+      // che Chrome tagli i fonemi finali prima del decadimento acustico
+      const ut = new SpeechSynthesisUtterance(text.trimEnd() + '\u00A0\u00A0\u00A0\u00A0\u00A0');
       ut.lang = 'it-IT';
       ut.rate = 0.82;
       ut.pitch = 1.05;
       if (itVoice) ut.voice = itVoice;
+      currentUtRef.current = ut;
       window.speechSynthesis.speak(ut);
     };
 
     if (window.speechSynthesis.speaking || window.speechSynthesis.pending) {
-      // Sovrapposizione: cancel + 320ms — Chrome ha bisogno di tempo per resettarsi
-      window.speechSynthesis.cancel();
-      const tid = window.setTimeout(doSpeak, 320);
-      demoTimersRef.current.push(tid);
+      // C'è una narrazione in corso: non interrompere con cancel().
+      // Annulla l'eventuale onend precedente, poi concatena doSpeak alla fine.
+      const prev = currentUtRef.current;
+      if (prev) prev.onend = null;
+      // Crea una nuova utterance-sentinella che verrà aggiunta in coda
+      const sentinel = new SpeechSynthesisUtterance('\u00A0');
+      sentinel.lang = 'it-IT';
+      sentinel.volume = 0.01;
+      sentinel.onend = () => {
+        if (demoActiveRef.current && narrateGenRef.current === gen) {
+          window.setTimeout(doSpeak, 50);
+        }
+      };
+      window.speechSynthesis.speak(sentinel);
     } else {
-      // Motore idle: piccolo buffer da 80ms per evitare troncamento del primo fonema
+      // Motore idle: piccolo buffer da 80ms per inizializzare il pipeline audio
       const tid = window.setTimeout(doSpeak, 80);
       demoTimersRef.current.push(tid);
     }
@@ -766,6 +779,7 @@ export default function App() {
     demoTimersRef.current = [];
     demoActiveRef.current = false;
     narrateGenRef.current++;        // invalida TUTTI i warmup.onend pendenti
+    if (currentUtRef.current) { currentUtRef.current.onend = null; currentUtRef.current = null; }
     window.speechSynthesis.cancel();
     blockSpeakRef.current = true;
     setTimeout(() => { blockSpeakRef.current = false; }, 3000);
