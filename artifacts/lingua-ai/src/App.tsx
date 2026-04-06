@@ -275,6 +275,7 @@ export default function App() {
   const translatedTextRef = useRef('');
   const demoActiveRef = useRef(false);
   const blockSpeakRef = useRef(false);
+  const voicesRef = useRef<SpeechSynthesisVoice[]>([]);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const moreLangsRef = useRef<HTMLDivElement>(null);
@@ -316,6 +317,7 @@ export default function App() {
   useEffect(() => {
     const loadVoices = () => {
       const all = window.speechSynthesis.getVoices();
+      voicesRef.current = all;
       setVoices(all);
     };
     loadVoices();
@@ -665,7 +667,7 @@ export default function App() {
       ut.lang = 'it-IT';
       ut.rate = 0.82;
       ut.pitch = 1.05;
-      const itVoice = window.speechSynthesis.getVoices().find(v => v.lang.startsWith('it'));
+      const itVoice = voicesRef.current.find(v => v.lang.startsWith('it'));
       if (itVoice) ut.voice = itVoice;
       window.speechSynthesis.speak(ut);
     }, 80);
