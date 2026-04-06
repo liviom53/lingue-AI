@@ -683,45 +683,52 @@ export default function App() {
     recognition.start();
   };
 
+  // ── Regola narrazione: ogni frase descrive SOLO ciò che è visibile in quel momento ──────
+  // Step 0: durante il typewriter → descrivo il testo che appare
+  // Step 1: cursore sulla griglia lingua → descrivo la selezione
+  // Step 2: cursore su TRADUCI → premo il bottone (non dico il risultato che non c'è ancora!)
+  // Step 3: feature principale → descrivo ciò che SI VEDE (traduzione tornata + azione)
+  // Step 4: tab panel aperto → descrivo il pannello visibile
+  // Step 5: fine demo
+
   // ── Demo 1: Traduzione & X-Ray ──────────────────────────────────────────
-  // Struttura uniforme: step 0 = intro (typewriter), 1-4 = azioni, 5 = fine
   const DEMO_STEPS = [
-    { icon: '✍️', label: '1/5 — Scrittura',   desc: 'Scrivo una frase in italiano...',                      narration: 'Guarda: scrivo in italiano e traduco in inglese.' },
-    { icon: '🌍', label: '2/5 — Lingua',       desc: 'Scelgo la lingua di destinazione...',                 narration: 'Scelgo la lingua.' },
-    { icon: '🔄', label: '3/5 — Traduzione',   desc: 'Premo TRADUCI — risultato istantaneo con IPA e audio', narration: 'Premo Traduci. Ecco la traduzione.' },
-    { icon: '🔬', label: '4/5 — X-Ray',        desc: 'Analisi grammaticale X-Ray parola per parola',         narration: 'Traduzione con pronuncia e analisi grammaticale.' },
-    { icon: '⭐', label: '5/5 — Profilo',       desc: 'Profilo, Progressi, Segnalibri, Quiz e altro...',      narration: 'Qui trovo profilo e progressi.' },
-    { icon: '🎉', label: 'Demo completata',    desc: 'Esplora tutte le funzionalità!',                       narration: 'Demo completata!' },
+    { icon: '✍️', label: '1/5 — Scrittura',   desc: 'Scrivo una frase in italiano...',                       narration: 'Scrivo una frase in italiano.' },
+    { icon: '🌍', label: '2/5 — Lingua',       desc: 'Scelgo la lingua di destinazione...',                  narration: 'Scelgo inglese come lingua.' },
+    { icon: '🔄', label: '3/5 — Traduzione',   desc: 'Premo TRADUCI — risultato istantaneo con IPA e audio', narration: 'Premo Traduci.' },
+    { icon: '🔬', label: '4/5 — X-Ray',        desc: 'Analisi grammaticale X-Ray parola per parola',          narration: 'Ecco la traduzione. Analizzo la grammatica.' },
+    { icon: '⭐', label: '5/5 — Profilo',       desc: 'Profilo, Progressi, Segnalibri, Quiz e altro...',       narration: 'Apro profilo e progressi.' },
+    { icon: '🎉', label: 'Demo completata',    desc: 'Esplora tutte le funzionalità!',                        narration: 'Demo completata!' },
   ];
 
   // ── Demo 2: Shadowing & Pronuncia ───────────────────────────────────────
   const DEMO2_STEPS = [
-    { icon: '🎙️', label: '1/5 — Scrittura',   desc: 'Scrivo una frase da imparare in francese...',          narration: 'Guarda lo Shadowing per migliorare la pronuncia.' },
-    { icon: '🌍', label: '2/5 — Lingua',       desc: 'Scelgo il francese come lingua target...',             narration: 'Scelgo il francese.' },
-    { icon: '🔄', label: '3/5 — Traduzione',   desc: 'Traduco e ascolto la pronuncia nativa...',             narration: 'Premo Traduci e ascolto la pronuncia.' },
-    { icon: '🎙️', label: '4/5 — Shadowing',   desc: 'Apro Shadowing: la frase viene pronunciata, poi ripeto', narration: 'Apro Shadowing. La frase viene pronunciata per me.' },
-    { icon: '📊', label: '5/5 — Progressi',    desc: 'Ogni esercizio migliora il punteggio!',                narration: 'I progressi vengono salvati automaticamente.' },
-    { icon: '🎉', label: 'Demo completata',    desc: 'Attiva lo Shadowing e inizia a praticare!',            narration: 'Ora tocca a te!' },
+    { icon: '🎙️', label: '1/5 — Scrittura',   desc: 'Scrivo una frase da imparare in francese...',           narration: 'Imparo la pronuncia con lo Shadowing.' },
+    { icon: '🌍', label: '2/5 — Lingua',       desc: 'Scelgo il francese come lingua target...',              narration: 'Scelgo il francese.' },
+    { icon: '🔄', label: '3/5 — Traduzione',   desc: 'Traduco e ascolto la pronuncia nativa...',              narration: 'Premo Traduci.' },
+    { icon: '🎙️', label: '4/5 — Shadowing',   desc: 'Apro Shadowing: ascolto la frase, poi la ripeto',       narration: 'Apro lo Shadowing.' },
+    { icon: '📊', label: '5/5 — Progressi',    desc: 'Ogni esercizio migliora il punteggio!',                 narration: 'Vedo i progressi salvati.' },
+    { icon: '🎉', label: 'Demo completata',    desc: 'Attiva lo Shadowing e inizia a praticare!',             narration: 'Esercita ogni giorno!' },
   ];
 
   // ── Demo 3: Chat AI & Roleplay ───────────────────────────────────────────
   const DEMO3_STEPS = [
-    { icon: '🤖', label: '1/5 — Scrittura',   desc: 'Scrivo una frase da chiedere al Tutor AI...',           narration: 'Guarda il Tutor AI alimentato da DeepSeek.' },
-    { icon: '🌍', label: '2/5 — Lingua',       desc: 'Scelgo il giapponese come lingua target...',            narration: 'Scelgo il giapponese.' },
-    { icon: '🔄', label: '3/5 — Traduzione',   desc: 'Traduco la frase con il supporto AI...',                narration: 'Premo Traduci. Il risultato arriva in pochi secondi.' },
-    { icon: '💬', label: '4/5 — Chat AI',      desc: 'Apro la chat — l\'AI spiega grammatica ed esempi...',   narration: 'Apro il Tutor AI. Posso fare domande in italiano.' },
-    { icon: '📊', label: '5/5 — Progressi',   desc: 'Profilo e progressi sempre aggiornati...',               narration: 'Profilo e progressi sempre aggiornati.' },
-    { icon: '🎉', label: 'Demo completata',    desc: 'Inizia a chattare con il Tutor AI!',                    narration: 'L\'AI risponde e spiega tutto in italiano!' },
+    { icon: '🤖', label: '1/5 — Scrittura',   desc: 'Scrivo una frase da chiedere al Tutor AI...',            narration: 'Uso il Tutor AI DeepSeek.' },
+    { icon: '🌍', label: '2/5 — Lingua',       desc: 'Scelgo il giapponese come lingua target...',             narration: 'Scelgo il giapponese.' },
+    { icon: '🔄', label: '3/5 — Traduzione',   desc: 'Traduco la frase con il supporto AI...',                 narration: 'Premo Traduci.' },
+    { icon: '💬', label: '4/5 — Chat AI',      desc: 'Apro la chat — l\'AI spiega grammatica ed esempi...',    narration: 'Apro il Tutor AI.' },
+    { icon: '📊', label: '5/5 — Progressi',    desc: 'Profilo e progressi sempre aggiornati...',               narration: 'Vedo i miei progressi.' },
+    { icon: '🎉', label: 'Demo completata',    desc: 'Inizia a chattare con il Tutor AI!',                     narration: 'L\'AI risponde in italiano!' },
   ];
 
   // ── Demo 4: Segnalibri & Vocabolario ─────────────────────────────────────
   const DEMO4_STEPS = [
-    { icon: '⭐', label: '1/5 — Scrittura',    desc: 'Scrivo una frase per costruire il vocabolario...',      narration: 'Guarda come costruire il vocabolario personale.' },
-    { icon: '🌍', label: '2/5 — Lingua',       desc: 'Scelgo lo spagnolo come lingua target...',              narration: 'Scelgo lo spagnolo.' },
-    { icon: '🔄', label: '3/5 — Traduzione',   desc: 'Traduco la frase che voglio ricordare...',              narration: 'Premo Traduci e vedo la frase in spagnolo.' },
-    { icon: '📚', label: '4/5 — Segnalibri',   desc: 'La frase viene salvata nei Segnalibri per ripassarla',  narration: 'Salvo la frase nei Segnalibri per ripassarla dopo.' },
-    { icon: '📅', label: '5/5 — Calendario',   desc: 'Il Calendario mostra la costanza quotidiana!',          narration: 'Il Calendario mostra quanti giorni ho studiato.' },
-    { icon: '🎉', label: 'Demo completata',    desc: 'Studia ogni giorno e diventerai fluente!',              narration: 'Studia ogni giorno. Diventerai fluente!' },
+    { icon: '⭐', label: '1/5 — Scrittura',    desc: 'Scrivo una frase per costruire il vocabolario...',       narration: 'Costruisco il vocabolario personale.' },
+    { icon: '🌍', label: '2/5 — Lingua',       desc: 'Scelgo lo spagnolo come lingua target...',               narration: 'Scelgo lo spagnolo.' },
+    { icon: '🔄', label: '3/5 — Traduzione',   desc: 'Traduco la frase che voglio ricordare...',               narration: 'Premo Traduci.' },
+    { icon: '📚', label: '4/5 — Segnalibri',   desc: 'Vedo la traduzione — posso salvarla nei Segnalibri',     narration: 'Ecco la frase in spagnolo.' },
+    { icon: '📅', label: '5/5 — Calendario',   desc: 'Il Calendario mostra la costanza quotidiana!',           narration: 'Apro il calendario progressi.' },
+    { icon: '🎉', label: 'Demo completata',    desc: 'Studia ogni giorno e diventerai fluente!',               narration: 'Studia ogni giorno!' },
   ];
 
   const narrateDemo = (text: string) => {
