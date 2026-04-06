@@ -939,7 +939,7 @@ export default function App() {
       background: 'linear-gradient(140deg, #3d5f82 0%, #1e2d3f 35%, #0e1620 100%)',
       borderRadius: '14px',
       padding: '12px',
-      marginBottom: '16px',
+      marginBottom: '12px',
       border: '1px solid rgba(90,120,170,0.25)',
       borderTop: '1px solid rgba(160,210,255,0.35)',
       borderLeft: '1px solid rgba(140,190,255,0.20)',
@@ -964,35 +964,41 @@ export default function App() {
     },
     btn: {
       width: '100%',
-      padding: '10px 8px',
-      borderRadius: '10px',
+      padding: '8px 4px',
+      borderRadius: '8px',
       border: 'none',
-      borderTop: '1px solid rgba(255,255,255,0.22)',
-      borderBottom: '1px solid rgba(0,0,0,0.30)',
-      backgroundColor: '#fb923c',
+      borderTop: '1px solid rgba(255,255,255,0.10)',
+      backgroundColor: '#2d3f52',
       color: '#fff',
-      fontWeight: '700',
+      fontWeight: '500',
       cursor: 'pointer',
       marginTop: '22px',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
       gap: '8px',
-      transform: 'translateY(-5px)',
+      // stesso flottante dei lang-btn
+      transform: 'translateY(-3px)',
+      // stessa faccia a 3 strati dei lang-btn inattivi
       boxShadow: [
-        // bevel interno bottone — valori alti per renderli visibili
-        'inset 0 3px 0 rgba(255,255,255,0.42)',    // fascia alta luminosa (forte)
-        'inset 4px 0 0 rgba(255,255,255,0.20)',    // bordo sinistro lit
-        'inset -4px 0 0 rgba(0,0,0,0.28)',         // bordo destro scuro
-        'inset 0 -3px 0 rgba(0,0,0,0.35)',         // fascia bassa scura
-        // faccia inferiore colorata
-        '0 5px 0 #b85a10',
-        '0 7px 0 #8a3d08',
-        '0 9px 0 #5e2804',
-        '0 11px 0 rgba(40,16,0,0.40)',
-        // glow + ombra ambientale
-        '0 16px 30px rgba(251,146,60,0.24)',
-        '0 9px 18px rgba(0,0,0,0.48)',
+        'inset 0 1px 0 rgba(255,255,255,0.09)',
+        '0 3px 0 #1a2535',
+        '0 5px 0 #111c28',
+        '0 7px 0 rgba(6,12,22,0.50)',
+        '0 10px 18px rgba(0,0,0,0.50)',
+      ].join(','),
+    },
+    btnOrange: {
+      borderTop: '1px solid rgba(255,255,255,0.22)',
+      backgroundColor: '#fb923c',
+      fontWeight: '700',
+      boxShadow: [
+        'inset 0 1px 0 rgba(255,255,255,0.22)',
+        '0 3px 0 #b85a10',
+        '0 5px 0 #7c3a08',
+        '0 7px 0 rgba(60,20,0,0.35)',
+        '0 10px 20px rgba(251,146,60,0.20)',
+        '0 5px 12px rgba(0,0,0,0.40)',
       ].join(','),
     },
   };
@@ -1227,7 +1233,18 @@ export default function App() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', marginTop: '16px' }}>
             <button
               className="action-btn"
-              style={{ ...styles.btn, marginTop: 0, backgroundColor: isListening ? '#ef4444' : '#334155' }}
+              style={{
+                ...styles.btn, marginTop: 0,
+                backgroundColor: isListening ? '#ef4444' : '#2d3f52',
+                boxShadow: isListening ? [
+                  'inset 0 1px 0 rgba(255,255,255,0.18)',
+                  '0 3px 0 #991b1b',
+                  '0 5px 0 #7f1d1d',
+                  '0 7px 0 rgba(60,0,0,0.45)',
+                  '0 10px 18px rgba(239,68,68,0.18)',
+                  '0 5px 12px rgba(0,0,0,0.40)',
+                ].join(',') : styles.btn.boxShadow,
+              }}
               onClick={startInputSpeech}
             >
               <Mic size={18} /> DETTA
@@ -1236,7 +1253,7 @@ export default function App() {
               <button
                 className="action-btn"
                 data-demo="translate-btn"
-                style={{ ...styles.btn, marginTop: 0, backgroundColor: '#fb923c' }}
+                style={{ ...styles.btn, ...styles.btnOrange, marginTop: 0 }}
                 onClick={() => handleTranslate()}
                 disabled={loading || aiLoading}
               >
@@ -1244,7 +1261,19 @@ export default function App() {
               </button>
               <button
                 className="action-btn"
-                style={{ ...styles.btn, marginTop: 0, backgroundColor: '#e8d0a0', color: '#1e293b', fontSize: '0.85rem' }}
+                style={{
+                  ...styles.btn, marginTop: 0,
+                  backgroundColor: '#e8d0a0', color: '#1e293b', fontSize: '0.85rem',
+                  borderTop: '1px solid rgba(255,255,255,0.30)',
+                  boxShadow: [
+                    'inset 0 1px 0 rgba(255,255,255,0.30)',
+                    '0 3px 0 #b8a070',
+                    '0 5px 0 #967e58',
+                    '0 7px 0 rgba(60,40,0,0.35)',
+                    '0 10px 18px rgba(232,208,160,0.14)',
+                    '0 5px 12px rgba(0,0,0,0.40)',
+                  ].join(','),
+                }}
                 onClick={handleAiTranslate}
                 disabled={loading || aiLoading}
                 title="Traduzione AI con spiegazione grammaticale"
