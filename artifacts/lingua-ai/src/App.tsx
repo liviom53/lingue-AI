@@ -1473,78 +1473,40 @@ export default function App() {
                 })()}
               </div>
 
-              {/* Grafico Radar */}
+              {/* Grafico a barre */}
               {(() => {
-                const cx = 150, cy = 150, r = 100;
-                const axes = [
-                  { label: 'Pronuncia', emoji: '🎙', value: Math.min(avgScore / 100, 1), display: avgScore > 0 ? `${avgScore}%` : '—' },
-                  { label: 'Vocabolario', emoji: '📖', value: Math.min(progress.wordsLearned.length / 50, 1), display: `${progress.wordsLearned.length}` },
-                  { label: 'Traduzioni', emoji: '🌍', value: Math.min(progress.translationCount / 50, 1), display: `${progress.translationCount}` },
-                  { label: 'Tutor AI', emoji: '🤖', value: Math.min(progress.aiTranslationCount / 20, 1), display: `${progress.aiTranslationCount}` },
-                  { label: 'Streak', emoji: '🔥', value: Math.min(progress.streakDays / 14, 1), display: `${progress.streakDays}gg` },
+                const bars = [
+                  { label: '🎙 Pronuncia',   value: avgScore,                       max: 100, display: avgScore > 0 ? `${avgScore}%` : '—',           color: avgScore >= 80 ? '#10b981' : avgScore >= 60 ? '#f59e0b' : '#60a5fa' },
+                  { label: '📖 Vocabolario', value: progress.wordsLearned.length,   max: 50,  display: `${progress.wordsLearned.length} parole`,        color: '#10b981' },
+                  { label: '🌍 Traduzioni',  value: progress.translationCount,      max: 50,  display: `${progress.translationCount}`,                  color: '#fb923c' },
+                  { label: '🤖 Tutor AI',    value: progress.aiTranslationCount,    max: 20,  display: `${progress.aiTranslationCount}`,                color: '#a855f7' },
+                  { label: '🔥 Streak',      value: progress.streakDays,            max: 14,  display: `${progress.streakDays} gg`,                     color: '#f97316' },
+                  { label: '⏱ Ore studio',  value: progress.totalMinutes,          max: 300, display: `${hours}h ${mins}m`,                            color: '#38bdf8' },
                 ];
-                const N = axes.length;
-                const pt = (i: number, pct: number) => {
-                  const a = (2 * Math.PI * i / N) - Math.PI / 2;
-                  return { x: cx + pct * r * Math.cos(a), y: cy + pct * r * Math.sin(a) };
-                };
-                const dataPoints = axes.map((ax, i) => pt(i, Math.max(ax.value, 0.04)));
-                const dataPath = dataPoints.map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ') + 'Z';
-                const gridLevels = [0.25, 0.5, 0.75, 1.0];
+                const W = 260, barH = 14, gap = 10, labelW = 112;
+                const chartH = bars.length * (barH + gap) - gap;
                 return (
                   <div style={{ ...styles.card, marginBottom: '12px' }}>
-                    <p style={{ margin: '0 0 8px', fontSize: '0.75rem', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.06em', textAlign: 'center' }}>📊 Panoramica progressi</p>
-                    <svg viewBox="0 0 300 300" style={{ width: '100%', maxWidth: '280px', display: 'block', margin: '0 auto' }}>
-                      {/* Griglie */}
-                      {gridLevels.map((level, gi) => {
-                        const pts = axes.map((_, i) => pt(i, level));
-                        const d = pts.map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ') + 'Z';
-                        return <path key={gi} d={d} fill="none" stroke={gi === 3 ? '#475569' : '#1e293b'} strokeWidth={gi === 3 ? 1.2 : 0.8} />;
-                      })}
-                      {/* Assi */}
-                      {axes.map((_, i) => {
-                        const end = pt(i, 1);
-                        return <line key={i} x1={cx} y1={cy} x2={end.x.toFixed(1)} y2={end.y.toFixed(1)} stroke="#334155" strokeWidth={0.8} />;
-                      })}
-                      {/* Area dati */}
-                      <path d={dataPath} fill="#fb923c28" stroke="#fb923c" strokeWidth={2} strokeLinejoin="round" />
-                      {/* Punti */}
-                      {dataPoints.map((p, i) => (
-                        <circle key={i} cx={p.x} cy={p.y} r={4} fill="#fb923c" stroke="#0f172a" strokeWidth={1.5} />
-                      ))}
-                      {/* Etichette asse */}
-                      {axes.map((ax, i) => {
-                        const lp = pt(i, 1.32);
+                    <p style={{ margin: '0 0 12px', fontSize: '0.75rem', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.06em', textAlign: 'center' }}>📊 Panoramica progressi</p>
+                    <svg viewBox={`0 0 ${W + labelW + 4} ${chartH + 4}`} style={{ width: '100%', display: 'block' }}>
+                      {bars.map((b, i) => {
+                        const pct = Math.min(b.value / b.max, 1);
+                        const y = 2 + i * (barH + gap);
+                        const barW = Math.max(pct * W, pct > 0 ? 6 : 0);
                         return (
-                          <text key={i} x={lp.x.toFixed(1)} y={lp.y.toFixed(1)} textAnchor="middle" dominantBaseline="middle" fontSize="11" fill="#94a3b8">
-                            {ax.emoji} {ax.label}
-                          </text>
-                        );
-                      })}
-                      {/* Valori sui punti */}
-                      {axes.map((ax, i) => {
-                        if (ax.value === 0) return null;
-                        const vp = dataPoints[i];
-                        const offset = pt(i, Math.max(ax.value, 0.04) + 0.18);
-                        return (
-                          <text key={i} x={offset.x.toFixed(1)} y={offset.y.toFixed(1)} textAnchor="middle" dominantBaseline="middle" fontSize="10" fontWeight="bold" fill="#f8fafc">
-                            {ax.display}
-                          </text>
+                          <g key={b.label}>
+                            {/* etichetta */}
+                            <text x={labelW - 6} y={y + barH / 2} textAnchor="end" dominantBaseline="middle" fontSize="10.5" fill="#94a3b8">{b.label}</text>
+                            {/* sfondo barra */}
+                            <rect x={labelW} y={y} width={W} height={barH} rx={barH / 2} fill="#1e293b" />
+                            {/* barra dati */}
+                            {barW > 0 && <rect x={labelW} y={y} width={barW} height={barH} rx={barH / 2} fill={b.color} />}
+                            {/* valore */}
+                            <text x={labelW + W + 4} y={y + barH / 2} dominantBaseline="middle" fontSize="10" fontWeight="bold" fill={b.color}>{b.display}</text>
+                          </g>
                         );
                       })}
                     </svg>
-                    {/* Legenda compatta sotto */}
-                    <div style={{ display: 'flex', justifyContent: 'center', gap: '12px', flexWrap: 'wrap', marginTop: '10px' }}>
-                      {[
-                        { label: `${hours}h ${mins}m`, icon: '⏱', color: '#60a5fa' },
-                        { label: favLangName ?? '—', icon: '🗺', color: '#a855f7' },
-                        { label: `${bestScore > 0 ? bestScore + '%' : '—'} rec.`, icon: '🏅', color: '#fbbf24' },
-                      ].map(b => (
-                        <span key={b.label} style={{ fontSize: '0.72rem', color: b.color, display: 'flex', alignItems: 'center', gap: '3px' }}>
-                          {b.icon} {b.label}
-                        </span>
-                      ))}
-                    </div>
                   </div>
                 );
               })()}
