@@ -934,9 +934,7 @@ export default function App() {
             }}
           >
             <span style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
-              <span style={{ display: 'flex', alignItems: 'center', gap: '3px', padding: '2px 8px', backgroundColor: 'rgba(255,255,255,0.18)', borderRadius: '5px', fontSize: '0.78rem', fontWeight: 600 }}>
-                <FlagImg fc="it" name="Italiano" /> Italiano
-              </span>
+              <FlagImg fc="it" name="Italiano" />
               <span>▶ Demo &amp; Funzionalità</span>
             </span>
             {showDemoMenu ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
