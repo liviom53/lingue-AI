@@ -966,7 +966,7 @@ export default function App() {
       color: '#fff',
       fontWeight: '700',
       cursor: 'pointer',
-      marginTop: '14px',
+      marginTop: '22px',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
@@ -1219,11 +1219,11 @@ export default function App() {
           >
             <Mic size={18} /> DETTA
           </button>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginTop: '22px' }}>
             <button
               className="action-btn"
               data-demo="translate-btn"
-              style={{ ...styles.btn, backgroundColor: '#fb923c', marginTop: '6px' }}
+              style={{ ...styles.btn, backgroundColor: '#fb923c', marginTop: '0' }}
               onClick={() => handleTranslate()}
               disabled={loading || aiLoading}
             >
@@ -1231,7 +1231,7 @@ export default function App() {
             </button>
             <button
               className="action-btn"
-              style={{ ...styles.btn, backgroundColor: '#e8d0a0', color: '#1e293b', marginTop: '6px', fontSize: '0.85rem' }}
+              style={{ ...styles.btn, backgroundColor: '#e8d0a0', color: '#1e293b', marginTop: '0', fontSize: '0.85rem' }}
               onClick={handleAiTranslate}
               disabled={loading || aiLoading}
               title="Traduzione AI con spiegazione grammaticale"
