@@ -273,6 +273,7 @@ export default function App() {
   const [demoStep, setDemoStep] = useState(0);
   const demoTimersRef = useRef<number[]>([]);
   const translatedTextRef = useRef('');
+  const demoActiveRef = useRef(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const moreLangsRef = useRef<HTMLDivElement>(null);
@@ -340,6 +341,8 @@ export default function App() {
   const availableVoices = langVoices.length > 0 ? langVoices : voices;
 
   const speak = (text: string) => {
+    // During demo the Italian narration handles audio — skip target-language speech
+    if (demoActiveRef.current) return;
     // Stop anything currently playing
     window.speechSynthesis.cancel();
 
@@ -665,6 +668,7 @@ export default function App() {
     demoTimersRef.current.forEach(id => clearTimeout(id));
     demoTimersRef.current = [];
     window.speechSynthesis.cancel();
+    demoActiveRef.current = false;
     setDemoActive(false);
     setDemoStep(0);
   };
@@ -681,6 +685,7 @@ export default function App() {
     setShowTabPanel(false);
     setError(null);
     setInputText('');
+    demoActiveRef.current = true;
     setDemoActive(true);
     setDemoStep(0);
 
