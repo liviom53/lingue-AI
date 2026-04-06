@@ -42,6 +42,12 @@ section:hover {
     0 10px 20px rgba(0,0,0,0.55) !important;
 }
 
+/* Griglia lingue: nessun lift al hover della sezione */
+section.lang-section:hover {
+  transform: none !important;
+  box-shadow: inherit !important;
+}
+
 /* ── Bottoni: transizione fluida ────────────────────── */
 button {
   transition: transform 0.09s cubic-bezier(0.2,0,0,1),

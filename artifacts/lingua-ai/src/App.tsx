@@ -1063,34 +1063,63 @@ export default function App() {
           )}
         </div>
 
-        <section style={styles.card}>
-          <div data-demo="lang-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px' }}>
-            {LANGUAGES.map(l => (
-              <button
-                key={l.code}
-                onClick={() => { setSelectedLang(l.code); setShowMoreLangs(false); }}
-                style={{
-                  padding: '8px',
-                  backgroundColor: selectedLang === l.code ? '#fb923c' : '#334155',
-                  color: '#fff',
-                  border: 'none',
-                  borderRadius: '5px',
-                  cursor: 'pointer',
-                }}
-              >
-                <FlagImg fc={l.fc} name={l.name} /> {l.name}
-              </button>
-            ))}
+        <section className="lang-section" style={styles.card}>
+          <div data-demo="lang-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px', paddingBottom: '6px' }}>
+            {LANGUAGES.map(l => {
+              const active = selectedLang === l.code;
+              return (
+                <button
+                  key={l.code}
+                  onClick={() => { setSelectedLang(l.code); setShowMoreLangs(false); }}
+                  style={{
+                    padding: '8px 4px',
+                    backgroundColor: active ? '#fb923c' : '#2d3f52',
+                    color: '#fff',
+                    border: 'none',
+                    borderTop: active
+                      ? '1px solid rgba(255,255,255,0.22)'
+                      : '1px solid rgba(255,255,255,0.10)',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    fontWeight: active ? '700' : '500',
+                    transform: 'translateY(-3px)',
+                    transition: 'none',
+                    boxShadow: active ? [
+                      'inset 0 1px 0 rgba(255,255,255,0.22)',
+                      '0 3px 0 #b85a10',
+                      '0 5px 0 #7c3a08',
+                      '0 7px 0 rgba(60,20,0,0.35)',
+                      '0 10px 20px rgba(251,146,60,0.20)',
+                      '0 5px 12px rgba(0,0,0,0.40)',
+                    ].join(',') : [
+                      'inset 0 1px 0 rgba(255,255,255,0.09)',
+                      '0 3px 0 #1a2535',
+                      '0 5px 0 #111c28',
+                      '0 7px 0 rgba(6,12,22,0.50)',
+                      '0 10px 18px rgba(0,0,0,0.50)',
+                    ].join(','),
+                  }}
+                >
+                  <FlagImg fc={l.fc} name={l.name} /> {l.name}
+                </button>
+              );
+            })}
             <div ref={moreLangsRef} style={{ position: 'relative' }}>
+              {(() => {
+                const active = MORE_LANGUAGES.some(l => l.code === selectedLang);
+                return (
               <button
                 onClick={() => setShowMoreLangs(v => !v)}
                 style={{
                   width: '100%',
                   padding: '8px 4px',
-                  backgroundColor: MORE_LANGUAGES.some(l => l.code === selectedLang) ? '#fb923c' : '#334155',
+                  backgroundColor: active ? '#fb923c' : '#2d3f52',
                   color: '#fff',
                   border: 'none',
-                  borderRadius: '5px',
+                  borderTop: active
+                    ? '1px solid rgba(255,255,255,0.22)'
+                    : '1px solid rgba(255,255,255,0.10)',
+                  borderRadius: '8px',
                   cursor: 'pointer',
                   display: 'flex',
                   alignItems: 'center',
@@ -1098,11 +1127,30 @@ export default function App() {
                   gap: '4px',
                   whiteSpace: 'nowrap',
                   fontSize: 'clamp(0.7rem, 3.5vw, 1rem)',
+                  fontWeight: active ? '700' : '500',
+                  transform: 'translateY(-3px)',
+                  transition: 'none',
+                  boxShadow: active ? [
+                    'inset 0 1px 0 rgba(255,255,255,0.22)',
+                    '0 3px 0 #b85a10',
+                    '0 5px 0 #7c3a08',
+                    '0 7px 0 rgba(60,20,0,0.35)',
+                    '0 10px 20px rgba(251,146,60,0.20)',
+                    '0 5px 12px rgba(0,0,0,0.40)',
+                  ].join(',') : [
+                    'inset 0 1px 0 rgba(255,255,255,0.09)',
+                    '0 3px 0 #1a2535',
+                    '0 5px 0 #111c28',
+                    '0 7px 0 rgba(6,12,22,0.50)',
+                    '0 10px 18px rgba(0,0,0,0.50)',
+                  ].join(','),
                 }}
               >
                 {(() => { const ml = MORE_LANGUAGES.find(l => l.code === selectedLang); return ml ? <><FlagImg fc={ml.fc} name={ml.name} /> {ml.name}</> : <>🌍 Altre lingue</>; })()}
                 <ChevronDown size={14} style={{ marginLeft: '2px', transform: showMoreLangs ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
               </button>
+              );
+              })()}
               {showMoreLangs && (
                 <div style={{
                   position: 'absolute',
