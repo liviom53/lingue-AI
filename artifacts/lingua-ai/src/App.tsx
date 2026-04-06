@@ -1070,6 +1070,7 @@ export default function App() {
               return (
                 <button
                   key={l.code}
+                  className="lang-btn"
                   onClick={() => { setSelectedLang(l.code); setShowMoreLangs(false); }}
                   style={{
                     padding: '8px 4px',
@@ -1083,7 +1084,6 @@ export default function App() {
                     cursor: 'pointer',
                     fontWeight: active ? '700' : '500',
                     transform: 'translateY(-3px)',
-                    transition: 'none',
                     boxShadow: active ? [
                       'inset 0 1px 0 rgba(255,255,255,0.22)',
                       '0 3px 0 #b85a10',
@@ -1109,6 +1109,7 @@ export default function App() {
                 const active = MORE_LANGUAGES.some(l => l.code === selectedLang);
                 return (
               <button
+                className="lang-btn"
                 onClick={() => setShowMoreLangs(v => !v)}
                 style={{
                   width: '100%',
@@ -1129,7 +1130,6 @@ export default function App() {
                   fontSize: 'clamp(0.7rem, 3.5vw, 1rem)',
                   fontWeight: active ? '700' : '500',
                   transform: 'translateY(-3px)',
-                  transition: 'none',
                   boxShadow: active ? [
                     'inset 0 1px 0 rgba(255,255,255,0.22)',
                     '0 3px 0 #b85a10',

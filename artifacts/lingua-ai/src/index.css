@@ -48,6 +48,25 @@ section.lang-section:hover {
   box-shadow: inherit !important;
 }
 
+/* Bottoni griglia lingua: hover lift + brightness */
+.lang-btn {
+  transition:
+    transform 0.14s cubic-bezier(0.2,0,0.2,1),
+    filter    0.14s ease,
+    box-shadow 0.14s cubic-bezier(0.2,0,0.2,1) !important;
+}
+.lang-btn:hover {
+  transform: translateY(-6px) !important;
+  filter: brightness(1.14);
+}
+.lang-btn:active {
+  transform: translateY(2px) !important;
+  filter: brightness(0.92);
+  box-shadow:
+    inset 0 2px 6px rgba(0,0,0,0.55),
+    0 1px 3px rgba(0,0,0,0.30) !important;
+}
+
 /* ── Bottoni: transizione fluida ────────────────────── */
 button {
   transition: transform 0.09s cubic-bezier(0.2,0,0,1),
