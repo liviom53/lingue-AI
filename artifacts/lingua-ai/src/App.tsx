@@ -375,7 +375,7 @@ export default function App() {
           <img src={appIcon} alt="Impara una Lingua" style={{ width: '90px', height: '90px', borderRadius: '14px', flexShrink: 0 }} />
           <div>
             <h1 style={{ margin: 0, fontSize: '1.9rem', whiteSpace: 'nowrap' }}>Impara una lingua con l&apos;AI</h1>
-            <p style={{ color: '#f97316', fontSize: '1.55rem', margin: '4px 0 0', whiteSpace: 'nowrap' }}>Inizia a parlarla male .... poi si vedrà</p>
+            <p style={{ color: '#f97316', fontSize: '1.55rem', margin: '4px 0 0' }}>Parla male... poi si vedrà</p>
           </div>
         </header>
 
