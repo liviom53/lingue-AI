@@ -219,6 +219,7 @@ export default function App() {
   const [profile, setProfile] = useState<UserProfile>(loadProfile);
   const [profileSaved, setProfileSaved] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
+  const chatContainerRef = useRef<HTMLDivElement>(null);
   const moreLangsRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -271,7 +272,9 @@ export default function App() {
   }, [selectedLang]);
 
   useEffect(() => {
-    if (showChat) chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (showChat && chatContainerRef.current) {
+      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+    }
   }, [chatMessages, showChat]);
 
   const currentLocale = (ALL_LANGUAGES.find(l => l.code === selectedLang) ?? ALL_LANGUAGES[0]).locale;
@@ -812,7 +815,7 @@ export default function App() {
 
           {showChat && (
             <div style={{ marginTop: '10px' }}>
-              <div style={{
+              <div ref={chatContainerRef} style={{
                 height: '100px',
                 overflowY: 'auto',
                 backgroundColor: '#0f172a',
