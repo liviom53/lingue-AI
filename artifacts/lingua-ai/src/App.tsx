@@ -1084,12 +1084,14 @@ export default function App() {
           return (
             <div style={{ marginBottom: '16px' }}>
               {/* Livello */}
-              <section style={{ ...styles.card, textAlign: 'center', marginBottom: '10px' }}>
-                <p style={{ margin: '0 0 4px', fontSize: '0.75rem', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Il tuo livello</p>
-                <p style={{ margin: 0, fontSize: '2rem' }}>{levelInfo.icon}</p>
-                <p style={{ margin: '4px 0 0', fontSize: '1.1rem', fontWeight: 'bold', color: levelInfo.color }}>{levelInfo.label}</p>
-                <p style={{ margin: '2px 0 0', fontSize: '0.75rem', color: '#64748b' }}>{Math.round(totalScore)} pt</p>
-              </section>
+              <div style={{ ...styles.card, display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
+                <span style={{ fontSize: '1.6rem' }}>{levelInfo.icon}</span>
+                <div>
+                  <p style={{ margin: 0, fontSize: '0.65rem', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Il tuo livello</p>
+                  <p style={{ margin: 0, fontSize: '1rem', fontWeight: 'bold', color: levelInfo.color }}>{levelInfo.label}</p>
+                </div>
+                <span style={{ marginLeft: 'auto', fontSize: '0.75rem', color: '#64748b' }}>{Math.round(totalScore)} pt</span>
+              </div>
 
               {/* Riepilogo rapido */}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px', marginBottom: '12px' }}>
