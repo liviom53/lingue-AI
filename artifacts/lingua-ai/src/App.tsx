@@ -139,6 +139,29 @@ interface ProgressStats {
   langStats: Record<string, number>;
 }
 
+interface UserProfile {
+  nome: string;
+  eta: string;
+  sesso: string;
+  occupazione: string;
+  citta: string;
+  altro: string;
+}
+
+const defaultProfile = (): UserProfile => ({ nome: '', eta: '', sesso: '', occupazione: '', citta: '', altro: '' });
+
+const PROFILE_KEY = 'lingua_ai_profile';
+const loadProfile = (): UserProfile => {
+  try {
+    const stored = localStorage.getItem(PROFILE_KEY);
+    if (stored) return { ...defaultProfile(), ...JSON.parse(stored) };
+  } catch {}
+  return defaultProfile();
+};
+const saveProfile = (p: UserProfile) => {
+  try { localStorage.setItem(PROFILE_KEY, JSON.stringify(p)); } catch {}
+};
+
 const PROGRESS_KEY = 'lingua_ai_progress';
 
 const defaultProgress = (): ProgressStats => ({
@@ -193,6 +216,8 @@ export default function App() {
   const [showMoreLangs, setShowMoreLangs] = useState(false);
   const [activeTab, setActiveTab] = useState<'profilo' | 'progressi'>('profilo');
   const [progress, setProgress] = useState<ProgressStats>(loadProgress);
+  const [profile, setProfile] = useState<UserProfile>(loadProfile);
+  const [profileSaved, setProfileSaved] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const moreLangsRef = useRef<HTMLDivElement>(null);
 
@@ -348,7 +373,7 @@ export default function App() {
       const res = await fetch('/api/ai/translate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: inputText, targetLang: selectedLang }),
+        body: JSON.stringify({ text: inputText, targetLang: selectedLang, userProfile: profile }),
       });
       if (!res.ok) throw new Error('Errore AI. Riprova.');
       const data = await res.json();
@@ -417,7 +442,7 @@ export default function App() {
       const res = await fetch('/api/ai/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: newMessages, targetLang: selectedLang }),
+        body: JSON.stringify({ messages: newMessages, targetLang: selectedLang, userProfile: profile }),
       });
       if (!res.ok) throw new Error('Errore chat AI');
       const data = await res.json();
@@ -928,6 +953,26 @@ export default function App() {
             </div>
           );
 
+          const inputStyle: React.CSSProperties = {
+            width: '100%', boxSizing: 'border-box', padding: '8px 10px',
+            backgroundColor: '#0f172a', border: '1px solid #334155', borderRadius: '8px',
+            color: '#f8fafc', fontSize: '0.9rem', outline: 'none',
+          };
+          const labelStyle: React.CSSProperties = {
+            fontSize: '0.7rem', color: '#64748b', textTransform: 'uppercase',
+            letterSpacing: '0.06em', display: 'block', marginBottom: '4px',
+          };
+
+          const updateProfile = (field: keyof UserProfile, value: string) => {
+            setProfile(prev => {
+              const updated = { ...prev, [field]: value };
+              saveProfile(updated);
+              return updated;
+            });
+            setProfileSaved(true);
+            setTimeout(() => setProfileSaved(false), 1500);
+          };
+
           if (activeTab === 'profilo') return (
             <div style={{ marginBottom: '16px' }}>
               {/* Livello */}
@@ -945,7 +990,7 @@ export default function App() {
               </div>
 
               {/* Lingua preferita */}
-              <div style={{ backgroundColor: '#1e293b', borderRadius: '10px', padding: '12px', textAlign: 'center' }}>
+              <div style={{ backgroundColor: '#1e293b', borderRadius: '10px', padding: '12px', textAlign: 'center', marginBottom: '12px' }}>
                 <p style={{ margin: '0 0 4px', fontSize: '0.7rem', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Lingua preferita</p>
                 {favLangName ? (
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', marginTop: '4px' }}>
@@ -954,6 +999,86 @@ export default function App() {
                   </div>
                 ) : <p style={{ margin: 0, fontSize: '1.2rem', color: '#64748b' }}>—</p>}
               </div>
+
+              {/* Informazioni personali */}
+              <section style={{ ...styles.card, marginBottom: '0' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                  <p style={{ margin: 0, fontSize: '0.75rem', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                    👤 Informazioni personali
+                  </p>
+                  {profileSaved && (
+                    <span style={{ fontSize: '0.7rem', color: '#10b981', fontWeight: 'bold' }}>✓ Salvato</span>
+                  )}
+                </div>
+                <p style={{ margin: '0 0 10px', fontSize: '0.78rem', color: '#64748b', lineHeight: '1.4' }}>
+                  Campi facoltativi — l'AI li usa per personalizzare spiegazioni ed esempi.
+                </p>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '10px' }}>
+                  <div>
+                    <label style={labelStyle}>Nome</label>
+                    <input
+                      style={inputStyle}
+                      placeholder="es. Marco"
+                      value={profile.nome}
+                      onChange={e => updateProfile('nome', e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <label style={labelStyle}>Età</label>
+                    <input
+                      style={inputStyle}
+                      placeholder="es. 32"
+                      type="number"
+                      min="1"
+                      max="120"
+                      value={profile.eta}
+                      onChange={e => updateProfile('eta', e.target.value)}
+                    />
+                  </div>
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '10px' }}>
+                  <div>
+                    <label style={labelStyle}>Sesso</label>
+                    <select
+                      style={{ ...inputStyle, appearance: 'none' }}
+                      value={profile.sesso}
+                      onChange={e => updateProfile('sesso', e.target.value)}
+                    >
+                      <option value="">—</option>
+                      <option value="Uomo">Uomo</option>
+                      <option value="Donna">Donna</option>
+                      <option value="Altro">Altro</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label style={labelStyle}>Città</label>
+                    <input
+                      style={inputStyle}
+                      placeholder="es. Milano"
+                      value={profile.citta}
+                      onChange={e => updateProfile('citta', e.target.value)}
+                    />
+                  </div>
+                </div>
+                <div style={{ marginBottom: '10px' }}>
+                  <label style={labelStyle}>Occupazione</label>
+                  <input
+                    style={inputStyle}
+                    placeholder="es. Insegnante, Medico, Studente…"
+                    value={profile.occupazione}
+                    onChange={e => updateProfile('occupazione', e.target.value)}
+                  />
+                </div>
+                <div>
+                  <label style={labelStyle}>Altro (interessi, motivo dello studio…)</label>
+                  <textarea
+                    style={{ ...inputStyle, resize: 'none', minHeight: '60px' }}
+                    placeholder="es. Studio l'inglese per lavoro, amo i viaggi..."
+                    value={profile.altro}
+                    onChange={e => updateProfile('altro', e.target.value)}
+                  />
+                </div>
+              </section>
             </div>
           );
 
