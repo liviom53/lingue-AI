@@ -775,6 +775,12 @@ export default function App() {
         </button>
 
         <section style={styles.card}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '4px 10px', backgroundColor: '#334155', borderRadius: '6px', fontSize: '0.8rem', color: '#e2e8f0', fontWeight: 600 }}>
+              <FlagImg fc="it" name="Italiano" /> Italiano
+            </span>
+            <span style={{ color: '#64748b', fontSize: '0.8rem' }}>→ traduco in:</span>
+          </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px' }}>
             {LANGUAGES.map(l => (
               <button
