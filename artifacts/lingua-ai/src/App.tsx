@@ -274,6 +274,7 @@ export default function App() {
   const demoTimersRef = useRef<number[]>([]);
   const translatedTextRef = useRef('');
   const demoActiveRef = useRef(false);
+  const blockSpeakRef = useRef(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const moreLangsRef = useRef<HTMLDivElement>(null);
@@ -341,8 +342,8 @@ export default function App() {
   const availableVoices = langVoices.length > 0 ? langVoices : voices;
 
   const speak = (text: string) => {
-    // During demo the Italian narration handles audio — skip target-language speech
-    if (demoActiveRef.current) return;
+    // During demo (or right after stopping it) the Italian narration handles audio
+    if (demoActiveRef.current || blockSpeakRef.current) return;
     // Stop anything currently playing
     window.speechSynthesis.cancel();
 
@@ -657,7 +658,9 @@ export default function App() {
   const narrateDemo = (text: string) => {
     window.speechSynthesis.cancel();
     // Piccola pausa dopo cancel — fix per Chrome che spezza le parole
-    setTimeout(() => {
+    // Tracciamo il timer così stopDemo() lo cancella se l'utente preme Salta
+    const tid = window.setTimeout(() => {
+      if (!demoActiveRef.current) return; // Demo già fermata, non parlare
       const ut = new SpeechSynthesisUtterance(text);
       ut.lang = 'it-IT';
       ut.rate = 0.82;
@@ -666,6 +669,7 @@ export default function App() {
       if (itVoice) ut.voice = itVoice;
       window.speechSynthesis.speak(ut);
     }, 80);
+    demoTimersRef.current.push(tid);
   };
 
   const stopDemo = () => {
@@ -673,6 +677,9 @@ export default function App() {
     demoTimersRef.current = [];
     window.speechSynthesis.cancel();
     demoActiveRef.current = false;
+    // Block speak() for 3s to absorb any in-flight API calls (translate, shadow, grammar)
+    blockSpeakRef.current = true;
+    setTimeout(() => { blockSpeakRef.current = false; }, 3000);
     setDemoActive(false);
     setDemoStep(0);
   };
