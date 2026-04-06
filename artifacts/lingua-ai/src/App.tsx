@@ -1212,32 +1212,34 @@ export default function App() {
             onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleTranslate(); } }}
             placeholder="Scrivi in italiano..."
           />
-          <button
-            className="action-btn"
-            style={{ ...styles.btn, backgroundColor: isListening ? '#ef4444' : '#334155' }}
-            onClick={startInputSpeech}
-          >
-            <Mic size={18} /> DETTA
-          </button>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginTop: '22px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', marginTop: '20px' }}>
             <button
               className="action-btn"
-              data-demo="translate-btn"
-              style={{ ...styles.btn, backgroundColor: '#fb923c', marginTop: '0' }}
-              onClick={() => handleTranslate()}
-              disabled={loading || aiLoading}
+              style={{ ...styles.btn, marginTop: 0, backgroundColor: isListening ? '#ef4444' : '#334155' }}
+              onClick={startInputSpeech}
             >
-              {loading ? <Loader2 className="animate-spin" size={18} /> : <Send size={18} />} TRADUCI
+              <Mic size={18} /> DETTA
             </button>
-            <button
-              className="action-btn"
-              style={{ ...styles.btn, backgroundColor: '#e8d0a0', color: '#1e293b', marginTop: '0', fontSize: '0.85rem' }}
-              onClick={handleAiTranslate}
-              disabled={loading || aiLoading}
-              title="Traduzione AI con spiegazione grammaticale"
-            >
-              {aiLoading ? <Loader2 className="animate-spin" size={18} /> : <Bot size={18} />} TUTOR AI
-            </button>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+              <button
+                className="action-btn"
+                data-demo="translate-btn"
+                style={{ ...styles.btn, marginTop: 0, backgroundColor: '#fb923c' }}
+                onClick={() => handleTranslate()}
+                disabled={loading || aiLoading}
+              >
+                {loading ? <Loader2 className="animate-spin" size={18} /> : <Send size={18} />} TRADUCI
+              </button>
+              <button
+                className="action-btn"
+                style={{ ...styles.btn, marginTop: 0, backgroundColor: '#e8d0a0', color: '#1e293b', fontSize: '0.85rem' }}
+                onClick={handleAiTranslate}
+                disabled={loading || aiLoading}
+                title="Traduzione AI con spiegazione grammaticale"
+              >
+                {aiLoading ? <Loader2 className="animate-spin" size={18} /> : <Bot size={18} />} TUTOR AI
+              </button>
+            </div>
           </div>
           {error && (
             <p style={{ color: '#ef4444', fontSize: '0.8rem', marginTop: '10px', display: 'flex', alignItems: 'center', gap: '6px' }}>
