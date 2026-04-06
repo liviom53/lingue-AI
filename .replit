@@ -3,13 +3,9 @@ modules = ["nodejs-24"]
   [[artifacts]]
   id = "3B4_FFSkEVBkAeYMFRJ2e"
 
-  [[ports]]
-  localPort = 8080
-  externalPort = 80
-
   [deployment]
   router = "application"
-  deploymentTarget = "vm"
+  deploymentTarget = "autoscale"
 
   [deployment.postBuild]
   args = ["pnpm", "store", "prune"]
