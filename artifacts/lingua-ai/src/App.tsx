@@ -354,7 +354,7 @@ export default function App() {
       padding: '8px',
       borderRadius: '8px',
       border: 'none',
-      backgroundColor: '#3b82f6',
+      backgroundColor: '#f97316',
       color: '#fff',
       fontWeight: 'bold',
       cursor: 'pointer',
@@ -387,7 +387,7 @@ export default function App() {
                 onClick={() => { setSelectedLang(l.code); setShowMoreLangs(false); }}
                 style={{
                   padding: '8px',
-                  backgroundColor: selectedLang === l.code ? '#3b82f6' : '#334155',
+                  backgroundColor: selectedLang === l.code ? '#f97316' : '#334155',
                   color: '#fff',
                   border: 'none',
                   borderRadius: '5px',
@@ -403,7 +403,7 @@ export default function App() {
                 style={{
                   width: '100%',
                   padding: '8px',
-                  backgroundColor: MORE_LANGUAGES.some(l => l.code === selectedLang) ? '#3b82f6' : '#334155',
+                  backgroundColor: MORE_LANGUAGES.some(l => l.code === selectedLang) ? '#f97316' : '#334155',
                   color: '#fff',
                   border: 'none',
                   borderRadius: '5px',
@@ -442,7 +442,7 @@ export default function App() {
                       style={{
                         width: '100%',
                         padding: '9px 14px',
-                        backgroundColor: selectedLang === l.code ? '#3b82f6' : 'transparent',
+                        backgroundColor: selectedLang === l.code ? '#f97316' : 'transparent',
                         color: '#fff',
                         border: 'none',
                         cursor: 'pointer',
@@ -488,14 +488,14 @@ export default function App() {
           </button>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
             <button
-              style={{ ...styles.btn, backgroundColor: '#6366f1', marginTop: '6px' }}
+              style={{ ...styles.btn, backgroundColor: '#f97316', marginTop: '6px' }}
               onClick={handleTranslate}
               disabled={loading || aiLoading}
             >
               {loading ? <Loader2 className="animate-spin" size={18} /> : <Send size={18} />} TRADUCI
             </button>
             <button
-              style={{ ...styles.btn, backgroundColor: '#7c3aed', marginTop: '6px', fontSize: '0.85rem' }}
+              style={{ ...styles.btn, backgroundColor: '#ef4444', marginTop: '6px', fontSize: '0.85rem' }}
               onClick={handleAiTranslate}
               disabled={loading || aiLoading}
               title="Traduzione AI con spiegazione grammaticale"
@@ -557,7 +557,7 @@ export default function App() {
               step={0.1}
               value={speechRate}
               onChange={e => setSpeechRate(Number(e.target.value))}
-              style={{ width: '100%', accentColor: '#3b82f6' }}
+              style={{ width: '100%', accentColor: '#f97316' }}
             />
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.7rem', color: '#64748b', marginTop: '2px' }}>
               <span>0.1x (lento)</span>
@@ -592,9 +592,9 @@ export default function App() {
               </p>
             )}
             {aiExplanation && (
-              <div style={{ marginTop: '10px', padding: '8px', backgroundColor: '#0f172a', borderRadius: '8px', border: '1px solid #7c3aed' }}>
-                <p style={{ fontSize: '0.8rem', color: '#a78bfa', margin: '0 0 4px', fontWeight: 'bold' }}>🤖 DeepSeek spiega:</p>
-                <p style={{ fontSize: '0.85rem', color: '#c4b5fd', margin: '0 0 6px' }}>{aiExplanation.explanation}</p>
+              <div style={{ marginTop: '10px', padding: '8px', backgroundColor: '#0f172a', borderRadius: '8px', border: '1px solid #f97316' }}>
+                <p style={{ fontSize: '0.8rem', color: '#fbbf24', margin: '0 0 4px', fontWeight: 'bold' }}>🤖 DeepSeek spiega:</p>
+                <p style={{ fontSize: '0.85rem', color: '#fde68a', margin: '0 0 6px' }}>{aiExplanation.explanation}</p>
                 {aiExplanation.example && (
                   <p style={{ fontSize: '0.8rem', color: '#94a3b8', margin: 0, fontStyle: 'italic' }}>
                     Es: <em style={{ color: '#e2e8f0' }}>{aiExplanation.example}</em>
@@ -645,14 +645,14 @@ export default function App() {
         )}
 
         {/* AI Chat Section */}
-        <section style={{ ...styles.card, border: '1px solid #7c3aed' }}>
+        <section style={{ ...styles.card, border: '1px solid #f97316' }}>
           <button
             onClick={() => setShowChat(!showChat)}
             style={{
               width: '100%',
               background: 'none',
               border: 'none',
-              color: '#a78bfa',
+              color: '#fbbf24',
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
@@ -694,8 +694,8 @@ export default function App() {
                       maxWidth: '85%',
                       padding: '6px 10px',
                       borderRadius: msg.role === 'user' ? '12px 12px 2px 12px' : '12px 12px 12px 2px',
-                      backgroundColor: msg.role === 'user' ? '#6366f1' : '#1e293b',
-                      border: msg.role === 'assistant' ? '1px solid #7c3aed' : 'none',
+                      backgroundColor: msg.role === 'user' ? '#ea580c' : '#1e293b',
+                      border: msg.role === 'assistant' ? '1px solid #f59e0b' : 'none',
                       fontSize: '0.85rem',
                       lineHeight: '1.4',
                       color: '#f8fafc',
@@ -714,8 +714,8 @@ export default function App() {
                 ))}
                 {chatLoading && (
                   <div style={{ display: 'flex', justifyContent: 'flex-start', marginBottom: '8px' }}>
-                    <div style={{ padding: '6px 10px', backgroundColor: '#1e293b', borderRadius: '12px', border: '1px solid #7c3aed' }}>
-                      <Loader2 size={14} className="animate-spin" style={{ color: '#a78bfa' }} />
+                    <div style={{ padding: '6px 10px', backgroundColor: '#1e293b', borderRadius: '12px', border: '1px solid #f59e0b' }}>
+                      <Loader2 size={14} className="animate-spin" style={{ color: '#fbbf24' }} />
                     </div>
                   </div>
                 )}
@@ -743,7 +743,7 @@ export default function App() {
                   disabled={chatLoading || !chatInput.trim()}
                   style={{
                     padding: '8px 12px',
-                    backgroundColor: '#7c3aed',
+                    backgroundColor: '#ea580c',
                     color: '#fff',
                     border: 'none',
                     borderRadius: '8px',
