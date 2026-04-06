@@ -276,6 +276,8 @@ export default function App() {
   const demoActiveRef = useRef(false);
   const blockSpeakRef = useRef(false);
   const voicesRef = useRef<SpeechSynthesisVoice[]>([]);
+  const [demoCursorPos, setDemoCursorPos] = useState<{x: number, y: number} | null>(null);
+  const [demoCursorClicking, setDemoCursorClicking] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const moreLangsRef = useRef<HTMLDivElement>(null);
@@ -662,7 +664,7 @@ export default function App() {
     // Piccola pausa dopo cancel — fix per Chrome che spezza le parole
     // Tracciamo il timer così stopDemo() lo cancella se l'utente preme Salta
     const tid = window.setTimeout(() => {
-      if (!demoActiveRef.current) return; // Demo già fermata, non parlare
+      if (!demoActiveRef.current) return;
       const ut = new SpeechSynthesisUtterance(text);
       ut.lang = 'it-IT';
       ut.rate = 0.82;
@@ -674,8 +676,21 @@ export default function App() {
         itVoices[0];
       if (itVoice) ut.voice = itVoice;
       window.speechSynthesis.speak(ut);
-    }, 80);
+    }, 150);
     demoTimersRef.current.push(tid);
+  };
+
+  const moveDemoCursor = (target: string, xOff = 0, yOff = 0) => {
+    const el = document.querySelector(`[data-demo="${target}"]`);
+    if (!el) return;
+    const r = el.getBoundingClientRect();
+    setDemoCursorPos({ x: r.left + r.width / 2 + xOff, y: r.top + r.height / 2 + yOff });
+  };
+
+  const animateDemoCursorClick = () => {
+    setDemoCursorClicking(true);
+    const id = window.setTimeout(() => setDemoCursorClicking(false), 400);
+    demoTimersRef.current.push(id);
   };
 
   const stopDemo = () => {
@@ -683,11 +698,12 @@ export default function App() {
     demoTimersRef.current = [];
     window.speechSynthesis.cancel();
     demoActiveRef.current = false;
-    // Block speak() for 3s to absorb any in-flight API calls (translate, shadow, grammar)
     blockSpeakRef.current = true;
     setTimeout(() => { blockSpeakRef.current = false; }, 3000);
     setDemoActive(false);
     setDemoStep(0);
+    setDemoCursorPos(null);
+    setDemoCursorClicking(false);
   };
 
   const startDemo = () => {
@@ -705,6 +721,8 @@ export default function App() {
     demoActiveRef.current = true;
     setDemoActive(true);
     setDemoStep(0);
+    // Position cursor at input immediately
+    window.setTimeout(() => moveDemoCursor('textarea'), 60);
 
     const t = (fn: () => void, ms: number) => {
       const id = window.setTimeout(fn, ms);
@@ -721,31 +739,39 @@ export default function App() {
         demoTimersRef.current.push(id);
       } else {
         // Offsets from when typewriter finishes — spaced to not cut narrations mid-frase
-        t(() => { setDemoStep(1); narrateDemo(DEMO_STEPS[1].narration); }, 0);
+        t(() => { setDemoStep(1); narrateDemo(DEMO_STEPS[1].narration); moveDemoCursor('lang-grid'); }, 0);
         t(() => {
           setDemoStep(2);
           narrateDemo(DEMO_STEPS[2].narration);
+          moveDemoCursor('translate-btn');
           handleTranslate();
         }, 2500);
+        t(() => animateDemoCursorClick(), 3000);
         t(() => {
           setDemoStep(3);
           narrateDemo(DEMO_STEPS[3].narration);
+          moveDemoCursor('translated-text', -30, 0);
           const words = translatedTextRef.current.split(' ').filter(w => w.replace(/[^a-zA-Z]/g, '').length > 2);
           if (words.length > 0) fetchGrammar(words[0]);
         }, 7000);
+        t(() => animateDemoCursorClick(), 7500);
         t(() => {
           setDemoStep(4);
           narrateDemo(DEMO_STEPS[4].narration);
+          moveDemoCursor('shadow-toggle');
           setShowShadow(true);
           fetchShadowPhrase();
         }, 11500);
+        t(() => animateDemoCursorClick(), 12000);
         t(() => {
           setShowShadow(false);
           setDemoStep(5);
           narrateDemo(DEMO_STEPS[5].narration);
+          moveDemoCursor('tab-profilo');
           setShowTabPanel(true);
           setActiveTab('profilo');
         }, 16000);
+        t(() => animateDemoCursorClick(), 16500);
         t(() => { setDemoStep(6); narrateDemo(DEMO_STEPS[6].narration); }, 20000);
         t(() => stopDemo(), 23500);
       }
@@ -822,7 +848,7 @@ export default function App() {
             </span>
             <span style={{ color: '#64748b', fontSize: '0.8rem' }}>→ traduco in:</span>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px' }}>
+          <div data-demo="lang-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px' }}>
             {LANGUAGES.map(l => (
               <button
                 key={l.code}
@@ -916,6 +942,7 @@ export default function App() {
               resize: 'none',
               boxSizing: 'border-box',
             }}
+            data-demo="textarea"
             value={inputText}
             onChange={e => setInputText(e.target.value)}
             onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleTranslate(); } }}
@@ -929,6 +956,7 @@ export default function App() {
           </button>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
             <button
+              data-demo="translate-btn"
               style={{ ...styles.btn, backgroundColor: '#fb923c', marginTop: '6px' }}
               onClick={handleTranslate}
               disabled={loading || aiLoading}
@@ -1033,7 +1061,7 @@ export default function App() {
         {translatedText && (
           <section style={{ ...styles.card, borderLeft: '4px solid #10b981' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-              <div style={{ flex: 1, fontSize: '1.2rem', fontWeight: 'bold', lineHeight: '1.7', flexWrap: 'wrap', display: 'flex', gap: '4px' }}>
+              <div data-demo="translated-text" style={{ flex: 1, fontSize: '1.2rem', fontWeight: 'bold', lineHeight: '1.7', flexWrap: 'wrap', display: 'flex', gap: '4px' }}>
                 {translatedText.split(' ').map((word, i) => (
                   <span
                     key={i}
@@ -1225,6 +1253,7 @@ export default function App() {
         {/* Shadowing Mode */}
         <section style={{ ...styles.card, border: '1px solid #a855f7' }}>
           <button
+            data-demo="shadow-toggle"
             onClick={() => setShowShadow(v => !v)}
             style={{ width: '100%', background: 'none', border: 'none', color: '#c084fc', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: 0, fontSize: '0.9rem', fontWeight: 'bold' }}
           >
@@ -1552,7 +1581,7 @@ export default function App() {
             { id: 'profilo',     label: '👤 Profilo' },
             { id: 'progressi',  label: '📊 Progressi' },
           ] as const).map(({ id, label }) => (
-            <button key={id} onClick={() => setActiveTab(id)} style={{
+            <button key={id} data-demo={id === 'profilo' ? 'tab-profilo' : undefined} onClick={() => setActiveTab(id)} style={{
               padding: '9px 6px', border: '1px solid #334155', borderRadius: '8px', cursor: 'pointer',
               fontWeight: 'bold', fontSize: '0.82rem',
               backgroundColor: activeTab === id ? '#fb923c' : '#1e293b',
@@ -2118,6 +2147,27 @@ export default function App() {
         )}
 
       </div>
+
+      {/* Cursore animato demo — segue i punti di interesse */}
+      {demoActive && demoCursorPos && (
+        <div
+          style={{
+            position: 'fixed',
+            left: demoCursorPos.x,
+            top: demoCursorPos.y,
+            zIndex: 99999,
+            pointerEvents: 'none',
+            transition: 'left 0.65s cubic-bezier(0.4,0,0.2,1), top 0.65s cubic-bezier(0.4,0,0.2,1), transform 0.15s ease',
+            transform: `translate(-4px, -2px) scale(${demoCursorClicking ? 0.68 : 1})`,
+            filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.7))',
+          }}
+        >
+          <svg width="22" height="28" viewBox="0 0 22 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M2 2L2 22L7.5 17L11 26L14 24.5L10.5 15.5L17.5 15.5Z" fill="white" stroke="#0f172a" strokeWidth="2" strokeLinejoin="round" strokeLinecap="round"/>
+          </svg>
+        </div>
+      )}
+
     </div>
   );
 }
