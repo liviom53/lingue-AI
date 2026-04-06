@@ -662,12 +662,18 @@ export default function App() {
                 </p>
               </div>
             )}
-            <button
-              style={{ ...styles.btn, backgroundColor: isPracticing ? '#f59e0b' : '#10b981' }}
-              onClick={startPracticeSession}
-            >
-              <Mic size={18} /> {practiceResult && !isPracticing ? 'RIPROVA' : 'PRATICA PRONUNCIA'}
-            </button>
+            {!((window as any).SpeechRecognition || (window as any).webkitSpeechRecognition) ? (
+              <p style={{ fontSize: '0.8rem', color: '#f59e0b', marginTop: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                🎙️ Pratica pronuncia disponibile solo su <strong>Chrome</strong> o <strong>Edge</strong>
+              </p>
+            ) : (
+              <button
+                style={{ ...styles.btn, backgroundColor: isPracticing ? '#f59e0b' : '#10b981' }}
+                onClick={startPracticeSession}
+              >
+                <Mic size={18} /> {practiceResult && !isPracticing ? 'RIPROVA' : 'PRATICA PRONUNCIA'}
+              </button>
+            )}
           </section>
         )}
 
