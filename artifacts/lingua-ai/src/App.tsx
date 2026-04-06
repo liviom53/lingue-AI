@@ -645,23 +645,27 @@ export default function App() {
   };
 
   const DEMO_STEPS = [
-    { icon: '✍️', label: '1/6 — Scrittura', desc: 'Scrivo una frase in italiano...', narration: 'Ciao! Ti mostro come funziona l\'app. Sto scrivendo una frase in italiano.' },
-    { icon: '🌍', label: '2/6 — Lingua', desc: 'Traduco nella lingua selezionata...', narration: 'Ora seleziono la lingua in cui voglio tradurre.' },
-    { icon: '🔄', label: '3/6 — Traduzione', desc: 'Premo TRADUCI — traduzione istantanea con pronuncia', narration: 'Premo Traduci. La traduzione arriva in pochi secondi, con pronuncia automatica.' },
-    { icon: '🔬', label: '4/6 — X-Ray', desc: 'Tocco una parola → analisi grammaticale istantanea', narration: 'Posso toccare qualsiasi parola della traduzione per vedere l\'analisi grammaticale X-Ray.' },
-    { icon: '🎙️', label: '5/6 — Shadowing', desc: 'Apro Shadowing — ascolta e ripeti per la pronuncia', narration: 'Con la modalità Shadowing, ascolto la frase e la ripeto per migliorare la pronuncia.' },
-    { icon: '⭐', label: '6/6 — Funzionalità', desc: 'Profilo, Progressi, Segnalibri, Quiz e altro...', narration: 'Nel pannello Funzionalità trovi il profilo, i progressi, i segnalibri e il quiz.' },
-    { icon: '🎉', label: 'Demo completata', desc: 'Esplora liberamente tutte le funzionalità!', narration: 'Demo completata! Ora sei pronto. Buono studio!' },
+    { icon: '✍️', label: '1/6 — Scrittura',   desc: 'Scrivo una frase in italiano...',                    narration: 'Ciao! Guarda come funziona questa app.' },
+    { icon: '🌍', label: '2/6 — Lingua',       desc: 'Traduco nella lingua selezionata...',               narration: 'Seleziono la lingua di destinazione.' },
+    { icon: '🔄', label: '3/6 — Traduzione',   desc: 'Premo TRADUCI — traduzione istantanea con pronuncia', narration: 'Premo Traduci. Ecco la traduzione in pochi secondi.' },
+    { icon: '🔬', label: '4/6 — X-Ray',        desc: 'Tocco una parola → analisi grammaticale istantanea', narration: 'Tocco una parola. Ecco l\'analisi grammaticale X-Ray.' },
+    { icon: '🎙️', label: '5/6 — Shadowing',   desc: 'Apro Shadowing — ascolta e ripeti per la pronuncia', narration: 'Con lo Shadowing ascolto e ripeto per migliorare.' },
+    { icon: '⭐', label: '6/6 — Funzionalità', desc: 'Profilo, Progressi, Segnalibri, Quiz e altro...',    narration: 'Qui trovo profilo, progressi e segnalibri.' },
+    { icon: '🎉', label: 'Demo completata',    desc: 'Esplora liberamente tutte le funzionalità!',         narration: 'Demo completata. Buono studio!' },
   ];
 
   const narrateDemo = (text: string) => {
     window.speechSynthesis.cancel();
-    const ut = new SpeechSynthesisUtterance(text);
-    ut.lang = 'it-IT';
-    ut.rate = 0.92;
-    const itVoice = window.speechSynthesis.getVoices().find(v => v.lang.startsWith('it'));
-    if (itVoice) ut.voice = itVoice;
-    window.speechSynthesis.speak(ut);
+    // Piccola pausa dopo cancel — fix per Chrome che spezza le parole
+    setTimeout(() => {
+      const ut = new SpeechSynthesisUtterance(text);
+      ut.lang = 'it-IT';
+      ut.rate = 0.82;
+      ut.pitch = 1.05;
+      const itVoice = window.speechSynthesis.getVoices().find(v => v.lang.startsWith('it'));
+      if (itVoice) ut.voice = itVoice;
+      window.speechSynthesis.speak(ut);
+    }, 80);
   };
 
   const stopDemo = () => {
@@ -703,39 +707,40 @@ export default function App() {
         const id = window.setTimeout(type, 45);
         demoTimersRef.current.push(id);
       } else {
-        // Step 0 narration fires at start of typing
-        t(() => { setDemoStep(1); narrateDemo(DEMO_STEPS[1].narration); }, 400);
+        // Offsets from when typewriter finishes — spaced to not cut narrations mid-frase
+        t(() => { setDemoStep(1); narrateDemo(DEMO_STEPS[1].narration); }, 0);
         t(() => {
           setDemoStep(2);
           narrateDemo(DEMO_STEPS[2].narration);
           handleTranslate();
-        }, 1600);
+        }, 2500);
         t(() => {
           setDemoStep(3);
           narrateDemo(DEMO_STEPS[3].narration);
           const words = translatedTextRef.current.split(' ').filter(w => w.replace(/[^a-zA-Z]/g, '').length > 2);
           if (words.length > 0) fetchGrammar(words[0]);
-        }, 5200);
+        }, 7000);
         t(() => {
           setDemoStep(4);
           narrateDemo(DEMO_STEPS[4].narration);
           setShowShadow(true);
           fetchShadowPhrase();
-        }, 9000);
+        }, 11500);
         t(() => {
           setShowShadow(false);
           setDemoStep(5);
           narrateDemo(DEMO_STEPS[5].narration);
           setShowTabPanel(true);
           setActiveTab('profilo');
-        }, 13500);
-        t(() => { setDemoStep(6); narrateDemo(DEMO_STEPS[6].narration); }, 17500);
-        t(() => stopDemo(), 21000);
+        }, 16000);
+        t(() => { setDemoStep(6); narrateDemo(DEMO_STEPS[6].narration); }, 20000);
+        t(() => stopDemo(), 23500);
       }
     };
-    // Narrate step 0 immediately, then start typing
+    // Narrate step 0 first, then start typing after it has time to complete
     narrateDemo(DEMO_STEPS[0].narration);
-    type();
+    const startTypingId = window.setTimeout(type, 2400);
+    demoTimersRef.current.push(startTypingId);
   };
 
   const styles: Record<string, React.CSSProperties> = {
