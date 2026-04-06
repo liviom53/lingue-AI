@@ -935,25 +935,30 @@ export default function App() {
       fontFamily: "'Inter', system-ui, sans-serif",
     },
     card: {
-      // Gradiente interno: più chiaro in alto = luce da sopra
-      background: 'linear-gradient(175deg, #2c3f57 0%, #1e2d3f 30%, #1a2535 100%)',
+      // Gradiente più drammatico: luce intensa in alto-sinistra, scuro in basso
+      background: 'linear-gradient(155deg, #314663 0%, #1e2d3f 28%, #131c2b 100%)',
       borderRadius: '14px',
       padding: '12px',
-      marginBottom: '14px', // spazio per il piano d'ombra
-      // Bordo superiore luminoso + bordo laterale
-      border: '1px solid rgba(90,120,170,0.30)',
-      borderTop: '1px solid rgba(150,190,255,0.18)',
-      borderBottom: '1px solid rgba(0,0,0,0.60)',
-      // Spessore 3D: 6 layer a 0-blur = piano inferiore visibile
+      marginBottom: '16px',
+      // Bordi: top luminoso, bottom scuro, left lit, right ombra
+      border: '1px solid rgba(90,120,170,0.25)',
+      borderTop: '1px solid rgba(160,200,255,0.22)',
+      borderBottom: '1px solid rgba(0,0,0,0.65)',
       boxShadow: [
-        'inset 0 1px 0 rgba(255,255,255,0.12)',   // highlight cima
-        'inset 0 -1px 0 rgba(0,0,0,0.40)',         // ombra interna fondo
-        '0 2px 0 #0b1524',                         // ── strati dello spessore ──
-        '0 4px 0 #091220',
-        '0 6px 0 #070e1a',
-        '0 8px 0 rgba(4,8,16,0.7)',
-        '0 14px 30px rgba(0,0,0,0.65)',            // ombra ambientale
-        '0 6px 14px rgba(0,0,0,0.50)',             // ombra di contatto
+        // ── bevel interno completo (simula luce da top-left) ──
+        'inset 0 2px 0 rgba(255,255,255,0.14)',    // top highlight spesso
+        'inset 2px 0 0 rgba(255,255,255,0.08)',    // left edge lit
+        'inset -2px 0 0 rgba(0,0,0,0.22)',         // right edge dark
+        'inset 0 -2px 0 rgba(0,0,0,0.38)',         // bottom inner shadow
+        // ── faccia inferiore: 5 strati da 2px a 10px ──
+        '0 2px 0 #0c1624',
+        '0 4px 0 #09111e',
+        '0 6px 0 #060d18',
+        '0 8px 0 #040a12',
+        '0 10px 0 rgba(3,7,14,0.55)',
+        // ── ombre ambientali ──
+        '0 16px 36px rgba(0,0,0,0.70)',
+        '0 7px 16px rgba(0,0,0,0.55)',
       ].join(','),
     },
     btn: {
@@ -961,7 +966,8 @@ export default function App() {
       padding: '10px 8px',
       borderRadius: '10px',
       border: 'none',
-      borderTop: '1px solid rgba(255,255,255,0.20)',
+      borderTop: '1px solid rgba(255,255,255,0.22)',
+      borderBottom: '1px solid rgba(0,0,0,0.30)',
       backgroundColor: '#fb923c',
       color: '#fff',
       fontWeight: '700',
@@ -971,16 +977,20 @@ export default function App() {
       alignItems: 'center',
       justifyContent: 'center',
       gap: '8px',
-      // flottante di 5px sulla superficie
       transform: 'translateY(-5px)',
-      // faccia inferiore colorata (spessore 3D visibile)
       boxShadow: [
-        'inset 0 1px 0 rgba(255,255,255,0.25)',
+        // bevel interno bottone
+        'inset 0 2px 0 rgba(255,255,255,0.28)',    // top highlight
+        'inset 2px 0 0 rgba(255,255,255,0.14)',    // left edge lit
+        'inset -2px 0 0 rgba(0,0,0,0.18)',         // right edge dark
+        // faccia inferiore colorata
         '0 5px 0 #b85a10',
-        '0 7px 0 #7c3a08',
-        '0 9px 0 rgba(60,20,0,0.40)',
-        '0 14px 28px rgba(251,146,60,0.22)',
-        '0 8px 16px rgba(0,0,0,0.45)',
+        '0 7px 0 #8a3d08',
+        '0 9px 0 #5e2804',
+        '0 11px 0 rgba(40,16,0,0.40)',
+        // glow + ombra ambientale
+        '0 16px 30px rgba(251,146,60,0.24)',
+        '0 9px 18px rgba(0,0,0,0.48)',
       ].join(','),
     },
   };
