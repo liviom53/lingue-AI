@@ -667,7 +667,11 @@ export default function App() {
       ut.lang = 'it-IT';
       ut.rate = 0.82;
       ut.pitch = 1.05;
-      const itVoice = voicesRef.current.find(v => v.lang.startsWith('it'));
+      const itVoices = voicesRef.current.filter(v => v.lang.startsWith('it'));
+      const itVoice =
+        itVoices.find(v => v.name.toLowerCase().includes('google')) ||
+        itVoices.find(v => !v.localService) ||
+        itVoices[0];
       if (itVoice) ut.voice = itVoice;
       window.speechSynthesis.speak(ut);
     }, 80);
