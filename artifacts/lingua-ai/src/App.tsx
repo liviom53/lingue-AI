@@ -358,10 +358,20 @@ export default function App() {
     };
     const target = STEP_TARGETS[demoStep];
     if (!target) { setDemoCursorPos(null); return; }
-    const el = document.querySelector(`[data-demo="${target}"]`);
-    if (!el) return;
-    const r = el.getBoundingClientRect();
-    setDemoCursorPos({ x: r.left + r.width / 2, y: r.top + r.height / 2 });
+
+    let rafId: number;
+    rafId = requestAnimationFrame(() => {
+      const el = document.querySelector(`[data-demo="${target}"]`);
+      if (!el) return;
+      // Porta l'elemento in vista (senza animazione, per leggere posizione corretta)
+      el.scrollIntoView({ block: 'nearest' });
+      // Leggi posizione dopo che il browser ha completato il layout
+      rafId = requestAnimationFrame(() => {
+        const r = el.getBoundingClientRect();
+        setDemoCursorPos({ x: r.left + r.width / 2, y: r.top + r.height / 2 });
+      });
+    });
+    return () => cancelAnimationFrame(rafId);
   }, [demoStep, demoActive]);
 
   const currentLocale = (ALL_LANGUAGES.find(l => l.code === selectedLang) ?? ALL_LANGUAGES[0]).locale;
@@ -733,13 +743,14 @@ export default function App() {
     };
 
     if (window.speechSynthesis.speaking || window.speechSynthesis.pending) {
-      // Sovrapposizione: cancel + pausa minima per evitare troncamenti
+      // Sovrapposizione: cancel + 320ms — Chrome ha bisogno di tempo per resettarsi
       window.speechSynthesis.cancel();
-      const tid = window.setTimeout(doSpeak, 150);
+      const tid = window.setTimeout(doSpeak, 320);
       demoTimersRef.current.push(tid);
     } else {
-      // Niente in coda: parla subito, zero ritardo, zero troncamenti
-      doSpeak();
+      // Motore idle: piccolo buffer da 80ms per evitare troncamento del primo fonema
+      const tid = window.setTimeout(doSpeak, 80);
+      demoTimersRef.current.push(tid);
     }
   };
 
@@ -778,6 +789,7 @@ export default function App() {
     setShowChat(false);
     setError(null);
     setInputText('');
+    window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior });
     demoActiveRef.current = true;
     setDemoActive(true);
     setDemoStep(0);
@@ -2272,7 +2284,7 @@ export default function App() {
             zIndex: 99999,
             pointerEvents: 'none',
             transition: 'left 0.65s cubic-bezier(0.4,0,0.2,1), top 0.65s cubic-bezier(0.4,0,0.2,1), transform 0.15s ease',
-            transform: `translate(-4px, -2px) scale(${demoCursorClicking ? 0.68 : 1})`,
+            transform: `translate(-2px, -2px) scale(${demoCursorClicking ? 0.68 : 1})`,
             filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.7))',
           }}
         >
