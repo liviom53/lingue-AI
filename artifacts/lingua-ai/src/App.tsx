@@ -643,7 +643,7 @@ export default function App() {
 
   const DEMO_STEPS = [
     { icon: '✍️', label: '1/6 — Scrittura', desc: 'Scrivo una frase in italiano...' },
-    { icon: '🌍', label: '2/6 — Lingua', desc: 'Imposto Inglese come lingua di destinazione' },
+    { icon: '🌍', label: '2/6 — Lingua', desc: 'Traduco nella lingua selezionata...' },
     { icon: '🔄', label: '3/6 — Traduzione', desc: 'Premo TRADUCI — traduzione istantanea con pronuncia' },
     { icon: '🔬', label: '4/6 — X-Ray', desc: 'Tocco una parola → analisi grammaticale istantanea' },
     { icon: '🎙️', label: '5/6 — Shadowing', desc: 'Apro Shadowing — ascolta e ripeti per la pronuncia' },
@@ -670,7 +670,6 @@ export default function App() {
     setShowTabPanel(false);
     setError(null);
     setInputText('');
-    setSelectedLang('en');
     setDemoActive(true);
     setDemoStep(0);
 
