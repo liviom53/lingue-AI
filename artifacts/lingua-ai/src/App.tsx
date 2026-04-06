@@ -966,7 +966,7 @@ export default function App() {
       color: '#fff',
       fontWeight: '700',
       cursor: 'pointer',
-      marginTop: '8px',
+      marginTop: '14px',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
@@ -1219,7 +1219,7 @@ export default function App() {
           >
             <Mic size={18} /> DETTA
           </button>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
             <button
               className="action-btn"
               data-demo="translate-btn"
