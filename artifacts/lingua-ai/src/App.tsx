@@ -681,28 +681,35 @@ export default function App() {
 
   const narrateDemo = (text: string) => {
     window.speechSynthesis.cancel();
-    // Polling: aspetta che speechSynthesis sia libero prima di parlare
-    const trySpeak = () => {
+
+    const tid = window.setTimeout(() => {
       if (!demoActiveRef.current) return;
-      if (window.speechSynthesis.speaking || window.speechSynthesis.pending) {
-        const id = window.setTimeout(trySpeak, 80);
-        demoTimersRef.current.push(id);
-        return;
-      }
-      // Spazio iniziale/finale aiuta Chrome a non troncare la prima/ultima parola
-      const ut = new SpeechSynthesisUtterance('\u00A0' + text + '\u00A0');
-      ut.lang = 'it-IT';
-      ut.rate = 0.82;
-      ut.pitch = 1.05;
+
       const itVoices = voicesRef.current.filter(v => v.lang.startsWith('it'));
       const itVoice =
         itVoices.find(v => v.name.toLowerCase().includes('google')) ||
         itVoices.find(v => !v.localService) ||
         itVoices[0];
+
+      // Utterance reale
+      const ut = new SpeechSynthesisUtterance(text);
+      ut.lang = 'it-IT';
+      ut.rate = 0.82;
+      ut.pitch = 1.05;
       if (itVoice) ut.voice = itVoice;
-      window.speechSynthesis.speak(ut);
-    };
-    const tid = window.setTimeout(trySpeak, 150);
+
+      // Warm-up silenziosa: "sveglia" il motore Chrome prima di parlare
+      // Questo elimina il troncamento del primo fonema dopo un cancel()
+      const warmup = new SpeechSynthesisUtterance('\u00A0');
+      warmup.volume = 0;
+      warmup.lang = 'it-IT';
+      if (itVoice) warmup.voice = itVoice;
+      warmup.onend = () => {
+        if (!demoActiveRef.current) return;
+        window.speechSynthesis.speak(ut);
+      };
+      window.speechSynthesis.speak(warmup);
+    }, 250);
     demoTimersRef.current.push(tid);
   };
 
