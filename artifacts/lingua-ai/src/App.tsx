@@ -935,21 +935,22 @@ export default function App() {
       fontFamily: "'Inter', system-ui, sans-serif",
     },
     card: {
-      // Gradiente più drammatico: luce intensa in alto-sinistra, scuro in basso
-      background: 'linear-gradient(155deg, #314663 0%, #1e2d3f 28%, #131c2b 100%)',
+      // Gradiente 140°: azzurro-chiaro in alto-sinistra → quasi-nero in basso-destra
+      background: 'linear-gradient(140deg, #3d5f82 0%, #1e2d3f 35%, #0e1620 100%)',
       borderRadius: '14px',
       padding: '12px',
       marginBottom: '16px',
-      // Bordi: top luminoso, bottom scuro, left lit, right ombra
       border: '1px solid rgba(90,120,170,0.25)',
-      borderTop: '1px solid rgba(160,200,255,0.22)',
-      borderBottom: '1px solid rgba(0,0,0,0.65)',
+      borderTop: '1px solid rgba(160,210,255,0.35)',
+      borderLeft: '1px solid rgba(140,190,255,0.20)',
+      borderBottom: '1px solid rgba(0,0,0,0.70)',
+      borderRight: '1px solid rgba(0,0,0,0.45)',
       boxShadow: [
-        // ── bevel interno completo (simula luce da top-left) ──
-        'inset 0 2px 0 rgba(255,255,255,0.14)',    // top highlight spesso
-        'inset 2px 0 0 rgba(255,255,255,0.08)',    // left edge lit
-        'inset -2px 0 0 rgba(0,0,0,0.22)',         // right edge dark
-        'inset 0 -2px 0 rgba(0,0,0,0.38)',         // bottom inner shadow
+        // ── bevel interno: bordo alto e sinistro luminosi, basso e destro scuri ──
+        'inset 0 3px 0 rgba(255,255,255,0.22)',    // fascia alta luminosa
+        'inset 4px 0 0 rgba(255,255,255,0.13)',    // bordo sinistro lit
+        'inset -4px 0 0 rgba(0,0,0,0.35)',         // bordo destro scuro
+        'inset 0 -3px 0 rgba(0,0,0,0.45)',         // fascia bassa scura
         // ── faccia inferiore: 5 strati da 2px a 10px ──
         '0 2px 0 #0c1624',
         '0 4px 0 #09111e',
@@ -979,10 +980,11 @@ export default function App() {
       gap: '8px',
       transform: 'translateY(-5px)',
       boxShadow: [
-        // bevel interno bottone
-        'inset 0 2px 0 rgba(255,255,255,0.28)',    // top highlight
-        'inset 2px 0 0 rgba(255,255,255,0.14)',    // left edge lit
-        'inset -2px 0 0 rgba(0,0,0,0.18)',         // right edge dark
+        // bevel interno bottone — valori alti per renderli visibili
+        'inset 0 3px 0 rgba(255,255,255,0.42)',    // fascia alta luminosa (forte)
+        'inset 4px 0 0 rgba(255,255,255,0.20)',    // bordo sinistro lit
+        'inset -4px 0 0 rgba(0,0,0,0.28)',         // bordo destro scuro
+        'inset 0 -3px 0 rgba(0,0,0,0.35)',         // fascia bassa scura
         // faccia inferiore colorata
         '0 5px 0 #b85a10',
         '0 7px 0 #8a3d08',
