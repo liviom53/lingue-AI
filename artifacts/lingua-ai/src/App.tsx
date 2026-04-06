@@ -374,7 +374,7 @@ export default function App() {
         <header style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '16px', marginBottom: '10px' }}>
           <img src={appIcon} alt="Impara una Lingua" style={{ width: '90px', height: '90px', borderRadius: '14px', flexShrink: 0 }} />
           <div>
-            <h1 style={{ margin: 0, fontSize: '1.9rem', whiteSpace: 'nowrap' }}>Impara una lingua con l&apos;AI</h1>
+            <h1 style={{ margin: 0, fontSize: 'clamp(1.2rem, 5vw, 1.9rem)' }}>Impara una lingua con l&apos;AI</h1>
             <p style={{ color: '#f97316', fontSize: 'clamp(0.9rem, 3.8vw, 1.45rem)', margin: '4px 0 0', whiteSpace: 'nowrap' }}>Inizia a parlarla male... poi si vedrà</p>
           </div>
         </header>
@@ -402,7 +402,7 @@ export default function App() {
                 onClick={() => setShowMoreLangs(v => !v)}
                 style={{
                   width: '100%',
-                  padding: '8px',
+                  padding: '8px 4px',
                   backgroundColor: MORE_LANGUAGES.some(l => l.code === selectedLang) ? '#fb923c' : '#334155',
                   color: '#fff',
                   border: 'none',
@@ -412,6 +412,8 @@ export default function App() {
                   alignItems: 'center',
                   justifyContent: 'center',
                   gap: '4px',
+                  whiteSpace: 'nowrap',
+                  fontSize: 'clamp(0.7rem, 3.5vw, 1rem)',
                 }}
               >
                 {MORE_LANGUAGES.find(l => l.code === selectedLang)
