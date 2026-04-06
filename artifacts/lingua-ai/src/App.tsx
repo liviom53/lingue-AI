@@ -341,6 +341,26 @@ export default function App() {
     }
   }, [chatMessages, showChat]);
 
+  // Aggiorna la posizione del cursore demo DOPO ogni render di demoStep
+  useEffect(() => {
+    if (!demoActive) return;
+    const STEP_TARGETS: Record<number, string> = {
+      0: 'textarea',
+      1: 'lang-grid',
+      2: 'translate-btn',
+      3: 'translated-text',
+      4: 'shadow-toggle',
+      5: 'tab-profilo',
+      6: '',
+    };
+    const target = STEP_TARGETS[demoStep];
+    if (!target) { setDemoCursorPos(null); return; }
+    const el = document.querySelector(`[data-demo="${target}"]`);
+    if (!el) return;
+    const r = el.getBoundingClientRect();
+    setDemoCursorPos({ x: r.left + r.width / 2, y: r.top + r.height / 2 });
+  }, [demoStep, demoActive]);
+
   const currentLocale = (ALL_LANGUAGES.find(l => l.code === selectedLang) ?? ALL_LANGUAGES[0]).locale;
   const langVoices = voices.filter(v => v.lang.startsWith(selectedLang));
   const availableVoices = langVoices.length > 0 ? langVoices : voices;
@@ -661,11 +681,16 @@ export default function App() {
 
   const narrateDemo = (text: string) => {
     window.speechSynthesis.cancel();
-    // Piccola pausa dopo cancel — fix per Chrome che spezza le parole
-    // Tracciamo il timer così stopDemo() lo cancella se l'utente preme Salta
-    const tid = window.setTimeout(() => {
+    // Polling: aspetta che speechSynthesis sia libero prima di parlare
+    const trySpeak = () => {
       if (!demoActiveRef.current) return;
-      const ut = new SpeechSynthesisUtterance(text);
+      if (window.speechSynthesis.speaking || window.speechSynthesis.pending) {
+        const id = window.setTimeout(trySpeak, 80);
+        demoTimersRef.current.push(id);
+        return;
+      }
+      // Spazio iniziale/finale aiuta Chrome a non troncare la prima/ultima parola
+      const ut = new SpeechSynthesisUtterance('\u00A0' + text + '\u00A0');
       ut.lang = 'it-IT';
       ut.rate = 0.82;
       ut.pitch = 1.05;
@@ -676,15 +701,9 @@ export default function App() {
         itVoices[0];
       if (itVoice) ut.voice = itVoice;
       window.speechSynthesis.speak(ut);
-    }, 150);
+    };
+    const tid = window.setTimeout(trySpeak, 150);
     demoTimersRef.current.push(tid);
-  };
-
-  const moveDemoCursor = (target: string, xOff = 0, yOff = 0) => {
-    const el = document.querySelector(`[data-demo="${target}"]`);
-    if (!el) return;
-    const r = el.getBoundingClientRect();
-    setDemoCursorPos({ x: r.left + r.width / 2 + xOff, y: r.top + r.height / 2 + yOff });
   };
 
   const animateDemoCursorClick = () => {
@@ -721,8 +740,6 @@ export default function App() {
     demoActiveRef.current = true;
     setDemoActive(true);
     setDemoStep(0);
-    // Position cursor at input immediately
-    window.setTimeout(() => moveDemoCursor('textarea'), 60);
 
     const t = (fn: () => void, ms: number) => {
       const id = window.setTimeout(fn, ms);
@@ -739,39 +756,35 @@ export default function App() {
         demoTimersRef.current.push(id);
       } else {
         // Offsets from when typewriter finishes — spaced to not cut narrations mid-frase
-        t(() => { setDemoStep(1); narrateDemo(DEMO_STEPS[1].narration); moveDemoCursor('lang-grid'); }, 0);
+        t(() => { setDemoStep(1); narrateDemo(DEMO_STEPS[1].narration); }, 0);
         t(() => {
           setDemoStep(2);
           narrateDemo(DEMO_STEPS[2].narration);
-          moveDemoCursor('translate-btn');
           handleTranslate();
         }, 2500);
-        t(() => animateDemoCursorClick(), 3000);
+        t(() => animateDemoCursorClick(), 3100);
         t(() => {
           setDemoStep(3);
           narrateDemo(DEMO_STEPS[3].narration);
-          moveDemoCursor('translated-text', -30, 0);
           const words = translatedTextRef.current.split(' ').filter(w => w.replace(/[^a-zA-Z]/g, '').length > 2);
           if (words.length > 0) fetchGrammar(words[0]);
         }, 7000);
-        t(() => animateDemoCursorClick(), 7500);
+        t(() => animateDemoCursorClick(), 7600);
         t(() => {
           setDemoStep(4);
           narrateDemo(DEMO_STEPS[4].narration);
-          moveDemoCursor('shadow-toggle');
           setShowShadow(true);
           fetchShadowPhrase();
         }, 11500);
-        t(() => animateDemoCursorClick(), 12000);
+        t(() => animateDemoCursorClick(), 12100);
         t(() => {
           setShowShadow(false);
           setDemoStep(5);
           narrateDemo(DEMO_STEPS[5].narration);
-          moveDemoCursor('tab-profilo');
           setShowTabPanel(true);
           setActiveTab('profilo');
         }, 16000);
-        t(() => animateDemoCursorClick(), 16500);
+        t(() => animateDemoCursorClick(), 16600);
         t(() => { setDemoStep(6); narrateDemo(DEMO_STEPS[6].narration); }, 20000);
         t(() => stopDemo(), 23500);
       }
