@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Mic, Volume2, Send, Loader2, AlertCircle, Bot, X, ChevronDown, ChevronUp } from 'lucide-react';
+import { Mic, Volume2, Send, Loader2, AlertCircle, Bot, X, ChevronDown, ChevronUp, Copy, Check } from 'lucide-react';
 import appIcon from '@assets/icon-192_1775392140519.png';
 
 const LINGVA_INSTANCES = [
@@ -210,10 +210,13 @@ export default function App() {
   const [phonetic, setPhonetic] = useState<string | null>(null);
   const [aiExplanation, setAiExplanation] = useState<{ explanation: string; example: string } | null>(null);
   const [showChat, setShowChat] = useState(false);
+  const [chatExpanded, setChatExpanded] = useState(false);
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [chatInput, setChatInput] = useState('');
   const [chatLoading, setChatLoading] = useState(false);
   const [showMoreLangs, setShowMoreLangs] = useState(false);
+  const [showVoiceSettings, setShowVoiceSettings] = useState(false);
+  const [copied, setCopied] = useState(false);
   const [activeTab, setActiveTab] = useState<'profilo' | 'progressi'>('profilo');
   const [progress, setProgress] = useState<ProgressStats>(loadProgress);
   const [profile, setProfile] = useState<UserProfile>(loadProfile);
@@ -636,71 +639,108 @@ export default function App() {
         </section>
 
         <section style={styles.card}>
-          <p style={{ color: '#94a3b8', fontSize: '0.75rem', marginBottom: '10px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Impostazioni voce</p>
+          <button
+            onClick={() => setShowVoiceSettings(v => !v)}
+            style={{
+              width: '100%',
+              background: 'none',
+              border: 'none',
+              color: '#94a3b8',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: 0,
+              fontSize: '0.75rem',
+              textTransform: 'uppercase',
+              letterSpacing: '0.05em',
+              marginBottom: showVoiceSettings ? '10px' : 0,
+            }}
+          >
+            <span>⚙️ Impostazioni voce</span>
+            {showVoiceSettings ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+          </button>
 
-          {voices.length > 0 ? (
-            <div style={{ marginBottom: '12px' }}>
-              <label style={{ fontSize: '0.8rem', color: '#94a3b8', display: 'block', marginBottom: '4px' }}>
-                Voce {langVoices.length > 0 ? `(${langVoices.length} per questa lingua)` : '(tutte disponibili)'}
-              </label>
-              <select
-                value={selectedVoiceURI}
-                onChange={e => setSelectedVoiceURI(e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: '8px',
-                  backgroundColor: '#0f172a',
-                  color: '#fff',
-                  border: '1px solid #334155',
-                  borderRadius: '6px',
-                  fontSize: '0.9rem',
-                }}
-              >
-                <option value="">— Voce predefinita —</option>
-                {availableVoices.map(v => (
-                  <option key={v.voiceURI} value={v.voiceURI}>
-                    {v.name} [{v.lang}]
-                  </option>
-                ))}
-              </select>
-            </div>
-          ) : (
-            <p style={{ fontSize: '0.8rem', color: '#64748b', marginBottom: '12px' }}>
-              Nessuna voce disponibile nel tuo browser.
-            </p>
+          {showVoiceSettings && (
+            <>
+              {voices.length > 0 ? (
+                <div style={{ marginBottom: '12px' }}>
+                  <label style={{ fontSize: '0.8rem', color: '#94a3b8', display: 'block', marginBottom: '4px' }}>
+                    Voce {langVoices.length > 0 ? `(${langVoices.length} per questa lingua)` : '(tutte disponibili)'}
+                  </label>
+                  <select
+                    value={selectedVoiceURI}
+                    onChange={e => setSelectedVoiceURI(e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: '8px',
+                      backgroundColor: '#0f172a',
+                      color: '#fff',
+                      border: '1px solid #334155',
+                      borderRadius: '6px',
+                      fontSize: '0.9rem',
+                    }}
+                  >
+                    <option value="">— Voce predefinita —</option>
+                    {availableVoices.map(v => (
+                      <option key={v.voiceURI} value={v.voiceURI}>
+                        {v.name} [{v.lang}]
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              ) : (
+                <p style={{ fontSize: '0.8rem', color: '#64748b', marginBottom: '12px' }}>
+                  Nessuna voce disponibile nel tuo browser.
+                </p>
+              )}
+              <div>
+                <label style={{ fontSize: '0.8rem', color: '#94a3b8', display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
+                  <span>Velocità</span>
+                  <span style={{ color: '#f8fafc' }}>{speechRate.toFixed(1)}x</span>
+                </label>
+                <input
+                  type="range"
+                  min={0.1}
+                  max={1}
+                  step={0.1}
+                  value={speechRate}
+                  onChange={e => setSpeechRate(Number(e.target.value))}
+                  style={{ width: '100%', accentColor: '#fb923c' }}
+                />
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.7rem', color: '#64748b', marginTop: '2px' }}>
+                  <span>0.1x (lento)</span>
+                  <span>1x (normale)</span>
+                </div>
+              </div>
+            </>
           )}
-
-          <div>
-            <label style={{ fontSize: '0.8rem', color: '#94a3b8', display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
-              <span>Velocità</span>
-              <span style={{ color: '#f8fafc' }}>{speechRate.toFixed(1)}x</span>
-            </label>
-            <input
-              type="range"
-              min={0.1}
-              max={1}
-              step={0.1}
-              value={speechRate}
-              onChange={e => setSpeechRate(Number(e.target.value))}
-              style={{ width: '100%', accentColor: '#fb923c' }}
-            />
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.7rem', color: '#64748b', marginTop: '2px' }}>
-              <span>0.1x (lento)</span>
-              <span>1x (normale)</span>
-            </div>
-          </div>
         </section>
 
         {translatedText && (
           <section style={{ ...styles.card, borderLeft: '4px solid #10b981' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <p style={{ fontSize: '1.2rem', fontWeight: 'bold', margin: 0 }}>{translatedText}</p>
-              <Volume2
-                size={24}
-                color="#10b981"
-                style={{ cursor: 'pointer', flexShrink: 0, marginLeft: '8px' }}
-                onClick={() => speak(translatedText)}
-              />
+              <div style={{ display: 'flex', gap: '8px', flexShrink: 0, marginLeft: '8px' }}>
+                <button
+                  title="Copia traduzione"
+                  onClick={() => {
+                    navigator.clipboard.writeText(translatedText).then(() => {
+                      setCopied(true);
+                      setTimeout(() => setCopied(false), 2000);
+                    });
+                  }}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '2px', color: copied ? '#10b981' : '#64748b' }}
+                >
+                  {copied ? <Check size={20} /> : <Copy size={20} />}
+                </button>
+                <Volume2
+                  size={24}
+                  color="#10b981"
+                  style={{ cursor: 'pointer' }}
+                  onClick={() => speak(translatedText)}
+                />
+              </div>
             </div>
             {phonetic && (
               <p style={{
@@ -810,13 +850,24 @@ export default function App() {
             <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <Bot size={18} /> Conversa in {langName} con DeepSeek AI
             </span>
-            {showChat ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              {showChat && (
+                <button
+                  title={chatExpanded ? 'Riduci chat' : 'Espandi chat'}
+                  onClick={e => { e.stopPropagation(); setChatExpanded(v => !v); }}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#fbbf24', padding: '2px', display: 'flex' }}
+                >
+                  {chatExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                </button>
+              )}
+              {showChat ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+            </div>
           </button>
 
           {showChat && (
             <div style={{ marginTop: '10px' }}>
               <div ref={chatContainerRef} style={{
-                height: '100px',
+                height: chatExpanded ? '360px' : '220px',
                 overflowY: 'auto',
                 backgroundColor: '#0f172a',
                 borderRadius: '8px',
@@ -825,7 +876,7 @@ export default function App() {
                 border: '1px solid #334155',
               }}>
                 {chatMessages.length === 0 && (
-                  <p style={{ color: '#64748b', fontSize: '0.8rem', textAlign: 'center', marginTop: '70px' }}>
+                  <p style={{ color: '#64748b', fontSize: '0.8rem', textAlign: 'center', marginTop: '90px' }}>
                     Scrivi qualcosa per iniziare a conversare in {langName}...
                   </p>
                 )}
