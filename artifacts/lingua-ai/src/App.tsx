@@ -1506,36 +1506,35 @@ export default function App() {
 
           if (activeTab === 'demo') return (
             <div style={{ marginBottom: '16px' }}>
-              <div style={{ ...styles.card, marginBottom: '10px', background: 'linear-gradient(135deg, #1e1b4b 0%, #0f172a 100%)', border: '1px solid #4c1d95' }}>
-                <p style={{ margin: '0 0 4px', fontSize: '0.7rem', color: '#a78bfa', textTransform: 'uppercase', letterSpacing: '0.08em' }}>🎬 Guida rapida</p>
-                <p style={{ margin: 0, fontSize: '0.85rem', color: '#e2e8f0', lineHeight: '1.5' }}>
-                  Tutto quello che puoi fare con <strong style={{ color: '#fb923c' }}>Lingua AI</strong> — passo dopo passo.
+              <div style={{ ...styles.card, marginBottom: '10px', background: 'linear-gradient(135deg, #1e1b4b 0%, #0f172a 100%)', border: '1px solid #4c1d95', padding: '10px 12px' }}>
+                <p style={{ margin: '0 0 2px', fontSize: '0.7rem', color: '#a78bfa', textTransform: 'uppercase', letterSpacing: '0.08em' }}>🎬 Video promozionale</p>
+                <p style={{ margin: 0, fontSize: '0.82rem', color: '#e2e8f0', lineHeight: '1.4' }}>
+                  Scopri tutte le funzionalità di <strong style={{ color: '#fb923c' }}>Lingua AI</strong> in 25 secondi.
                 </p>
               </div>
-              {[
-                { step: '1', icon: '🌍', title: 'Scegli la lingua', desc: 'Seleziona tra 29+ lingue: Inglese, Spagnolo, Francese, Tedesco, Cinese, Giapponese…', color: '#3b82f6' },
-                { step: '2', icon: '✍️', title: 'Scrivi o ditta in italiano', desc: 'Scrivi nel campo di testo oppure premi DETTA per dettare la frase a voce.', color: '#10b981' },
-                { step: '3', icon: '🚀', title: 'Traduci o chiedi al Tutor', desc: 'TRADUCI usa Lingva (veloce). TUTOR AI usa DeepSeek: ottieni traduzione + spiegazione grammaticale.', color: '#fb923c' },
-                { step: '4', icon: '🔊', title: 'Ascolta la pronuncia', desc: 'Premi l\'icona 🔊 per sentire la traduzione letta ad alta voce nella lingua scelta.', color: '#a855f7' },
-                { step: '5', icon: '🔬', title: 'Analisi X-Ray', desc: 'Tocca qualsiasi parola nella traduzione per vedere categoria grammaticale, genere e tempo.', color: '#f59e0b' },
-                { step: '6', icon: '⭐', title: 'Salva nei preferiti', desc: 'Premi l\'icona segnalibro per salvare la coppia italiano ↔ traduzione. Ritrovala in Vocabolario → ⭐ Preferiti.', color: '#fbbf24' },
-                { step: '7', icon: '📤', title: 'Condividi', desc: 'Premi l\'icona condivisione per inviare la traduzione via WhatsApp, messaggi o copiare negli appunti.', color: '#64748b' },
-                { step: '8', icon: '🔁', title: 'Shadowing', desc: 'Allena l\'orecchio ripetendo frasi ad alta voce con velocità regolabile e feedback sul punteggio.', color: '#06b6d4' },
-                { step: '9', icon: '🤖', title: 'Chat con AI', desc: 'Conversa liberamente nella lingua scelta con il tutor DeepSeek AI. Ideale per pratica avanzata.', color: '#f97316' },
-                { step: '10', icon: '🧠', title: 'Quiz', desc: 'Salva 4+ segnalibri per sbloccare il quiz: indovina la traduzione corretta tra 4 opzioni.', color: '#7c3aed' },
-              ].map(({ step, icon, title, desc, color }) => (
-                <div key={step} style={{ display: 'flex', gap: '12px', alignItems: 'flex-start', padding: '10px', backgroundColor: '#0f172a', borderRadius: '10px', border: `1px solid ${color}33`, marginBottom: '8px' }}>
-                  <div style={{ flexShrink: 0, width: '32px', height: '32px', borderRadius: '50%', backgroundColor: `${color}22`, border: `1px solid ${color}55`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem' }}>
-                    {icon}
+              <div style={{ borderRadius: '12px', overflow: 'hidden', border: '1px solid #334155', backgroundColor: '#0f172a', marginBottom: '10px' }}>
+                <iframe
+                  src="https://7f2e7385-dc18-4dec-b4cb-b49d934165fd-00-1p6eowh30kvti.spock.replit.dev/lingua-ai-demo-video/"
+                  style={{ width: '100%', aspectRatio: '16/9', border: 'none', display: 'block' }}
+                  allow="autoplay"
+                  title="Lingua AI Demo Video"
+                />
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px' }}>
+                {[
+                  { icon: '🌍', label: '29+ lingue' },
+                  { icon: '🔬', label: 'X-Ray grammaticale' },
+                  { icon: '🤖', label: 'AI Tutor DeepSeek' },
+                  { icon: '🔁', label: 'Shadowing' },
+                  { icon: '⭐', label: 'Segnalibri & Quiz' },
+                  { icon: '📤', label: 'Condivisione rapida' },
+                ].map(({ icon, label }) => (
+                  <div key={label} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '7px 10px', backgroundColor: '#0f172a', borderRadius: '8px', border: '1px solid #1e293b' }}>
+                    <span style={{ fontSize: '0.9rem' }}>{icon}</span>
+                    <span style={{ fontSize: '0.73rem', color: '#94a3b8', fontWeight: 500 }}>{label}</span>
                   </div>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <p style={{ margin: '0 0 2px', fontSize: '0.82rem', fontWeight: 'bold', color: '#f8fafc' }}>
-                      <span style={{ color, marginRight: '4px', fontSize: '0.65rem', fontWeight: 400 }}>STEP {step}</span>{title}
-                    </p>
-                    <p style={{ margin: 0, fontSize: '0.75rem', color: '#94a3b8', lineHeight: '1.5' }}>{desc}</p>
-                  </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           );
 

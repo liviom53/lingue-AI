@@ -1,0 +1,31 @@
+kind = "video"
+previewPath = "/lingua-ai-demo-video/"
+title = "Lingua AI — Demo Video"
+version = "1.0.0"
+id = "artifacts/lingua-ai-demo-video"
+router = "path"
+
+[[integratedSkills]]
+name = "video-js"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/lingua-ai-demo-video/" ]
+localPort = 23031
+
+[services.development]
+run = "pnpm --filter @workspace/lingua-ai-demo-video run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/lingua-ai-demo-video", "run", "build" ]
+publicDir = "artifacts/lingua-ai-demo-video/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "23031"
+BASE_PATH = "/lingua-ai-demo-video/"
