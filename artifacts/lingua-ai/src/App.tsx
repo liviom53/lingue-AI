@@ -978,31 +978,6 @@ export default function App() {
 
           if (activeTab === 'profilo') return (
             <div style={{ marginBottom: '16px' }}>
-              {/* Livello */}
-              <section style={{ ...styles.card, textAlign: 'center', marginBottom: '10px' }}>
-                <p style={{ margin: '0 0 4px', fontSize: '0.75rem', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Il tuo livello</p>
-                <p style={{ margin: 0, fontSize: '2.5rem' }}>{levelInfo.icon}</p>
-                <p style={{ margin: '4px 0 0', fontSize: '1.3rem', fontWeight: 'bold', color: levelInfo.color }}>{levelInfo.label}</p>
-                <p style={{ margin: '2px 0 0', fontSize: '0.8rem', color: '#64748b' }}>Punteggio: {Math.round(totalScore)} pt</p>
-              </section>
-
-              {/* Riepilogo */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '10px' }}>
-                <StatCard label="Ore totali" value={`${hours}h ${mins}m`} />
-                <StatCard label="Streak" value={`${progress.streakDays}gg`} color="#fb923c" />
-              </div>
-
-              {/* Lingua preferita */}
-              <div style={{ backgroundColor: '#1e293b', borderRadius: '10px', padding: '12px', textAlign: 'center', marginBottom: '12px' }}>
-                <p style={{ margin: '0 0 4px', fontSize: '0.7rem', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Lingua preferita</p>
-                {favLangName ? (
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', marginTop: '4px' }}>
-                    {favLangFc && <img src={`https://flagcdn.com/20x15/${favLangFc}.png`} width="20" height="15" alt={favLangName} style={{ borderRadius: '2px' }} />}
-                    <span style={{ fontWeight: 'bold', color: '#f8fafc', fontSize: '1.1rem' }}>{favLangName}</span>
-                  </div>
-                ) : <p style={{ margin: 0, fontSize: '1.2rem', color: '#64748b' }}>—</p>}
-              </div>
-
               {/* Informazioni personali */}
               <section style={{ ...styles.card, marginBottom: '0' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
@@ -1108,6 +1083,26 @@ export default function App() {
 
           return (
             <div style={{ marginBottom: '16px' }}>
+              {/* Livello */}
+              <section style={{ ...styles.card, textAlign: 'center', marginBottom: '10px' }}>
+                <p style={{ margin: '0 0 4px', fontSize: '0.75rem', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Il tuo livello</p>
+                <p style={{ margin: 0, fontSize: '2rem' }}>{levelInfo.icon}</p>
+                <p style={{ margin: '4px 0 0', fontSize: '1.1rem', fontWeight: 'bold', color: levelInfo.color }}>{levelInfo.label}</p>
+                <p style={{ margin: '2px 0 0', fontSize: '0.75rem', color: '#64748b' }}>{Math.round(totalScore)} pt</p>
+              </section>
+
+              {/* Riepilogo rapido */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px', marginBottom: '12px' }}>
+                <StatCard label="Ore" value={`${hours}h ${mins}m`} />
+                <StatCard label="Streak" value={`${progress.streakDays}gg`} color="#fb923c" />
+                <div style={{ backgroundColor: '#1e293b', borderRadius: '10px', padding: '10px', textAlign: 'center' }}>
+                  <p style={{ margin: '0 0 4px', fontSize: '0.7rem', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Lingua</p>
+                  {favLangFc
+                    ? <img src={`https://flagcdn.com/20x15/${favLangFc}.png`} width="20" height="15" alt={favLangName ?? ''} style={{ borderRadius: '2px', marginTop: '4px' }} />
+                    : <p style={{ margin: 0, color: '#64748b' }}>—</p>}
+                </div>
+              </div>
+
               {/* Traduzioni */}
               <p style={{ fontSize: '0.75rem', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 6px' }}>🌍 Traduzioni</p>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '12px' }}>
