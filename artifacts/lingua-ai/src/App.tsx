@@ -1212,7 +1212,7 @@ export default function App() {
             onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleTranslate(); } }}
             placeholder="Scrivi in italiano..."
           />
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', marginTop: '25px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', marginTop: '16px' }}>
             <button
               className="action-btn"
               style={{ ...styles.btn, marginTop: 0, backgroundColor: isListening ? '#ef4444' : '#334155' }}
