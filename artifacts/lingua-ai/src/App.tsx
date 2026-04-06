@@ -144,6 +144,7 @@ export default function App() {
   const [selectedVoiceURI, setSelectedVoiceURI] = useState('');
   const [speechRate, setSpeechRate] = useState(1);
   const [ipaText, setIpaText] = useState<string | null>(null);
+  const [phonetic, setPhonetic] = useState<string | null>(null);
   const [aiExplanation, setAiExplanation] = useState<{ explanation: string; example: string } | null>(null);
   const [showChat, setShowChat] = useState(false);
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
@@ -241,6 +242,7 @@ export default function App() {
     setPracticeResult(null);
     setTranslatedText('');
     setAiExplanation(null);
+    setPhonetic(null);
 
     try {
       const { translation, pronunciation } = await translateText(inputText, selectedLang);
@@ -270,6 +272,7 @@ export default function App() {
     setTranslatedText('');
     setAiExplanation(null);
     setIpaText(null);
+    setPhonetic(null);
 
     try {
       const res = await fetch('/api/ai/translate', {
@@ -281,6 +284,7 @@ export default function App() {
       const data = await res.json();
       if (data.error) throw new Error(data.error);
       setTranslatedText(data.translation ?? '');
+      setPhonetic(data.pronunciation ?? null);
       setAiExplanation({ explanation: data.explanation ?? '', example: data.example ?? '' });
       speak(data.translation ?? '');
     } catch (err: any) {
@@ -586,7 +590,21 @@ export default function App() {
                 onClick={() => speak(translatedText)}
               />
             </div>
-            {ipaText && (
+            {phonetic && (
+              <p style={{
+                marginTop: '6px',
+                marginBottom: '2px',
+                fontSize: '0.95rem',
+                color: '#34d399',
+                fontStyle: 'italic',
+                letterSpacing: '0.04em',
+                borderLeft: '3px solid #34d399',
+                paddingLeft: '8px',
+              }}>
+                <span style={{ fontStyle: 'normal', fontWeight: 'bold', marginRight: '6px', fontSize: '0.75rem', color: '#6ee7b7' }}>si legge</span>{phonetic}
+              </p>
+            )}
+            {ipaText && !phonetic && (
               <p style={{
                 marginTop: '6px',
                 marginBottom: '2px',

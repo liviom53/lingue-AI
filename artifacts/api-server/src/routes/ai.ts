@@ -30,8 +30,9 @@ router.post("/translate", async (req: Request, res: Response) => {
           role: "system",
           content: `You are a language tutor. Translate Italian text to ${langName} and provide a brief grammar insight.
 Respond ONLY with valid JSON in this exact format (no markdown, no extra text):
-{"translation":"...","explanation":"...","example":"..."}
+{"translation":"...","pronunciation":"...","explanation":"...","example":"..."}
 - translation: the ${langName} translation
+- pronunciation: a simplified phonetic spelling of the translation that an Italian speaker can read and roughly pronounce correctly (e.g. for English "Hello" write "el-LÒ", for "Thank you" write "senk-IÙ"). Use Italian phonetic conventions. Capitalize stressed syllables. Keep it short.
 - explanation: one short sentence explaining an interesting grammar point or word choice (in Italian)
 - example: one short additional example sentence in ${langName} using a key word from the translation`,
         },
