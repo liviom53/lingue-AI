@@ -1,15 +1,16 @@
 modules = ["nodejs-24"]
 
-  [[artifacts]]
-  id = "3B4_FFSkEVBkAeYMFRJ2e"
+  [[ports]]
+  localPort = 8080
+  externalPort = 80
 
   [deployment]
-  router = "application"
+  run = ["node", "--enable-source-maps", "artifacts/api-server/dist/index.mjs"]
+  build = ["sh", "-c", "NODE_ENV=production BASE_PATH=/lingua-ai/ pnpm --filter @workspace/lingua-ai run build && NODE_ENV=production BASE_PATH=/ pnpm --filter @workspace/diario-pescatore run build && NODE_ENV=production pnpm --filter @workspace/api-server run build"]
   deploymentTarget = "autoscale"
 
-  [deployment.postBuild]
-  args = ["pnpm", "store", "prune"]
-  env = { "CI" = "true" }
+  [deployment.env]
+  NODE_ENV = "production"
 
   [workflows]
   runButton = "Project"
