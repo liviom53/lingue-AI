@@ -268,6 +268,11 @@ export default function App() {
   const [shadowScore, setShadowScore] = useState<number | null>(null);
   const [shadowSpoken, setShadowSpoken] = useState('');
   const [shadowLoading, setShadowLoading] = useState(false);
+  // Demo guidata
+  const [demoActive, setDemoActive] = useState(false);
+  const [demoStep, setDemoStep] = useState(0);
+  const demoTimersRef = useRef<number[]>([]);
+  const translatedTextRef = useRef('');
   const chatEndRef = useRef<HTMLDivElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const moreLangsRef = useRef<HTMLDivElement>(null);
@@ -303,6 +308,8 @@ export default function App() {
     document.addEventListener('mousedown', handleClick);
     return () => document.removeEventListener('mousedown', handleClick);
   }, [showMoreLangs]);
+
+  useEffect(() => { translatedTextRef.current = translatedText; }, [translatedText]);
 
   useEffect(() => {
     const loadVoices = () => {
@@ -634,6 +641,81 @@ export default function App() {
     recognition.start();
   };
 
+  const DEMO_STEPS = [
+    { icon: '✍️', label: '1/6 — Scrittura', desc: 'Scrivo una frase in italiano...' },
+    { icon: '🌍', label: '2/6 — Lingua', desc: 'Imposto Inglese come lingua di destinazione' },
+    { icon: '🔄', label: '3/6 — Traduzione', desc: 'Premo TRADUCI — traduzione istantanea con pronuncia' },
+    { icon: '🔬', label: '4/6 — X-Ray', desc: 'Tocco una parola → analisi grammaticale istantanea' },
+    { icon: '🎙️', label: '5/6 — Shadowing', desc: 'Apro Shadowing — ascolta e ripeti per la pronuncia' },
+    { icon: '⭐', label: '6/6 — Funzionalità', desc: 'Profilo, Progressi, Segnalibri, Quiz e altro...' },
+    { icon: '🎉', label: 'Demo completata', desc: 'Esplora liberamente tutte le funzionalità!' },
+  ];
+
+  const stopDemo = () => {
+    demoTimersRef.current.forEach(id => clearTimeout(id));
+    demoTimersRef.current = [];
+    setDemoActive(false);
+    setDemoStep(0);
+  };
+
+  const startDemo = () => {
+    stopDemo();
+    setTranslatedText('');
+    setAiExplanation(null);
+    setXrayData(null);
+    setXrayWord(null);
+    setShowShadow(false);
+    setShadowPhrase(null);
+    setShadowStep('idle');
+    setShowTabPanel(false);
+    setError(null);
+    setInputText('');
+    setSelectedLang('en');
+    setDemoActive(true);
+    setDemoStep(0);
+
+    const t = (fn: () => void, ms: number) => {
+      const id = window.setTimeout(fn, ms);
+      demoTimersRef.current.push(id);
+    };
+
+    const PHRASE = 'Ho perso il treno, ci vediamo dopo?';
+    let i = 0;
+    const type = () => {
+      if (i <= PHRASE.length) {
+        setInputText(PHRASE.slice(0, i));
+        i++;
+        const id = window.setTimeout(type, 45);
+        demoTimersRef.current.push(id);
+      } else {
+        t(() => setDemoStep(1), 400);
+        t(() => {
+          setDemoStep(2);
+          handleTranslate();
+        }, 1600);
+        t(() => {
+          setDemoStep(3);
+          const words = translatedTextRef.current.split(' ').filter(w => w.replace(/[^a-zA-Z]/g, '').length > 2);
+          if (words.length > 0) fetchGrammar(words[0]);
+        }, 5200);
+        t(() => {
+          setDemoStep(4);
+          setShowShadow(true);
+          fetchShadowPhrase();
+        }, 9000);
+        t(() => {
+          setShowShadow(false);
+          setDemoStep(5);
+          setShowTabPanel(true);
+          setActiveTab('profilo');
+        }, 13500);
+        t(() => setDemoStep(6), 17500);
+        t(() => stopDemo(), 21000);
+      }
+    };
+    type();
+  };
+
   const styles: Record<string, React.CSSProperties> = {
     main: {
       minHeight: '100vh',
@@ -678,6 +760,20 @@ export default function App() {
             <p style={{ color: '#f97316', fontSize: 'clamp(0.9rem, 3.8vw, 1.45rem)', margin: '4px 0 0', whiteSpace: 'nowrap' }}>Inizia a parlarla male... poi si vedrà</p>
           </div>
         </header>
+
+        <button
+          onClick={startDemo}
+          style={{
+            width: '100%', marginBottom: '10px', padding: '9px 16px',
+            background: 'linear-gradient(90deg, #10b981, #3b82f6)',
+            border: 'none', borderRadius: '10px', color: '#fff',
+            fontWeight: 700, fontSize: '0.88rem', cursor: 'pointer',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+            letterSpacing: '0.04em',
+          }}
+        >
+          ▶ Avvia Demo guidata — vedi l&apos;app in azione
+        </button>
 
         <section style={styles.card}>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px' }}>
@@ -1888,6 +1984,47 @@ export default function App() {
             🔒 Privacy &amp; Cookie
           </button>
         </footer>
+
+        {/* Demo banner fisso in basso */}
+        {demoActive && (
+          <div style={{
+            position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 10000,
+            background: 'linear-gradient(135deg, #0f2027, #203a43, #2c5364)',
+            borderTop: '2px solid #10b981',
+            padding: '12px 16px',
+            display: 'flex', flexDirection: 'column', gap: '6px',
+            boxShadow: '0 -8px 32px rgba(0,0,0,0.5)',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <span style={{ fontSize: '1.3rem' }}>{DEMO_STEPS[demoStep]?.icon}</span>
+                <div>
+                  <p style={{ margin: 0, fontSize: '0.68rem', color: '#10b981', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+                    {DEMO_STEPS[demoStep]?.label}
+                  </p>
+                  <p style={{ margin: 0, fontSize: '0.82rem', color: '#e2e8f0', lineHeight: '1.3' }}>
+                    {DEMO_STEPS[demoStep]?.desc}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={stopDemo}
+                style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '6px', color: '#94a3b8', cursor: 'pointer', padding: '4px 10px', fontSize: '0.72rem', fontWeight: 600 }}
+              >
+                Salta
+              </button>
+            </div>
+            <div style={{ display: 'flex', gap: '5px' }}>
+              {DEMO_STEPS.map((_, idx) => (
+                <div key={idx} style={{
+                  flex: 1, height: '3px', borderRadius: '2px',
+                  backgroundColor: idx <= demoStep ? '#10b981' : 'rgba(255,255,255,0.15)',
+                  transition: 'background-color 0.4s',
+                }} />
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Privacy Modal */}
         {showPrivacy && (
