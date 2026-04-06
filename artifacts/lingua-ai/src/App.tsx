@@ -146,6 +146,7 @@ interface ProgressStats {
   streakDays: number;
   firstUsedDate: string;
   langStats: Record<string, number>;
+  activityDates: string[];
 }
 
 interface UserProfile {
@@ -184,6 +185,7 @@ const defaultProgress = (): ProgressStats => ({
   streakDays: 0,
   firstUsedDate: new Date().toISOString().split('T')[0],
   langStats: {},
+  activityDates: [],
 });
 
 const loadProgress = (): ProgressStats => {
@@ -255,7 +257,8 @@ export default function App() {
       if (prev.lastActiveDate === today) return prev;
       const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
       const streak = prev.lastActiveDate === yesterday ? prev.streakDays + 1 : 1;
-      const updated = { ...prev, lastActiveDate: today, streakDays: streak };
+      const activityDates = prev.activityDates.includes(today) ? prev.activityDates : [...(prev.activityDates ?? []), today];
+      const updated = { ...prev, lastActiveDate: today, streakDays: streak, activityDates };
       saveProgress(updated);
       return updated;
     });
@@ -1485,6 +1488,77 @@ export default function App() {
                         );
                       })}
                     </svg>
+                  </div>
+                );
+              })()}
+
+              {/* Calendario Streak */}
+              {(() => {
+                const today = new Date();
+                const days = Array.from({ length: 28 }, (_, i) => {
+                  const d = new Date(today);
+                  d.setDate(today.getDate() - (27 - i));
+                  return d.toISOString().split('T')[0];
+                });
+                const actSet = new Set(progress.activityDates ?? []);
+                const weekLabels = ['L', 'M', 'M', 'G', 'V', 'S', 'D'];
+                return (
+                  <div style={{ ...styles.card, marginBottom: '12px' }}>
+                    <p style={{ margin: '0 0 10px', fontSize: '0.75rem', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.06em' }}>📅 Calendario attività — ultimi 28 giorni</p>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '4px', marginBottom: '6px' }}>
+                      {weekLabels.map((l, i) => (
+                        <div key={i} style={{ textAlign: 'center', fontSize: '0.62rem', color: '#475569', fontWeight: 600 }}>{l}</div>
+                      ))}
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '4px' }}>
+                      {days.map(date => {
+                        const isToday = date === today.toISOString().split('T')[0];
+                        const active = actSet.has(date);
+                        return (
+                          <div key={date} title={date} style={{
+                            aspectRatio: '1', borderRadius: '4px',
+                            background: active ? '#fb923c' : '#1e293b',
+                            border: isToday ? '1px solid #fb923c' : '1px solid transparent',
+                            opacity: active ? 1 : 0.4,
+                          }} />
+                        );
+                      })}
+                    </div>
+                    <div style={{ display: 'flex', gap: '12px', marginTop: '8px', fontSize: '0.7rem', color: '#64748b' }}>
+                      <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <span style={{ width: '10px', height: '10px', borderRadius: '2px', background: '#fb923c', display: 'inline-block' }} /> Attivo
+                      </span>
+                      <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <span style={{ width: '10px', height: '10px', borderRadius: '2px', background: '#1e293b', border: '1px solid #334155', display: 'inline-block', opacity: 0.4 }} /> Inattivo
+                      </span>
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {/* Vocabolario imparato */}
+              {progress.wordsLearned.length > 0 && (() => {
+                const words = [...progress.wordsLearned].reverse().slice(0, 40);
+                return (
+                  <div style={{ ...styles.card, marginBottom: '12px' }}>
+                    <p style={{ margin: '0 0 10px', fontSize: '0.75rem', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                      📚 Vocabolario imparato <span style={{ color: '#10b981', fontWeight: 700 }}>{progress.wordsLearned.length}</span>
+                    </p>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', maxHeight: '160px', overflowY: 'auto' }}>
+                      {words.map((w, i) => (
+                        <span key={i} style={{
+                          fontSize: '0.75rem', padding: '3px 10px', borderRadius: '999px',
+                          background: '#0f172a', border: '1px solid #334155',
+                          color: '#e2e8f0', whiteSpace: 'nowrap', maxWidth: '180px',
+                          overflow: 'hidden', textOverflow: 'ellipsis',
+                        }} title={w}>{w}</span>
+                      ))}
+                    </div>
+                    {progress.wordsLearned.length > 40 && (
+                      <p style={{ margin: '8px 0 0', fontSize: '0.7rem', color: '#475569', textAlign: 'center' }}>
+                        + altri {progress.wordsLearned.length - 40} elementi
+                      </p>
+                    )}
                   </div>
                 );
               })()}
