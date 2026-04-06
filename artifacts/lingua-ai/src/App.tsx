@@ -348,14 +348,14 @@ export default function App() {
   // Aggiorna la posizione del cursore demo DOPO ogni render di demoStep
   useEffect(() => {
     if (!demoActive) return;
+    // Step 3: demo 2 punta allo shadow-toggle, tutte le altre al testo tradotto
     const STEP_TARGETS: Record<number, string> = {
       0: 'textarea',
       1: 'lang-grid',
       2: 'translate-btn',
-      3: 'translated-text',
-      4: 'shadow-toggle',
-      5: 'tab-profilo',
-      6: '',
+      3: activeDemoNum === 2 ? 'shadow-toggle' : 'translated-text',
+      4: 'tab-profilo',
+      5: '',
     };
     const target = STEP_TARGETS[demoStep];
     if (!target) { setDemoCursorPos(null); return; }
@@ -373,7 +373,7 @@ export default function App() {
       });
     });
     return () => cancelAnimationFrame(rafId);
-  }, [demoStep, demoActive]);
+  }, [demoStep, demoActive, activeDemoNum]);
 
   const currentLocale = (ALL_LANGUAGES.find(l => l.code === selectedLang) ?? ALL_LANGUAGES[0]).locale;
   const langVoices = voices.filter(v => v.lang.startsWith(selectedLang));
@@ -684,44 +684,44 @@ export default function App() {
   };
 
   // ── Demo 1: Traduzione & X-Ray ──────────────────────────────────────────
+  // Struttura uniforme: step 0 = intro (typewriter), 1-4 = azioni, 5 = fine
   const DEMO_STEPS = [
-    { icon: '✍️', label: '1/6 — Scrittura',   desc: 'Scrivo una frase in italiano...',                    narration: 'Scrivo una frase in italiano.' },
-    { icon: '🌍', label: '2/6 — Lingua',       desc: 'Traduco nella lingua selezionata...',               narration: 'Scelgo la lingua.' },
-    { icon: '🔄', label: '3/6 — Traduzione',   desc: 'Premo TRADUCI — traduzione istantanea con pronuncia', narration: 'Premo Traduci.' },
-    { icon: '🔬', label: '4/6 — X-Ray',        desc: 'Tocco una parola → analisi grammaticale istantanea', narration: 'Analisi X-Ray grammaticale.' },
-    { icon: '🎙️', label: '5/6 — Shadowing',   desc: 'Apro Shadowing — ascolta e ripeti per la pronuncia', narration: 'Apro lo Shadowing.' },
-    { icon: '⭐', label: '6/6 — Funzionalità', desc: 'Profilo, Progressi, Segnalibri, Quiz e altro...',    narration: 'Profilo e progressi.' },
-    { icon: '🎉', label: 'Demo completata',    desc: 'Esplora liberamente tutte le funzionalità!',         narration: 'Demo completata!' },
+    { icon: '✍️', label: '1/5 — Scrittura',   desc: 'Scrivo una frase in italiano...',                      narration: 'Guarda: scrivo in italiano e traduco in inglese.' },
+    { icon: '🌍', label: '2/5 — Lingua',       desc: 'Scelgo la lingua di destinazione...',                 narration: 'Scelgo la lingua.' },
+    { icon: '🔄', label: '3/5 — Traduzione',   desc: 'Premo TRADUCI — risultato istantaneo con IPA e audio', narration: 'Premo Traduci. Ecco la traduzione.' },
+    { icon: '🔬', label: '4/5 — X-Ray',        desc: 'Analisi grammaticale X-Ray parola per parola',         narration: 'Traduzione con pronuncia e analisi grammaticale.' },
+    { icon: '⭐', label: '5/5 — Profilo',       desc: 'Profilo, Progressi, Segnalibri, Quiz e altro...',      narration: 'Qui trovo profilo e progressi.' },
+    { icon: '🎉', label: 'Demo completata',    desc: 'Esplora tutte le funzionalità!',                       narration: 'Demo completata!' },
   ];
 
   // ── Demo 2: Shadowing & Pronuncia ───────────────────────────────────────
   const DEMO2_STEPS = [
-    { icon: '🎙️', label: '1/5 — Scrittura',   desc: 'Scrivo una frase da imparare a pronunciare...',      narration: 'Scrivo una frase.' },
-    { icon: '🌍', label: '2/5 — Lingua',       desc: 'Scelgo il francese come lingua target...',           narration: 'Scelgo il francese.' },
-    { icon: '🔄', label: '3/5 — Traduzione',   desc: 'Traduco e ascolto la pronuncia nativa...',           narration: 'Traduco.' },
-    { icon: '🎙️', label: '4/5 — Shadowing',   desc: 'Attivo Shadowing: ascolto e ripeto la frase...',     narration: 'Attivo lo Shadowing.' },
-    { icon: '📊', label: '5/5 — Progressi',    desc: 'Il punteggio migliora ad ogni esercizio!',           narration: 'Vedo i progressi.' },
-    { icon: '🎉', label: 'Demo completata',    desc: 'Attiva lo Shadowing e inizia a praticare!',          narration: 'Ottimo!' },
+    { icon: '🎙️', label: '1/5 — Scrittura',   desc: 'Scrivo una frase da imparare in francese...',          narration: 'Guarda lo Shadowing per migliorare la pronuncia.' },
+    { icon: '🌍', label: '2/5 — Lingua',       desc: 'Scelgo il francese come lingua target...',             narration: 'Scelgo il francese.' },
+    { icon: '🔄', label: '3/5 — Traduzione',   desc: 'Traduco e ascolto la pronuncia nativa...',             narration: 'Premo Traduci e ascolto la pronuncia.' },
+    { icon: '🎙️', label: '4/5 — Shadowing',   desc: 'Apro Shadowing: la frase viene pronunciata, poi ripeto', narration: 'Apro Shadowing. La frase viene pronunciata per me.' },
+    { icon: '📊', label: '5/5 — Progressi',    desc: 'Ogni esercizio migliora il punteggio!',                narration: 'I progressi vengono salvati automaticamente.' },
+    { icon: '🎉', label: 'Demo completata',    desc: 'Attiva lo Shadowing e inizia a praticare!',            narration: 'Ora tocca a te!' },
   ];
 
   // ── Demo 3: Chat AI & Roleplay ───────────────────────────────────────────
   const DEMO3_STEPS = [
-    { icon: '🤖', label: '1/5 — AI Tutor',     desc: 'Attivo il Tutor AI alimentato da DeepSeek...',       narration: 'Scrivo una frase.' },
-    { icon: '🌍', label: '2/5 — Lingua',       desc: 'Scelgo il giapponese come lingua target...',         narration: 'Scelgo il giapponese.' },
-    { icon: '🔄', label: '3/5 — Traduzione',   desc: 'Traduco la frase con analisi integrata...',          narration: 'Traduco.' },
-    { icon: '💬', label: '4/5 — Chat AI',      desc: 'Apro la chat — l\'AI spiega grammatica ed esempi...', narration: 'Apro il Tutor AI.' },
-    { icon: '🎭', label: '5/5 — Roleplay',     desc: 'Modalità Roleplay: conversazione in contesti reali!', narration: 'Converso con l\'AI.' },
-    { icon: '🎉', label: 'Demo completata',    desc: 'Inizia a chattare con il tuo Tutor AI!',             narration: 'Fantastico!' },
+    { icon: '🤖', label: '1/5 — Scrittura',   desc: 'Scrivo una frase da chiedere al Tutor AI...',           narration: 'Guarda il Tutor AI alimentato da DeepSeek.' },
+    { icon: '🌍', label: '2/5 — Lingua',       desc: 'Scelgo il giapponese come lingua target...',            narration: 'Scelgo il giapponese.' },
+    { icon: '🔄', label: '3/5 — Traduzione',   desc: 'Traduco la frase con il supporto AI...',                narration: 'Premo Traduci. Il risultato arriva in pochi secondi.' },
+    { icon: '💬', label: '4/5 — Chat AI',      desc: 'Apro la chat — l\'AI spiega grammatica ed esempi...',   narration: 'Apro il Tutor AI. Posso fare domande in italiano.' },
+    { icon: '📊', label: '5/5 — Progressi',   desc: 'Profilo e progressi sempre aggiornati...',               narration: 'Profilo e progressi sempre aggiornati.' },
+    { icon: '🎉', label: 'Demo completata',    desc: 'Inizia a chattare con il Tutor AI!',                    narration: 'L\'AI risponde e spiega tutto in italiano!' },
   ];
 
-  // ── Demo 4: Segnalibri & Quiz ────────────────────────────────────────────
+  // ── Demo 4: Segnalibri & Vocabolario ─────────────────────────────────────
   const DEMO4_STEPS = [
-    { icon: '⭐', label: '1/5 — Vocabolario',  desc: 'Ti mostro come costruire il tuo vocabolario...',     narration: 'Scrivo una frase.' },
-    { icon: '🌍', label: '2/5 — Lingua',       desc: 'Scelgo lo spagnolo come lingua target...',           narration: 'Scelgo lo spagnolo.' },
-    { icon: '🔄', label: '3/5 — Traduzione',   desc: 'Traduco e salvo la frase che voglio ricordare...',   narration: 'Traduco.' },
-    { icon: '📚', label: '4/5 — Segnalibri',   desc: 'Aggiungo ai Segnalibri per ripassare dopo...',       narration: 'Salvo nei segnalibri.' },
-    { icon: '📊', label: '5/5 — Progressi',    desc: 'Calendario e Progressi mostrano la costanza!',       narration: 'Vedo i progressi.' },
-    { icon: '🎉', label: 'Demo completata',    desc: 'Studia ogni giorno e diventerai fluente!',           narration: 'Bravissimo!' },
+    { icon: '⭐', label: '1/5 — Scrittura',    desc: 'Scrivo una frase per costruire il vocabolario...',      narration: 'Guarda come costruire il vocabolario personale.' },
+    { icon: '🌍', label: '2/5 — Lingua',       desc: 'Scelgo lo spagnolo come lingua target...',              narration: 'Scelgo lo spagnolo.' },
+    { icon: '🔄', label: '3/5 — Traduzione',   desc: 'Traduco la frase che voglio ricordare...',              narration: 'Premo Traduci e vedo la frase in spagnolo.' },
+    { icon: '📚', label: '4/5 — Segnalibri',   desc: 'La frase viene salvata nei Segnalibri per ripassarla',  narration: 'Salvo la frase nei Segnalibri per ripassarla dopo.' },
+    { icon: '📅', label: '5/5 — Calendario',   desc: 'Il Calendario mostra la costanza quotidiana!',          narration: 'Il Calendario mostra quanti giorni ho studiato.' },
+    { icon: '🎉', label: 'Demo completata',    desc: 'Studia ogni giorno e diventerai fluente!',              narration: 'Studia ogni giorno. Diventerai fluente!' },
   ];
 
   const narrateDemo = (text: string) => {
@@ -814,53 +814,54 @@ export default function App() {
       demoTimersRef.current.push(id);
     };
 
-    // Sequenze specifiche per ogni demo (offset dalla fine del typewriter)
+    // Struttura uniforme per tutte le demo:
+    // t=0: lingua, t=3000: traduci, t=3600: click, t=8000: feature, t=8600: click,
+    // t=13000: profilo/tab, t=13600: click, t=17000: fine, t=20000: stop
     const runSequence = () => {
       if (demoNum === 1) {
         t(() => { setDemoStep(1); narrateDemo(DEMO_STEPS[1].narration); }, 0);
-        t(() => { setDemoStep(2); narrateDemo(DEMO_STEPS[2].narration); handleTranslate(); }, 2500);
-        t(() => animateDemoCursorClick(), 3100);
+        t(() => { setDemoStep(2); narrateDemo(DEMO_STEPS[2].narration); handleTranslate(); }, 3000);
+        t(() => animateDemoCursorClick(), 3600);
         t(() => {
           setDemoStep(3); narrateDemo(DEMO_STEPS[3].narration);
           const words = translatedTextRef.current.split(' ').filter(w => w.replace(/[^a-zA-Z]/g, '').length > 2);
           if (words.length > 0) fetchGrammar(words[0]);
-        }, 7000);
-        t(() => animateDemoCursorClick(), 7600);
-        t(() => { setDemoStep(4); narrateDemo(DEMO_STEPS[4].narration); setShowShadow(true); fetchShadowPhrase(); }, 11500);
-        t(() => animateDemoCursorClick(), 12100);
-        t(() => { setShowShadow(false); setDemoStep(5); narrateDemo(DEMO_STEPS[5].narration); setShowTabPanel(true); setActiveTab('profilo'); }, 16000);
-        t(() => animateDemoCursorClick(), 16600);
-        t(() => { setDemoStep(6); narrateDemo(DEMO_STEPS[6].narration); }, 20000);
-        t(() => stopDemo(), 23500);
+        }, 8000);
+        t(() => animateDemoCursorClick(), 8600);
+        t(() => { setDemoStep(4); narrateDemo(DEMO_STEPS[4].narration); setShowTabPanel(true); setActiveTab('profilo'); }, 13000);
+        t(() => animateDemoCursorClick(), 13600);
+        t(() => { setDemoStep(5); narrateDemo(DEMO_STEPS[5].narration); }, 17000);
+        t(() => stopDemo(), 20000);
       } else if (demoNum === 2) {
         t(() => { setSelectedLang('fr'); setDemoStep(1); narrateDemo(DEMO2_STEPS[1].narration); }, 0);
-        t(() => { setDemoStep(2); narrateDemo(DEMO2_STEPS[2].narration); handleTranslate(); }, 2500);
-        t(() => animateDemoCursorClick(), 3100);
-        t(() => { setDemoStep(3); narrateDemo(DEMO2_STEPS[3].narration); setShowShadow(true); fetchShadowPhrase(); }, 7000);
-        t(() => animateDemoCursorClick(), 7600);
-        t(() => { setDemoStep(4); narrateDemo(DEMO2_STEPS[4].narration); setShowTabPanel(true); setActiveTab('progressi'); }, 11500);
-        t(() => animateDemoCursorClick(), 12100);
-        t(() => { setDemoStep(5); narrateDemo(DEMO2_STEPS[5].narration); }, 16000);
-        t(() => stopDemo(), 19000);
+        t(() => { setDemoStep(2); narrateDemo(DEMO2_STEPS[2].narration); handleTranslate(); }, 3000);
+        t(() => animateDemoCursorClick(), 3600);
+        t(() => { setDemoStep(3); narrateDemo(DEMO2_STEPS[3].narration); setShowShadow(true); fetchShadowPhrase(); }, 8000);
+        t(() => animateDemoCursorClick(), 8600);
+        t(() => { setDemoStep(4); narrateDemo(DEMO2_STEPS[4].narration); setShowTabPanel(true); setActiveTab('progressi'); }, 13000);
+        t(() => animateDemoCursorClick(), 13600);
+        t(() => { setDemoStep(5); narrateDemo(DEMO2_STEPS[5].narration); }, 17000);
+        t(() => stopDemo(), 20000);
       } else if (demoNum === 3) {
         t(() => { setSelectedLang('ja'); setDemoStep(1); narrateDemo(DEMO3_STEPS[1].narration); }, 0);
-        t(() => { setDemoStep(2); narrateDemo(DEMO3_STEPS[2].narration); handleTranslate(); }, 2500);
-        t(() => animateDemoCursorClick(), 3100);
-        t(() => { setDemoStep(3); narrateDemo(DEMO3_STEPS[3].narration); setShowChat(true); }, 7000);
-        t(() => animateDemoCursorClick(), 7600);
-        t(() => { setDemoStep(4); narrateDemo(DEMO3_STEPS[4].narration); }, 11500);
-        t(() => { setDemoStep(5); narrateDemo(DEMO3_STEPS[5].narration); }, 16000);
-        t(() => stopDemo(), 19000);
+        t(() => { setDemoStep(2); narrateDemo(DEMO3_STEPS[2].narration); handleTranslate(); }, 3000);
+        t(() => animateDemoCursorClick(), 3600);
+        t(() => { setDemoStep(3); narrateDemo(DEMO3_STEPS[3].narration); setShowChat(true); }, 8000);
+        t(() => animateDemoCursorClick(), 8600);
+        t(() => { setDemoStep(4); narrateDemo(DEMO3_STEPS[4].narration); setShowTabPanel(true); setActiveTab('progressi'); }, 13000);
+        t(() => animateDemoCursorClick(), 13600);
+        t(() => { setDemoStep(5); narrateDemo(DEMO3_STEPS[5].narration); }, 17000);
+        t(() => stopDemo(), 20000);
       } else {
         t(() => { setSelectedLang('es'); setDemoStep(1); narrateDemo(DEMO4_STEPS[1].narration); }, 0);
-        t(() => { setDemoStep(2); narrateDemo(DEMO4_STEPS[2].narration); handleTranslate(); }, 2500);
-        t(() => animateDemoCursorClick(), 3100);
-        t(() => { setDemoStep(3); narrateDemo(DEMO4_STEPS[3].narration); }, 7000);
-        t(() => animateDemoCursorClick(), 7600);
-        t(() => { setDemoStep(4); narrateDemo(DEMO4_STEPS[4].narration); setShowTabPanel(true); setActiveTab('progressi'); }, 11500);
-        t(() => animateDemoCursorClick(), 12100);
-        t(() => { setDemoStep(5); narrateDemo(DEMO4_STEPS[5].narration); }, 16000);
-        t(() => stopDemo(), 19000);
+        t(() => { setDemoStep(2); narrateDemo(DEMO4_STEPS[2].narration); handleTranslate(); }, 3000);
+        t(() => animateDemoCursorClick(), 3600);
+        t(() => { setDemoStep(3); narrateDemo(DEMO4_STEPS[3].narration); }, 8000);
+        t(() => animateDemoCursorClick(), 8600);
+        t(() => { setDemoStep(4); narrateDemo(DEMO4_STEPS[4].narration); setShowTabPanel(true); setActiveTab('calendario'); }, 13000);
+        t(() => animateDemoCursorClick(), 13600);
+        t(() => { setDemoStep(5); narrateDemo(DEMO4_STEPS[5].narration); }, 17000);
+        t(() => stopDemo(), 20000);
       }
     };
 
