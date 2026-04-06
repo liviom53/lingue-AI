@@ -500,7 +500,7 @@ export default function App() {
               disabled={loading || aiLoading}
               title="Traduzione AI con spiegazione grammaticale"
             >
-              {aiLoading ? <Loader2 className="animate-spin" size={18} /> : <Bot size={18} />} AI ✨
+              {aiLoading ? <Loader2 className="animate-spin" size={18} /> : <Bot size={18} />} Assistente AI
             </button>
           </div>
           {error && (
