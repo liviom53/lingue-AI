@@ -1,28 +1,27 @@
-kind = "api"
-  previewPath = "/api-server"
-  title = "API Server"
-  version = "1.0.0"
-  id = "3B4_FFSkEVBkAeYMFRJ2e"
+kind = "web"
+previewPath = "/"
+title = "API Server"
+version = "1.0.0"
+id = "3B4_FFSkEVBkAeYMFRJ2e"
 
-  [[services]]
-  localPort = 8080
-  name = "API Server"
-  paths = ["/api", "/lingua-ai/", "/"]
+[[services]]
+localPort = 8080
+name = "API Server"
+paths = ["/api", "/lingua-ai/", "/"]
 
-  [services.development]
-  run = "pnpm --filter @workspace/api-server run dev"
+[services.development]
+run = "pnpm --filter @workspace/api-server run dev"
 
-  [services.production]
+[services.production]
 
-  [services.production.build]
-  args = ["sh", "-c", "NODE_ENV=production BASE_PATH=/lingua-ai/ pnpm --filter @workspace/lingua-ai run build && NODE_ENV=production BASE_PATH=/ pnpm --filter @workspace/diario-pescatore run build && NODE_ENV=production pnpm --filter @workspace/api-server run build"]
+[services.production.build]
+args = ["sh", "-c", "NODE_ENV=production BASE_PATH=/lingua-ai/ pnpm --filter @workspace/lingua-ai run build && NODE_ENV=production BASE_PATH=/ pnpm --filter @workspace/diario-pescatore run build && NODE_ENV=production pnpm --filter @workspace/api-server run build"]
 
-  [services.production.run]
-  args = ["node", "--enable-source-maps", "artifacts/api-server/dist/index.mjs"]
+[services.production.run]
+args = ["node", "--enable-source-maps", "artifacts/api-server/dist/index.mjs"]
 
-  [services.production.run.env]
-  NODE_ENV = "production"
+[services.production.run.env]
+NODE_ENV = "production"
 
-  [services.production.health.startup]
-  path = "/api/healthz"
-  
+[services.production.health.startup]
+path = "/api/healthz"

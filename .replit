@@ -1,7 +1,7 @@
 modules = ["nodejs-24"]
 
   [[artifacts]]
-  id = "artifacts/diario-pescatore"
+  id = "3B4_FFSkEVBkAeYMFRJ2e"
 
   [[ports]]
   localPort = 8080
