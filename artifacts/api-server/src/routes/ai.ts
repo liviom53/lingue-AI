@@ -99,10 +99,11 @@ Respond ONLY with valid JSON in this exact format (no markdown, no extra text):
 });
 
 router.post("/chat", async (req: Request, res: Response) => {
-  const { messages, targetLang, userProfile } = req.body as {
+  const { messages, targetLang, userProfile, scenario } = req.body as {
     messages: { role: "user" | "assistant"; content: string }[];
     targetLang: string;
     userProfile?: UserProfile;
+    scenario?: string;
   };
   if (!messages || !targetLang) {
     res.status(400).json({ error: "Missing messages or targetLang" });
@@ -110,26 +111,114 @@ router.post("/chat", async (req: Request, res: Response) => {
   }
   const langName = LANG_NAMES[targetLang] ?? targetLang;
   const profileCtx = buildProfileContext(userProfile);
-  try {
-    const completion = await openrouter.chat.completions.create({
-      model: MODEL,
-      max_tokens: 8192,
-      messages: [
-        {
-          role: "system",
-          content: `You are a friendly ${langName} language tutor helping an Italian speaker practice ${langName}. 
+
+  let systemContent: string;
+  if (scenario) {
+    systemContent = `You are playing a character in a ${langName} language learning roleplay.
+Scenario: ${scenario}
+Rules:
+- Stay fully in character throughout — you ARE the character in this scenario
+- Always speak in ${langName} only (short, natural sentences — 2-3 max)
+- If the user makes a grammar or vocabulary mistake, gently correct it at the very end with "💡 Correzione:" followed by the correction in Italian
+- Start the conversation with a natural, in-character greeting that sets the scene
+- Help the user practice vocabulary and phrases relevant to this real-life situation${profileCtx}`;
+  } else {
+    systemContent = `You are a friendly ${langName} language tutor helping an Italian speaker practice ${langName}. 
 Rules:
 - Always respond in ${langName}
 - Keep responses short and natural (2-4 sentences)
 - If the user makes a grammar mistake, gently correct it at the very end with "💡 Correzione:" followed by the correction in Italian
 - Be encouraging and conversational
-- Personalize examples and topics based on the user profile when relevant${profileCtx}`,
-        },
+- Personalize examples and topics based on the user profile when relevant${profileCtx}`;
+  }
+
+  try {
+    const completion = await openrouter.chat.completions.create({
+      model: MODEL,
+      max_tokens: 8192,
+      messages: [
+        { role: "system", content: systemContent },
         ...messages,
       ],
     });
     const reply = completion.choices[0]?.message?.content ?? "";
     res.json({ reply });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message ?? "AI error" });
+  }
+});
+
+router.post("/grammar", async (req: Request, res: Response) => {
+  const { word, sentence, targetLang } = req.body as {
+    word: string;
+    sentence: string;
+    targetLang: string;
+  };
+  if (!word || !targetLang) {
+    res.status(400).json({ error: "Missing word or targetLang" });
+    return;
+  }
+  const langName = LANG_NAMES[targetLang] ?? targetLang;
+  try {
+    const completion = await openrouter.chat.completions.create({
+      model: MODEL,
+      max_tokens: 300,
+      messages: [
+        {
+          role: "system",
+          content: `You are a grammar expert. Analyze the given word within its ${langName} sentence context.
+Respond ONLY with valid JSON (no markdown, no extra text):
+{"pos":"...","gender":"...","tense":"...","info":"..."}
+- pos: part of speech in Italian (e.g. "sostantivo", "verbo", "aggettivo", "avverbio", "preposizione", "articolo", "pronome")
+- gender: grammatical gender in Italian if applicable (e.g. "maschile", "femminile", "neutro", or "—" if not applicable)
+- tense: verb tense in Italian if it is a verb (e.g. "presente", "passato prossimo", "futuro", or "—" if not a verb)
+- info: one short, useful note in Italian about this word — etymology, common usage, pitfall, or interesting fact. Max 20 words.`,
+        },
+        {
+          role: "user",
+          content: `Word: "${word}"\nSentence: "${sentence ?? word}"`,
+        },
+      ],
+    });
+    const raw = completion.choices[0]?.message?.content ?? "{}";
+    const clean = raw.replace(/^```json\s*/i, "").replace(/```$/, "").trim();
+    res.json(JSON.parse(clean));
+  } catch (err: any) {
+    res.status(500).json({ error: err.message ?? "AI error" });
+  }
+});
+
+router.post("/shadow", async (req: Request, res: Response) => {
+  const { targetLang, userProfile } = req.body as {
+    targetLang: string;
+    userProfile?: UserProfile;
+  };
+  if (!targetLang) {
+    res.status(400).json({ error: "Missing targetLang" });
+    return;
+  }
+  const langName = LANG_NAMES[targetLang] ?? targetLang;
+  const profileCtx = buildProfileContext(userProfile);
+  try {
+    const completion = await openrouter.chat.completions.create({
+      model: MODEL,
+      max_tokens: 300,
+      messages: [
+        {
+          role: "system",
+          content: `You generate short practice phrases for language shadowing exercises.
+Respond ONLY with valid JSON (no markdown):
+{"phrase":"...","phonetic":"...","translation":"..."}
+- phrase: a natural, everyday ${langName} sentence of 5-10 words. Use common vocabulary. Vary the topic each time.
+- phonetic: simplified phonetic spelling using Italian phonetic conventions so an Italian can roughly pronounce it. Capitalize stressed syllables.
+- translation: the Italian translation of the phrase.${profileCtx}`,
+        },
+        { role: "user", content: "Generate a new shadowing phrase." },
+      ],
+    });
+    const raw = completion.choices[0]?.message?.content ?? "{}";
+    const clean = raw.replace(/^```json\s*/i, "").replace(/```$/, "").trim();
+    res.json(JSON.parse(clean));
   } catch (err: any) {
     res.status(500).json({ error: err.message ?? "AI error" });
   }

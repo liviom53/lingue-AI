@@ -113,6 +113,15 @@ const FlagImg = ({ fc, name }: { fc: string; name: string }) => (
 
 const ALL_LANGUAGES = [...LANGUAGES, ...MORE_LANGUAGES];
 
+const SCENARIOS = [
+  { id: 'ristorante', icon: '🍽️', label: 'Ristorante', prompt: 'You are a waiter in a restaurant. The customer (user) has just sat down at a table. Greet them and offer the menu.' },
+  { id: 'aeroporto', icon: '✈️', label: 'Aeroporto', prompt: 'You are a check-in agent at an international airport. The passenger (user) approaches your desk.' },
+  { id: 'medico', icon: '🏥', label: 'Medico', prompt: 'You are a doctor in a clinic. The patient (user) enters for their appointment. Ask how you can help.' },
+  { id: 'hotel', icon: '🏨', label: 'Hotel', prompt: 'You are the front desk receptionist at a hotel. A guest (user) has just arrived to check in.' },
+  { id: 'colloquio', icon: '💼', label: 'Colloquio', prompt: 'You are an HR interviewer. The candidate (user) enters the room. Start the job interview.' },
+  { id: 'supermercato', icon: '🛒', label: 'Supermercato', prompt: 'You are a shop assistant in a supermarket. A customer (user) approaches you looking for help.' },
+];
+
 const normalizeText = (text: string) => {
   if (!text) return "";
   return text
@@ -222,6 +231,19 @@ export default function App() {
   const [progress, setProgress] = useState<ProgressStats>(loadProgress);
   const [profile, setProfile] = useState<UserProfile>(loadProfile);
   const [profileSaved, setProfileSaved] = useState(false);
+  // Roleplay
+  const [roleplayScenario, setRoleplayScenario] = useState<string | null>(null);
+  // Grammatica X-Ray
+  const [xrayWord, setXrayWord] = useState<string | null>(null);
+  const [xrayData, setXrayData] = useState<{ pos: string; gender: string; tense: string; info: string } | null>(null);
+  const [xrayLoading, setXrayLoading] = useState(false);
+  // Shadowing
+  const [showShadow, setShowShadow] = useState(false);
+  const [shadowPhrase, setShadowPhrase] = useState<{ phrase: string; phonetic: string; translation: string } | null>(null);
+  const [shadowStep, setShadowStep] = useState<'idle' | 'speaking' | 'listening' | 'result'>('idle');
+  const [shadowScore, setShadowScore] = useState<number | null>(null);
+  const [shadowSpoken, setShadowSpoken] = useState('');
+  const [shadowLoading, setShadowLoading] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const moreLangsRef = useRef<HTMLDivElement>(null);
@@ -437,19 +459,26 @@ export default function App() {
     recognition.start();
   };
 
-  const handleChatSend = async () => {
+  const handleChatSend = async (overrideScenario?: string) => {
     if (!chatInput.trim() || chatLoading) return;
     const userMsg: ChatMessage = { role: 'user', content: chatInput.trim() };
     const newMessages = [...chatMessages, userMsg];
     setChatMessages(newMessages);
     setChatInput('');
     setChatLoading(true);
+    const scenarioToUse = overrideScenario ?? roleplayScenario;
+    const activeScenario = scenarioToUse ? SCENARIOS.find(s => s.id === scenarioToUse) : null;
 
     try {
       const res = await fetch('/api/ai/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: newMessages, targetLang: selectedLang, userProfile: profile }),
+        body: JSON.stringify({
+          messages: newMessages,
+          targetLang: selectedLang,
+          userProfile: profile,
+          scenario: activeScenario?.prompt ?? undefined,
+        }),
       });
       if (!res.ok) throw new Error('Errore chat AI');
       const data = await res.json();
@@ -462,6 +491,106 @@ export default function App() {
     } finally {
       setChatLoading(false);
     }
+  };
+
+  const handleRoleplayStart = async (scenarioId: string) => {
+    setRoleplayScenario(scenarioId);
+    setChatMessages([]);
+    setShowChat(true);
+    setChatLoading(true);
+    const scenario = SCENARIOS.find(s => s.id === scenarioId);
+    if (!scenario) { setChatLoading(false); return; }
+    try {
+      const res = await fetch('/api/ai/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages: [{ role: 'user', content: '(start)' }],
+          targetLang: selectedLang,
+          userProfile: profile,
+          scenario: scenario.prompt,
+        }),
+      });
+      if (!res.ok) throw new Error('Errore');
+      const data = await res.json();
+      const aiMsg: ChatMessage = { role: 'assistant', content: data.reply ?? '' };
+      setChatMessages([aiMsg]);
+      speak(data.reply ?? '');
+    } catch {
+      setChatMessages([{ role: 'assistant', content: '⚠️ Errore avvio scenario' }]);
+    } finally {
+      setChatLoading(false);
+    }
+  };
+
+  const fetchGrammar = async (word: string) => {
+    const clean = word.replace(/[.,!?;:«»"'()\[\]]/g, '').trim();
+    if (!clean) return;
+    setXrayWord(clean);
+    setXrayData(null);
+    setXrayLoading(true);
+    try {
+      const res = await fetch('/api/ai/grammar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ word: clean, sentence: translatedText, targetLang: selectedLang }),
+      });
+      const data = await res.json();
+      setXrayData(data);
+    } catch {
+      setXrayData({ pos: '—', gender: '—', tense: '—', info: 'Errore nel recupero dati.' });
+    } finally {
+      setXrayLoading(false);
+    }
+  };
+
+  const fetchShadowPhrase = async () => {
+    setShadowLoading(true);
+    setShadowPhrase(null);
+    setShadowStep('idle');
+    setShadowScore(null);
+    setShadowSpoken('');
+    try {
+      const res = await fetch('/api/ai/shadow', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ targetLang: selectedLang, userProfile: profile }),
+      });
+      const data = await res.json();
+      setShadowPhrase(data);
+      setShadowStep('speaking');
+      setTimeout(() => speak(data.phrase ?? ''), 300);
+    } catch {
+      setShadowPhrase(null);
+    } finally {
+      setShadowLoading(false);
+    }
+  };
+
+  const startShadowListen = () => {
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SpeechRecognition || !shadowPhrase) return;
+    const recognition = new SpeechRecognition();
+    recognition.lang = (ALL_LANGUAGES.find(l => l.code === selectedLang) ?? ALL_LANGUAGES[0]).locale;
+    setShadowStep('listening');
+    recognition.onresult = (e: any) => {
+      const spoken = e.results[0][0].transcript;
+      setShadowSpoken(spoken);
+      const expectedWords = normalizeText(shadowPhrase.phrase).split(' ');
+      const spokenWords = normalizeText(spoken).split(' ');
+      const correct = expectedWords.filter((w, i) => spokenWords[i] === w).length;
+      const score = Math.round((correct / expectedWords.length) * 100);
+      setShadowScore(score);
+      setShadowStep('result');
+      setProgress(prev => {
+        const practiceScores = [...prev.practiceScores, score];
+        const updated = { ...prev, practiceAttempts: prev.practiceAttempts + 1, practiceScores };
+        saveProgress(updated);
+        return updated;
+      });
+    };
+    recognition.onend = () => { if (shadowStep === 'listening') setShadowStep('idle'); };
+    recognition.start();
   };
 
   const styles: Record<string, React.CSSProperties> = {
@@ -720,8 +849,24 @@ export default function App() {
 
         {translatedText && (
           <section style={{ ...styles.card, borderLeft: '4px solid #10b981' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <p style={{ fontSize: '1.2rem', fontWeight: 'bold', margin: 0 }}>{translatedText}</p>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+              <div style={{ flex: 1, fontSize: '1.2rem', fontWeight: 'bold', lineHeight: '1.7', flexWrap: 'wrap', display: 'flex', gap: '4px' }}>
+                {translatedText.split(' ').map((word, i) => (
+                  <span
+                    key={i}
+                    onClick={() => fetchGrammar(word)}
+                    title="Analisi grammaticale"
+                    style={{
+                      cursor: 'pointer',
+                      borderRadius: '4px',
+                      padding: '0 2px',
+                      backgroundColor: xrayWord === word.replace(/[.,!?;:«»"'()\[\]]/g, '').trim() ? '#1e40af' : 'transparent',
+                      color: xrayWord === word.replace(/[.,!?;:«»"'()\[\]]/g, '').trim() ? '#93c5fd' : 'inherit',
+                      transition: 'background 0.15s',
+                    }}
+                  >{word}</span>
+                ))}
+              </div>
               <div style={{ display: 'flex', gap: '8px', flexShrink: 0, marginLeft: '8px' }}>
                 <button
                   title="Copia traduzione"
@@ -743,6 +888,36 @@ export default function App() {
                 />
               </div>
             </div>
+            <p style={{ margin: '4px 0 0', fontSize: '0.7rem', color: '#475569' }}>🔬 Tocca una parola per analisi grammaticale</p>
+            {(xrayWord || xrayLoading) && (
+              <div style={{ marginTop: '8px', padding: '10px', backgroundColor: '#0f172a', borderRadius: '8px', border: '1px solid #3b82f6', position: 'relative' }}>
+                <button onClick={() => { setXrayWord(null); setXrayData(null); }} style={{ position: 'absolute', top: '6px', right: '6px', background: 'none', border: 'none', cursor: 'pointer', color: '#64748b' }}><X size={14} /></button>
+                <p style={{ margin: '0 0 6px', fontSize: '0.7rem', color: '#3b82f6', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em' }}>🔬 X-Ray: <em style={{ fontStyle: 'normal', color: '#93c5fd' }}>{xrayWord}</em></p>
+                {xrayLoading ? (
+                  <p style={{ margin: 0, color: '#64748b', fontSize: '0.85rem' }}><Loader2 className="animate-spin" size={14} style={{ display: 'inline', marginRight: '6px' }} />Analisi in corso...</p>
+                ) : xrayData && (
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '6px', marginBottom: '6px' }}>
+                    <div style={{ textAlign: 'center' }}>
+                      <p style={{ margin: 0, fontSize: '0.65rem', color: '#64748b', textTransform: 'uppercase' }}>Categoria</p>
+                      <p style={{ margin: 0, fontSize: '0.85rem', color: '#e2e8f0', fontWeight: 'bold' }}>{xrayData.pos}</p>
+                    </div>
+                    <div style={{ textAlign: 'center' }}>
+                      <p style={{ margin: 0, fontSize: '0.65rem', color: '#64748b', textTransform: 'uppercase' }}>Genere</p>
+                      <p style={{ margin: 0, fontSize: '0.85rem', color: '#e2e8f0', fontWeight: 'bold' }}>{xrayData.gender}</p>
+                    </div>
+                    <div style={{ textAlign: 'center' }}>
+                      <p style={{ margin: 0, fontSize: '0.65rem', color: '#64748b', textTransform: 'uppercase' }}>Tempo</p>
+                      <p style={{ margin: 0, fontSize: '0.85rem', color: '#e2e8f0', fontWeight: 'bold' }}>{xrayData.tense}</p>
+                    </div>
+                    {xrayData.info && (
+                      <div style={{ gridColumn: '1/-1', marginTop: '2px', padding: '6px', backgroundColor: '#1e293b', borderRadius: '6px' }}>
+                        <p style={{ margin: 0, fontSize: '0.8rem', color: '#94a3b8' }}>💡 {xrayData.info}</p>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
             {phonetic && (
               <p style={{
                 marginTop: '6px',
@@ -830,6 +1005,63 @@ export default function App() {
           </section>
         )}
 
+        {/* Shadowing Mode */}
+        <section style={{ ...styles.card, border: '1px solid #a855f7' }}>
+          <button
+            onClick={() => setShowShadow(v => !v)}
+            style={{ width: '100%', background: 'none', border: 'none', color: '#c084fc', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: 0, fontSize: '0.9rem', fontWeight: 'bold' }}
+          >
+            <span>🔁 Shadowing — ripeti e impara</span>
+            {showShadow ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+          </button>
+          {showShadow && (
+            <div style={{ marginTop: '10px' }}>
+              <p style={{ fontSize: '0.78rem', color: '#94a3b8', margin: '0 0 10px' }}>
+                L'AI genera una frase e la parla. Ripeti subito — poi scopri il tuo punteggio.
+              </p>
+              <button onClick={fetchShadowPhrase} disabled={shadowLoading} style={{ ...styles.btn, backgroundColor: '#7c3aed', marginBottom: '10px' }}>
+                {shadowLoading ? <Loader2 className="animate-spin" size={18} /> : '✨'} Genera nuova frase
+              </button>
+              {shadowPhrase && (
+                <div style={{ backgroundColor: '#0f172a', borderRadius: '8px', padding: '12px', border: '1px solid #6d28d9' }}>
+                  <p style={{ margin: '0 0 4px', fontSize: '1.1rem', fontWeight: 'bold', color: '#e2e8f0' }}>{shadowPhrase.phrase}</p>
+                  <p style={{ margin: '0 0 2px', fontSize: '0.85rem', color: '#a78bfa', fontStyle: 'italic' }}>si legge: {shadowPhrase.phonetic}</p>
+                  <p style={{ margin: '0 0 12px', fontSize: '0.8rem', color: '#64748b' }}>🇮🇹 {shadowPhrase.translation}</p>
+                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                    <button onClick={() => speak(shadowPhrase.phrase)} style={{ ...styles.btn, backgroundColor: '#4f46e5', flex: 1 }}>
+                      <Volume2 size={16} /> Riascolta
+                    </button>
+                    {(window as any).SpeechRecognition || (window as any).webkitSpeechRecognition ? (
+                      <button
+                        onClick={startShadowListen}
+                        disabled={shadowStep === 'listening'}
+                        style={{ ...styles.btn, backgroundColor: shadowStep === 'listening' ? '#f59e0b' : '#10b981', flex: 1 }}
+                      >
+                        <Mic size={16} /> {shadowStep === 'listening' ? 'Ascoltando...' : 'Ripeti ora!'}
+                      </button>
+                    ) : (
+                      <p style={{ fontSize: '0.75rem', color: '#f59e0b', margin: 0 }}>Solo Chrome/Edge</p>
+                    )}
+                  </div>
+                  {shadowStep === 'result' && shadowScore !== null && (
+                    <div style={{ marginTop: '10px', padding: '10px', backgroundColor: '#1e293b', borderRadius: '8px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '6px' }}>
+                        <span style={{ fontSize: '1.6rem', fontWeight: 'bold', color: shadowScore === 100 ? '#10b981' : shadowScore >= 60 ? '#f59e0b' : '#ef4444' }}>
+                          {shadowScore}%
+                        </span>
+                        <span style={{ color: '#94a3b8', fontSize: '0.85rem' }}>
+                          {shadowScore === 100 ? '🎉 Perfetto!' : shadowScore >= 60 ? '👍 Quasi!' : '❌ Riprova!'}
+                        </span>
+                      </div>
+                      <p style={{ margin: 0, fontSize: '0.8rem', color: '#64748b' }}>Hai detto: <em style={{ color: '#94a3b8' }}>{shadowSpoken}</em></p>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+        </section>
+
         {/* AI Chat Section */}
         <section style={{ ...styles.card, border: '1px solid #fb923c' }}>
           <button
@@ -867,6 +1099,32 @@ export default function App() {
 
           {showChat && (
             <div style={{ marginTop: '10px' }}>
+              {/* Scenario Roleplay Pills */}
+              <div style={{ marginBottom: '8px' }}>
+                <p style={{ margin: '0 0 6px', fontSize: '0.7rem', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>🎭 Scegli uno scenario o conversa liberamente</p>
+                <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                  <button
+                    onClick={() => { setRoleplayScenario(null); setChatMessages([]); }}
+                    style={{ padding: '4px 10px', borderRadius: '20px', border: '1px solid', borderColor: roleplayScenario === null ? '#fb923c' : '#334155', backgroundColor: roleplayScenario === null ? '#fb923c22' : 'transparent', color: roleplayScenario === null ? '#fb923c' : '#64748b', fontSize: '0.78rem', cursor: 'pointer', fontWeight: roleplayScenario === null ? 'bold' : 'normal' }}
+                  >
+                    💬 Libera
+                  </button>
+                  {SCENARIOS.map(s => (
+                    <button
+                      key={s.id}
+                      onClick={() => handleRoleplayStart(s.id)}
+                      style={{ padding: '4px 10px', borderRadius: '20px', border: '1px solid', borderColor: roleplayScenario === s.id ? '#fb923c' : '#334155', backgroundColor: roleplayScenario === s.id ? '#fb923c22' : 'transparent', color: roleplayScenario === s.id ? '#fb923c' : '#64748b', fontSize: '0.78rem', cursor: 'pointer', fontWeight: roleplayScenario === s.id ? 'bold' : 'normal' }}
+                    >
+                      {s.icon} {s.label}
+                    </button>
+                  ))}
+                </div>
+                {roleplayScenario && (
+                  <p style={{ margin: '6px 0 0', fontSize: '0.72rem', color: '#fb923c' }}>
+                    🎭 Roleplay: <strong>{SCENARIOS.find(s => s.id === roleplayScenario)?.label}</strong> — l'AI è il personaggio, tu sei il cliente/paziente/candidato.
+                  </p>
+                )}
+              </div>
               <div ref={chatContainerRef} style={{
                 height: chatExpanded ? '360px' : '220px',
                 overflowY: 'auto',
