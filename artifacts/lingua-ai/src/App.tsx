@@ -638,6 +638,28 @@ export default function App() {
           </div>
         </header>
 
+        <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', flexWrap: 'wrap', marginBottom: '10px' }}>
+          {[
+            { label: '👤 Autore', value: 'Livio Mazzocchi', color: '#3b82f6' },
+            { label: '📄 Licenza', value: 'MIT', color: '#10b981' },
+            { label: '🔖 Versione', value: 'v1.3.0', color: '#a855f7' },
+          ].map(b => (
+            <span key={b.label} style={{
+              fontSize: '0.72rem',
+              padding: '3px 10px',
+              borderRadius: '999px',
+              background: `${b.color}22`,
+              border: `1px solid ${b.color}66`,
+              color: b.color,
+              fontWeight: 600,
+              letterSpacing: '0.01em',
+              whiteSpace: 'nowrap',
+            }}>
+              {b.label}: <span style={{ fontWeight: 400, color: '#cbd5e1' }}>{b.value}</span>
+            </span>
+          ))}
+        </div>
+
         <section style={styles.card}>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px' }}>
             {LANGUAGES.map(l => (
