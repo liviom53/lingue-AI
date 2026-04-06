@@ -115,7 +115,7 @@ export function Scene2() {
             transition={{ type: "spring", stiffness: 300, damping: 25 }}
           >
             <div className="flex items-center justify-between mb-4 border-b border-[#a855f7]/20 pb-2">
-              <span className="text-[#d8b4fe] text-sm font-medium">English</span>
+              <span className="text-[#d8b4fe] text-sm font-medium">Inglese</span>
               <div className="w-6 h-4 bg-[#a855f7]/40 rounded" />
             </div>
             <p className="text-[1.8vw] font-medium text-white">I missed the train, can we meet later?</p>

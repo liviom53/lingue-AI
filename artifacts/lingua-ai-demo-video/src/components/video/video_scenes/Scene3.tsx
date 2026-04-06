@@ -16,10 +16,10 @@ export function Scene3() {
   }, []);
 
   const sentence = [
-    { word: "I", color: "text-white", tag: "Pronoun" },
-    { word: "missed", color: "text-[#fb923c]", tag: "Verb (Past)" },
-    { word: "the", color: "text-white", tag: "Article" },
-    { word: "train", color: "text-[#10b981]", tag: "Noun" }
+    { word: "I", color: "text-white", tag: "Pronome" },
+    { word: "missed", color: "text-[#fb923c]", tag: "Verbo (pass.)" },
+    { word: "the", color: "text-white", tag: "Articolo" },
+    { word: "train", color: "text-[#10b981]", tag: "Sostantivo" }
   ];
 
   return (
