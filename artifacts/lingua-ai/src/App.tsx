@@ -582,7 +582,8 @@ export default function App() {
           );
         })()}
 
-        {activeTab === 'traduci' && <section style={styles.card}>
+        {activeTab === 'traduci' && <>
+        <section style={styles.card}>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px' }}>
             {LANGUAGES.map(l => (
               <button
@@ -994,6 +995,7 @@ export default function App() {
             </div>
           )}
         </section>
+        </>}
       </div>
     </div>
   );
