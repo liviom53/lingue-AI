@@ -936,11 +936,13 @@ export default function App() {
       fontFamily: "'Inter', system-ui, sans-serif",
     },
     card: {
-      backgroundColor: '#1e293b',
-      borderRadius: '12px',
+      background: 'linear-gradient(160deg, #253347 0%, #1e293b 45%)',
+      borderRadius: '14px',
       padding: '12px',
       marginBottom: '10px',
       border: '1px solid #334155',
+      boxShadow:
+        '0 4px 14px rgba(0,0,0,0.45), 0 1px 4px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.06)',
     },
     btn: {
       width: '100%',
@@ -956,6 +958,7 @@ export default function App() {
       alignItems: 'center',
       justifyContent: 'center',
       gap: '8px',
+      boxShadow: '0 4px 0 rgba(0,0,0,0.35), 0 6px 18px rgba(0,0,0,0.25)',
     },
   };
 

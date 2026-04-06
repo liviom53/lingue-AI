@@ -9,7 +9,40 @@
 
 body {
   font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
-  background: #0f172a;
+  background: radial-gradient(ellipse 120% 55% at 50% -8%, #1a3155 0%, #0f172a 58%);
+  min-height: 100vh;
   margin: 0;
   padding: 0;
+}
+
+/* ── Profondità sezioni ──────────────────────────────── */
+section {
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+  will-change: transform;
+}
+section:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 8px 28px rgba(0, 0, 0, 0.55),
+    0 2px 6px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.09) !important;
+}
+
+/* ── Bottoni 3D ──────────────────────────────────────── */
+button {
+  transition: transform 0.08s ease, box-shadow 0.08s ease;
+  will-change: transform;
+}
+button:active:not([disabled]) {
+  transform: translateY(3px) !important;
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.4) !important;
+}
+
+/* ── Cursore demo ────────────────────────────────────── */
+#demo-cursor {
+  pointer-events: none;
+  position: fixed;
+  z-index: 99999;
+  transition: left 0.55s cubic-bezier(0.4, 0, 0.2, 1),
+              top  0.55s cubic-bezier(0.4, 0, 0.2, 1);
 }
