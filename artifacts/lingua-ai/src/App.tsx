@@ -479,7 +479,7 @@ export default function App() {
 
         {/* Tab bar */}
         <div style={{ display: 'flex', borderRadius: '10px', overflow: 'hidden', marginBottom: '12px', border: '1px solid #334155' }}>
-          {(['traduci', 'progressi'] as const).map(tab => (
+          {(['progressi', 'traduci'] as const).map(tab => (
             <button key={tab} onClick={() => setActiveTab(tab)} style={{
               flex: 1, padding: '10px', border: 'none', cursor: 'pointer', fontWeight: 'bold', fontSize: '0.95rem',
               backgroundColor: activeTab === tab ? '#fb923c' : '#1e293b',
