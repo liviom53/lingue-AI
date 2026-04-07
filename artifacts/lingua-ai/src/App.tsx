@@ -1546,7 +1546,7 @@ export default function App() {
                     '0 5px 12px rgba(0,0,0,0.40)',
                   ].join(','),
                 }}
-                onClick={handleAiTranslate}
+                onClick={() => handleAiTranslate()}
                 disabled={loading || aiLoading}
                 title="Traduzione AI con spiegazione grammaticale"
               >
