@@ -14,7 +14,7 @@ export default defineConfig({
     react(),
     tailwindcss(),
     VitePWA({
-      registerType: "prompt",          // Chiede conferma all'utente prima di aggiornare
+      registerType: "autoUpdate",      // Aggiornamento automatico (coerente con skipWaiting: true)
       injectRegister: "auto",
       base: basePath,
       scope: basePath,
