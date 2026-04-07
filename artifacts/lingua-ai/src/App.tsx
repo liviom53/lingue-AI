@@ -293,6 +293,7 @@ export default function App() {
   const [showPrivacy, setShowPrivacy] = useState(false);
   const [activeTab, setActiveTab] = useState<'profilo' | 'progressi' | 'calendario' | 'vocabolario' | 'demo'>('profilo');
   const [showTabPanel, setShowTabPanel] = useState(false);
+  const [showDonazioni, setShowDonazioni] = useState(false);
   const [showDemoMenu, setShowDemoMenu] = useState(false);
   const [showFunzionalitaApp, setShowFunzionalitaApp] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
@@ -2904,41 +2905,51 @@ export default function App() {
         </section>
 
         {/* Donazioni */}
-        <section style={{ ...styles.card, border: '1px solid #f59e0b', marginTop: '12px', textAlign: 'center' }}>
-          <p style={{ margin: '0 0 4px', fontSize: '0.75rem', color: '#f59e0b', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 700 }}>☕ Supporta il progetto</p>
-          <p style={{ margin: '0 0 14px', fontSize: '0.82rem', color: '#cbd5e1', lineHeight: '1.5' }}>
-            Se l'app ti è utile, considera una piccola donazione — aiuta a mantenerla gratuita e a migliorarla!
-          </p>
-          <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', flexWrap: 'wrap' }}>
-            <a
-              href="https://www.paypal.com/donate?business=livio.mazzocchi%40gmail.com&currency_code=EUR"
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{
-                display: 'inline-flex', alignItems: 'center', gap: '6px',
-                padding: '10px 20px', borderRadius: '10px',
-                background: '#0070ba', color: '#fff',
-                fontWeight: 700, fontSize: '0.88rem', textDecoration: 'none',
-                boxShadow: '0 3px 0 #005ea6',
-              }}
-            >
-              💳 PayPal
-            </a>
-            <a
-              href="https://ko-fi.com/liviomazzocchi"
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{
-                display: 'inline-flex', alignItems: 'center', gap: '6px',
-                padding: '10px 20px', borderRadius: '10px',
-                background: '#ff5e5b', color: '#fff',
-                fontWeight: 700, fontSize: '0.88rem', textDecoration: 'none',
-                boxShadow: '0 3px 0 #cc4a47',
-              }}
-            >
-              ☕ Ko-fi
-            </a>
-          </div>
+        <section style={{ ...styles.card, border: '1px solid #f59e0b', marginTop: '12px' }}>
+          <button
+            onClick={() => setShowDonazioni(v => !v)}
+            style={{ width: '100%', background: 'none', border: 'none', color: '#f59e0b', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: 0, fontSize: '0.9rem', fontWeight: 'bold' }}
+          >
+            <span>☕ Supporta il progetto</span>
+            {showDonazioni ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+          </button>
+          {showDonazioni && (
+            <div style={{ marginTop: '14px', textAlign: 'center' }}>
+              <p style={{ margin: '0 0 14px', fontSize: '0.82rem', color: '#cbd5e1', lineHeight: '1.5' }}>
+                Se l'app ti è utile, considera una piccola donazione — aiuta a mantenerla gratuita e a migliorarla!
+              </p>
+              <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', flexWrap: 'wrap' }}>
+                <a
+                  href="https://www.paypal.com/donate?business=livio.mazzocchi%40gmail.com&currency_code=EUR"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    display: 'inline-flex', alignItems: 'center', gap: '6px',
+                    padding: '10px 20px', borderRadius: '10px',
+                    background: '#0070ba', color: '#fff',
+                    fontWeight: 700, fontSize: '0.88rem', textDecoration: 'none',
+                    boxShadow: '0 3px 0 #005ea6',
+                  }}
+                >
+                  💳 PayPal
+                </a>
+                <a
+                  href="https://ko-fi.com/liviomazzocchi"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    display: 'inline-flex', alignItems: 'center', gap: '6px',
+                    padding: '10px 20px', borderRadius: '10px',
+                    background: '#ff5e5b', color: '#fff',
+                    fontWeight: 700, fontSize: '0.88rem', textDecoration: 'none',
+                    boxShadow: '0 3px 0 #cc4a47',
+                  }}
+                >
+                  ☕ Ko-fi
+                </a>
+              </div>
+            </div>
+          )}
         </section>
 
         {/* Footer Privacy */}
