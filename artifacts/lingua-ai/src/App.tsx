@@ -236,7 +236,6 @@ export default function App() {
   const [chatInput, setChatInput] = useState('');
   const [chatLoading, setChatLoading] = useState(false);
   const [showMoreLangs, setShowMoreLangs] = useState(false);
-  const [showLangSection, setShowLangSection] = useState(true);
   const [showVoiceSettings, setShowVoiceSettings] = useState(false);
   const [copied, setCopied] = useState(false);
   const [showPrivacy, setShowPrivacy] = useState(false);
@@ -1018,18 +1017,10 @@ export default function App() {
         </header>
 
         {/* Menu Demo & Funzionalità */}
-        <div style={{ marginBottom: '10px' }}>
+        <section style={{ ...styles.card, border: '1px solid #10b981', marginBottom: '4px' }}>
           <button
             onClick={() => setShowDemoMenu(v => !v)}
-            style={{
-              width: '100%', padding: '9px 16px',
-              background: 'linear-gradient(90deg, #10b981, #3b82f6)',
-              border: 'none',
-              borderRadius: showDemoMenu ? '10px 10px 0 0' : '10px',
-              color: '#fff', fontWeight: 700, fontSize: '0.88rem', cursor: 'pointer',
-              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-              letterSpacing: '0.04em',
-            }}
+            style={{ width: '100%', background: 'none', border: 'none', color: '#34d399', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: 0, fontSize: '0.9rem', fontWeight: 'bold', marginBottom: showDemoMenu ? '10px' : 0 }}
           >
             <span style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
               <FlagImg fc="it" name="Italiano" />
@@ -1039,9 +1030,6 @@ export default function App() {
           </button>
           {showDemoMenu && (
             <div style={{
-              padding: '8px', background: '#0a1628',
-              borderRadius: '0 0 10px 10px',
-              border: '1px solid #10b981', borderTop: 'none',
               display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px',
             }}>
               {([
@@ -1080,25 +1068,10 @@ export default function App() {
               </button>
             </div>
           )}
-        </div>
+        </section>
 
-        <section className="lang-section" style={{ ...styles.card, border: '1px solid #38bdf8' }}>
-          {(() => {
-            const curLang = LANGUAGES.find(l => l.code === selectedLang) || MORE_LANGUAGES.find(l => l.code === selectedLang);
-            return (
-              <button
-                onClick={() => setShowLangSection(v => !v)}
-                style={{ width: '100%', background: 'none', border: 'none', color: '#7dd3fc', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: 0, fontSize: '0.9rem', fontWeight: 'bold', marginBottom: showLangSection ? '10px' : 0 }}
-              >
-                <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  🌍 Lingua: {curLang && <FlagImg fc={curLang.fc} name={curLang.name} />}{curLang?.name ?? selectedLang}
-                </span>
-                {showLangSection ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
-              </button>
-            );
-          })()}
-          {showLangSection && (
-            <div data-demo="lang-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px', paddingBottom: '6px' }}>
+        <section className="lang-section" style={styles.card}>
+          <div data-demo="lang-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px', paddingBottom: '6px' }}>
               {LANGUAGES.map(l => {
                 const active = selectedLang === l.code;
                 return (
@@ -1178,7 +1151,6 @@ export default function App() {
                 )}
               </div>
             </div>
-          )}
         </section>
 
         <section className="input-section" style={styles.card}>
