@@ -1402,7 +1402,7 @@ export default function App() {
         </section>
 
         <section className="lang-section" style={styles.card}>
-          <div data-demo="lang-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px', paddingBottom: '6px' }}>
+          <div data-demo="lang-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px', paddingTop: '6px', paddingBottom: '14px' }}>
               {LANGUAGES.map(l => {
                 const active = selectedLang === l.code;
                 return (
@@ -1414,6 +1414,8 @@ export default function App() {
                       ...styles.btn,
                       marginTop: 0,
                       width: '100%',
+                      fontSize: 'clamp(0.68rem, 3vw, 1rem)',
+                      padding: '8px 2px',
                       ...(active ? styles.btnOrange : {}),
                     }}
                   >
