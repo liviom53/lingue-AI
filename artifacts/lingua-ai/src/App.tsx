@@ -1035,11 +1035,11 @@ export default function App() {
           {showDemoMenu && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
               {([
-                { key: 'demo1', icon: '🌍', label: 'Traduzione', sub: 'X-Ray grammaticale',      onClick: () => startDemo(1) },
-                { key: 'demo2', icon: '🎙️', label: 'Shadowing',  sub: 'Ripeti e impara',         onClick: () => startDemo(2) },
-                { key: 'demo3', icon: '🤖', label: 'Chat AI',    sub: 'Conversa con DeepSeek',   onClick: () => startDemo(3) },
-                { key: 'demo4', icon: '⭐', label: 'Vocabolario', sub: 'Salva e ripassa',         onClick: () => startDemo(4) },
-                { key: 'video', icon: '🎬', label: 'Funzionalità', sub: 'Scopri il video demo',  onClick: () => { setShowTabPanel(true); setActiveTab('demo'); setShowDemoMenu(false); } },
+                { key: 'demo1', icon: '🌍', label: 'Demo Traduzione', sub: 'X-Ray grammaticale',    onClick: () => startDemo(1) },
+                { key: 'demo2', icon: '🎙️', label: 'Demo Shadowing', sub: 'Ripeti e impara',       onClick: () => startDemo(2) },
+                { key: 'demo3', icon: '🤖', label: 'Demo Chat AI',   sub: 'Conversa con DeepSeek', onClick: () => startDemo(3) },
+                { key: 'demo4', icon: '⭐', label: 'Demo Vocabolario', sub: 'Salva e ripassa',      onClick: () => startDemo(4) },
+                { key: 'video', icon: '🎬', label: 'Funzionalità App', sub: 'Scopri il video demo', onClick: () => { setShowTabPanel(true); setActiveTab('demo'); setShowDemoMenu(false); } },
               ]).map(({ key, icon, label, sub, onClick }) => (
                 <button
                   key={key}
