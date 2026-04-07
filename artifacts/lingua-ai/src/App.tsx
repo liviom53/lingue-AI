@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Mic, Volume2, Send, Loader2, AlertCircle, Bot, X, ChevronDown, ChevronUp, Copy, Check, Share2, BookmarkPlus, BookmarkCheck } from 'lucide-react';
 import appIcon from '@assets/icon-192_1775392140519.png';
+import { styles } from './styles';
 
 async function translateText(text: string, targetLang: string): Promise<{ translation: string; pronunciation?: string }> {
   const res = await fetch('/api/ai/lingva', {
@@ -921,82 +922,6 @@ export default function App() {
     narrateDemo(allSteps[demoNum - 1][0].narration);
     const startTypingId = window.setTimeout(type, 2400);
     demoTimersRef.current.push(startTypingId);
-  };
-
-  const styles: Record<string, React.CSSProperties> = {
-    main: {
-      minHeight: '100vh',
-      color: '#f8fafc',
-      padding: '12px',
-      fontFamily: "'Inter', system-ui, sans-serif",
-    },
-    card: {
-      // Gradiente 140°: azzurro-chiaro in alto-sinistra → quasi-nero in basso-destra
-      background: 'linear-gradient(140deg, #3d5f82 0%, #1e2d3f 35%, #0e1620 100%)',
-      borderRadius: '14px',
-      padding: '12px',
-      marginBottom: '12px',
-      border: '1px solid rgba(90,120,170,0.25)',
-      borderTop: '1px solid rgba(160,210,255,0.35)',
-      borderLeft: '1px solid rgba(140,190,255,0.20)',
-      borderBottom: '1px solid rgba(0,0,0,0.70)',
-      borderRight: '1px solid rgba(0,0,0,0.45)',
-      boxShadow: [
-        // ── bevel interno: bordo alto e sinistro luminosi, basso e destro scuri ──
-        'inset 0 3px 0 rgba(255,255,255,0.22)',    // fascia alta luminosa
-        'inset 4px 0 0 rgba(255,255,255,0.13)',    // bordo sinistro lit
-        'inset -4px 0 0 rgba(0,0,0,0.35)',         // bordo destro scuro
-        'inset 0 -3px 0 rgba(0,0,0,0.45)',         // fascia bassa scura
-        // ── faccia inferiore: 5 strati da 2px a 10px ──
-        '0 2px 0 #0c1624',
-        '0 4px 0 #09111e',
-        '0 6px 0 #060d18',
-        '0 8px 0 #040a12',
-        '0 10px 0 rgba(3,7,14,0.55)',
-        // ── ombre ambientali ──
-        '0 16px 36px rgba(0,0,0,0.70)',
-        '0 7px 16px rgba(0,0,0,0.55)',
-      ].join(','),
-    },
-    btn: {
-      width: '100%',
-      padding: '8px 4px',
-      borderRadius: '8px',
-      border: 'none',
-      borderTop: '1px solid rgba(255,255,255,0.10)',
-      backgroundColor: '#2d3f52',
-      color: '#fff',
-      fontWeight: '500',
-      cursor: 'pointer',
-      marginTop: '22px',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      gap: '8px',
-      // stesso flottante dei lang-btn
-      transform: 'translateY(-3px)',
-      // stessa faccia a 3 strati dei lang-btn inattivi
-      boxShadow: [
-        'inset 0 1px 0 rgba(255,255,255,0.09)',
-        '0 3px 0 #1a2535',
-        '0 5px 0 #111c28',
-        '0 7px 0 rgba(6,12,22,0.50)',
-        '0 10px 18px rgba(0,0,0,0.50)',
-      ].join(','),
-    },
-    btnOrange: {
-      borderTop: '1px solid rgba(255,255,255,0.22)',
-      backgroundColor: '#fb923c',
-      fontWeight: '700',
-      boxShadow: [
-        'inset 0 1px 0 rgba(255,255,255,0.22)',
-        '0 3px 0 #b85a10',
-        '0 5px 0 #7c3a08',
-        '0 7px 0 rgba(60,20,0,0.35)',
-        '0 10px 20px rgba(251,146,60,0.20)',
-        '0 5px 12px rgba(0,0,0,0.40)',
-      ].join(','),
-    },
   };
 
   const langName = (ALL_LANGUAGES.find(l => l.code === selectedLang) ?? ALL_LANGUAGES[0]).name;
