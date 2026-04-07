@@ -336,6 +336,7 @@ export default function App() {
   const [shadowPhrase, setShadowPhrase] = useState<{ phrase: string; phonetic: string; translation: string } | null>(null);
   const [shadowStep, setShadowStep] = useState<'idle' | 'speaking' | 'listening' | 'result'>('idle');
   const [shadowScore, setShadowScore] = useState<number | null>(null);
+  const [shadowError, setShadowError] = useState<string | null>(null);
   const [shadowSpoken, setShadowSpoken] = useState('');
   const [shadowLoading, setShadowLoading] = useState(false);
   // Demo guidata
@@ -815,6 +816,7 @@ export default function App() {
   const startShadowListen = () => {
     if (!shadowPhrase) return;
     setShadowStep('listening');
+    setShadowError(null);
     setShadowUserAmps([]);
 
     // ── Cattura ampiezza microfono via Web Audio API ──────────────────────────
@@ -851,7 +853,11 @@ export default function App() {
     const recognition = new SR();
     const langInfo = ALL_LANGUAGES.find(l => l.code === selectedLang) ?? ALL_LANGUAGES[0];
     recognition.lang = langInfo.locale;
+    recognition.maxAlternatives = 3;
+    let resultReceived = false;
+
     recognition.onresult = (e: any) => {
+      resultReceived = true;
       stopCapture();
       // Normalise to max 80 bars and scale to 0-1
       const raw = amps.slice(0, 80);
@@ -873,8 +879,24 @@ export default function App() {
         return updated;
       });
     };
-    recognition.onerror = () => { stopCapture(); setShadowStep('idle'); };
-    recognition.onend = () => {};
+    recognition.onerror = (e: any) => {
+      stopCapture();
+      resultReceived = true; // prevent onend from also showing error
+      const msg = e.error === 'not-allowed'
+        ? '🚫 Permesso microfono negato — controlla le impostazioni del browser'
+        : e.error === 'no-speech'
+        ? '🎙️ Nessuna voce rilevata — riprova parlando più vicino al microfono'
+        : '⚠️ Errore microfono — riprova';
+      setShadowError(msg);
+      setShadowStep('idle');
+    };
+    recognition.onend = () => {
+      stopCapture();
+      if (!resultReceived) {
+        setShadowError('🎙️ Nessuna voce rilevata — riprova parlando più vicino al microfono');
+        setShadowStep('idle');
+      }
+    };
     recognition.start();
   };
 
@@ -2039,6 +2061,11 @@ export default function App() {
                       {shadowStep === 'listening' ? 'In ascolto…' : 'Ripeti ora!'}
                     </button>
                   </div>
+                  {shadowError && (
+                    <p style={{ margin: '8px 0 0', fontSize: '0.8rem', color: '#fbbf24', background: '#1e293b', borderRadius: '6px', padding: '6px 10px' }}>
+                      {shadowError}
+                    </p>
+                  )}
                   {!('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) && (
                     <p style={{ margin: '6px 0 0', fontSize: '0.72rem', color: '#94a3b8' }}>
                       ℹ️ Riconoscimento vocale non supportato su questo browser — usa Chrome, Edge o Safari
