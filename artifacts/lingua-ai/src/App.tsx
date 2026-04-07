@@ -272,6 +272,7 @@ export default function App() {
   const [shadowLoading, setShadowLoading] = useState(false);
   const [shadowCountdown, setShadowCountdown] = useState<number | null>(null);
   const [practiceCountdown, setPracticeCountdown] = useState<number | null>(null);
+  const [geminiUnavailable, setGeminiUnavailable] = useState(false);
   // Demo guidata
   const [demoActive, setDemoActive] = useState(false);
   const [demoStep, setDemoStep] = useState(0);
@@ -706,11 +707,14 @@ export default function App() {
         }
       );
       const json = await res.json();
+      if (!res.ok) throw new Error(`Gemini ${res.status}: ${json.error?.message ?? 'quota/error'}`);
       const spoken = (json.candidates?.[0]?.content?.parts?.[0]?.text ?? '').trim();
+      if (!spoken) throw new Error('Gemini returned empty transcription');
       const expectedWords = normalizeText(expectedPhrase).split(' ');
       const spokenWords = normalizeText(spoken).split(' ');
       const correct = expectedWords.filter((w, i) => spokenWords[i] === w).length;
       const score = Math.round((correct / expectedWords.length) * 100);
+      setGeminiUnavailable(false);
       onResult(spoken, score);
     };
 
@@ -719,7 +723,10 @@ export default function App() {
       try {
         await recordAndTranscribe();
         return;
-      } catch { /* fall through to Web Speech API */ }
+      } catch (err) {
+        console.warn('Gemini transcription failed, falling back to Web Speech API:', err);
+        setGeminiUnavailable(true);
+      }
     }
 
     // Fallback: Web Speech API
@@ -735,7 +742,8 @@ export default function App() {
       const score = Math.round((correct / expectedWords.length) * 100);
       onResult(spoken, score);
     };
-    recognition.onend = onError;
+    recognition.onerror = () => onError();
+    recognition.onend = () => {};
     recognition.start();
   };
 
@@ -1599,6 +1607,11 @@ export default function App() {
                         : 'Ripeti ora!'}
                     </button>
                   </div>
+                  {geminiUnavailable && (
+                    <p style={{ fontSize: '0.72rem', color: '#f59e0b', margin: '6px 0 0', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      ⚠️ Gemini non disponibile — uso riconoscimento browser (solo inglese affidabile)
+                    </p>
+                  )}
                   {shadowStep === 'result' && shadowScore !== null && (
                     <div style={{ marginTop: '10px', padding: '10px', backgroundColor: '#1e293b', borderRadius: '8px' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '6px' }}>
