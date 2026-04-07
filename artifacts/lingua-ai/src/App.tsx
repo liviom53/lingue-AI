@@ -242,6 +242,7 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<'profilo' | 'progressi' | 'calendario' | 'vocabolario' | 'demo'>('profilo');
   const [showTabPanel, setShowTabPanel] = useState(false);
   const [showDemoMenu, setShowDemoMenu] = useState(false);
+  const [showFunzionalitaApp, setShowFunzionalitaApp] = useState(false);
   const [activeDemoNum, setActiveDemoNum] = useState<1|2|3|4>(1);
   const [progress, setProgress] = useState<ProgressStats>(loadProgress);
   const [profile, setProfile] = useState<UserProfile>(loadProfile);
@@ -1035,28 +1036,55 @@ export default function App() {
           {showDemoMenu && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
               {([
-                { key: 'demo1', icon: '🌍', label: 'Demo Traduzione', sub: 'X-Ray grammaticale',    onClick: () => startDemo(1) },
-                { key: 'demo2', icon: '🎙️', label: 'Demo Shadowing', sub: 'Ripeti e impara',       onClick: () => startDemo(2) },
-                { key: 'demo3', icon: '🤖', label: 'Demo Chat AI',   sub: 'Conversa con DeepSeek', onClick: () => startDemo(3) },
-                { key: 'demo4', icon: '⭐', label: 'Demo Vocabolario', sub: 'Salva e ripassa',      onClick: () => startDemo(4) },
-                { key: 'video', icon: '🎬', label: 'Funzionalità App', sub: 'Scopri il video demo', onClick: () => { setShowTabPanel(true); setActiveTab('demo'); setShowDemoMenu(false); } },
-              ]).map(({ key, icon, label, sub, onClick }) => (
+                { key: 'demo1', icon: '🌍', label: 'Demo Traduzione',  sub: 'X-Ray grammaticale',    active: false, onClick: () => startDemo(1) },
+                { key: 'demo2', icon: '🎙️', label: 'Demo Shadowing',  sub: 'Ripeti e impara',       active: false, onClick: () => startDemo(2) },
+                { key: 'demo3', icon: '🤖', label: 'Demo Chat AI',    sub: 'Conversa con DeepSeek', active: false, onClick: () => startDemo(3) },
+                { key: 'demo4', icon: '⭐', label: 'Demo Vocabolario', sub: 'Salva e ripassa',       active: false, onClick: () => startDemo(4) },
+                { key: 'video', icon: '🎬', label: 'Funzionalità App', sub: showFunzionalitaApp ? 'Chiudi ▲' : 'Scopri il video demo ▼', active: showFunzionalitaApp, onClick: () => setShowFunzionalitaApp(v => !v) },
+              ]).map(({ key, icon, label, sub, active, onClick }) => (
                 <button
                   key={key}
                   onClick={onClick}
                   style={{
                     width: '100%', padding: '9px 12px',
-                    border: '1px solid #1e3a5f', borderRadius: '8px', cursor: 'pointer',
+                    border: `1px solid ${active ? '#6d28d9' : '#1e3a5f'}`, borderRadius: '8px', cursor: 'pointer',
                     fontWeight: 'bold', fontSize: '0.82rem',
-                    backgroundColor: '#1e293b', color: '#e2e8f0',
+                    backgroundColor: active ? '#2e1065' : '#1e293b', color: '#e2e8f0',
                     display: 'flex', alignItems: 'center', gap: '10px', textAlign: 'left',
                   }}
                 >
                   <span style={{ fontSize: '1.1rem', flexShrink: 0 }}>{icon}</span>
                   <span style={{ flex: 1 }}>{label}</span>
-                  <span style={{ fontSize: '0.75rem', color: '#94a3b8', fontWeight: 400 }}>{sub}</span>
+                  <span style={{ fontSize: '0.75rem', color: active ? '#a78bfa' : '#94a3b8', fontWeight: 400 }}>{sub}</span>
                 </button>
               ))}
+              {showFunzionalitaApp && (
+                <div style={{ marginTop: '6px', borderRadius: '10px', overflow: 'hidden', border: '1px solid #4c1d95', backgroundColor: '#0f172a' }}>
+                  <div style={{ borderRadius: '10px 10px 0 0', overflow: 'hidden' }}>
+                    <iframe
+                      src="https://7f2e7385-dc18-4dec-b4cb-b49d934165fd-00-1p6eowh30kvti.spock.replit.dev/lingua-ai-demo-video/"
+                      style={{ width: '100%', aspectRatio: '16/9', border: 'none', display: 'block' }}
+                      allow="autoplay"
+                      title="Lingua AI Demo Video"
+                    />
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px', padding: '8px' }}>
+                    {[
+                      { icon: '🌍', label: '29+ lingue' },
+                      { icon: '🔬', label: 'X-Ray grammaticale' },
+                      { icon: '🤖', label: 'AI Tutor DeepSeek' },
+                      { icon: '🔁', label: 'Shadowing' },
+                      { icon: '⭐', label: 'Segnalibri & Quiz' },
+                      { icon: '📤', label: 'Condivisione rapida' },
+                    ].map(({ icon, label }) => (
+                      <div key={label} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '7px 10px', backgroundColor: '#1e293b', borderRadius: '8px', border: '1px solid #1e3a5f' }}>
+                        <span style={{ fontSize: '0.9rem' }}>{icon}</span>
+                        <span style={{ fontSize: '0.73rem', color: '#94a3b8', fontWeight: 500 }}>{label}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </section>
