@@ -1029,43 +1029,30 @@ export default function App() {
             {showDemoMenu ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
           </button>
           {showDemoMenu && (
-            <div style={{
-              display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px',
-            }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
               {([
-                { n: 1 as const, icon: '🌍', label: 'Traduzione', sub: 'X-Ray grammaticale' },
-                { n: 2 as const, icon: '🎙️', label: 'Shadowing', sub: 'Ripeti e impara' },
-                { n: 3 as const, icon: '🤖', label: 'Chat AI', sub: 'Conversa con DeepSeek' },
-                { n: 4 as const, icon: '⭐', label: 'Vocabolario', sub: 'Salva e ripassa' },
-              ]).map(({ n, icon, label, sub }) => (
+                { key: 'demo1', icon: '🌍', label: 'Traduzione', sub: 'X-Ray grammaticale',      onClick: () => startDemo(1) },
+                { key: 'demo2', icon: '🎙️', label: 'Shadowing',  sub: 'Ripeti e impara',         onClick: () => startDemo(2) },
+                { key: 'demo3', icon: '🤖', label: 'Chat AI',    sub: 'Conversa con DeepSeek',   onClick: () => startDemo(3) },
+                { key: 'demo4', icon: '⭐', label: 'Vocabolario', sub: 'Salva e ripassa',         onClick: () => startDemo(4) },
+                { key: 'video', icon: '🎬', label: 'Funzionalità', sub: 'Scopri il video demo',  onClick: () => { setShowTabPanel(true); setActiveTab('demo'); setShowDemoMenu(false); } },
+              ]).map(({ key, icon, label, sub, onClick }) => (
                 <button
-                  key={n}
-                  onClick={() => startDemo(n)}
+                  key={key}
+                  onClick={onClick}
                   style={{
-                    padding: '9px 8px', border: '1px solid #1e3a5f',
-                    borderRadius: '8px', cursor: 'pointer',
-                    fontWeight: 'bold', fontSize: '0.78rem',
+                    width: '100%', padding: '9px 12px',
+                    border: '1px solid #1e3a5f', borderRadius: '8px', cursor: 'pointer',
+                    fontWeight: 'bold', fontSize: '0.82rem',
                     backgroundColor: '#1e293b', color: '#e2e8f0',
-                    display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px',
+                    display: 'flex', alignItems: 'center', gap: '10px', textAlign: 'left',
                   }}
                 >
-                  <span style={{ fontSize: '1.1rem' }}>{icon}</span>
-                  <span>{label}</span>
+                  <span style={{ fontSize: '1.1rem', flexShrink: 0 }}>{icon}</span>
+                  <span style={{ flex: 1 }}>{label}</span>
                   <span style={{ fontSize: '0.75rem', color: '#94a3b8', fontWeight: 400 }}>{sub}</span>
                 </button>
               ))}
-              <button
-                onClick={() => { setShowTabPanel(true); setActiveTab('demo'); setShowDemoMenu(false); }}
-                style={{
-                  gridColumn: '1 / -1', padding: '9px 8px',
-                  border: '1px solid #4c1d95', borderRadius: '8px', cursor: 'pointer',
-                  fontWeight: 'bold', fontSize: '0.82rem',
-                  backgroundColor: '#1e1b4b', color: '#a78bfa',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
-                }}
-              >
-                🎬 Funzionalità — scopri il video
-              </button>
             </div>
           )}
         </section>
@@ -1820,7 +1807,7 @@ export default function App() {
               fontWeight: 'bold',
             }}
           >
-            <span>👤 Profilo &nbsp;·&nbsp; 📊 Progressi &nbsp;·&nbsp; 🎬 Funzionalità</span>
+            <span>👤 Profilo &nbsp;·&nbsp; 📊 Progressi</span>
             {showTabPanel ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
           </button>
         </div>
