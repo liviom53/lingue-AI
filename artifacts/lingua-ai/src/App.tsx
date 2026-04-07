@@ -819,37 +819,12 @@ export default function App() {
     setShadowError(null);
     setShadowUserAmps([]);
 
-    // ── Cattura ampiezza microfono via Web Audio API ──────────────────────────
-    let animFrame: number | null = null;
-    let mediaStream: MediaStream | null = null;
-    let audioCtxLocal: AudioContext | null = null;
-    const amps: number[] = [];
-
-    const stopCapture = () => {
-      if (animFrame !== null) cancelAnimationFrame(animFrame);
-      if (mediaStream) mediaStream.getTracks().forEach(t => t.stop());
-      if (audioCtxLocal) audioCtxLocal.close().catch(() => {});
-    };
-
-    navigator.mediaDevices?.getUserMedia({ audio: true }).then(stream => {
-      mediaStream = stream;
-      audioCtxLocal = new AudioContext();
-      const source = audioCtxLocal.createMediaStreamSource(stream);
-      const analyser = audioCtxLocal.createAnalyser();
-      analyser.fftSize = 64;
-      source.connect(analyser);
-      const data = new Uint8Array(analyser.frequencyBinCount);
-      const capture = () => {
-        analyser.getByteTimeDomainData(data);
-        const rms = Math.sqrt(data.reduce((s, v) => s + (v - 128) ** 2, 0) / data.length);
-        amps.push(rms);
-        animFrame = requestAnimationFrame(capture);
-      };
-      animFrame = requestAnimationFrame(capture);
-    }).catch(() => {});
-
     const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    if (!SR) { setShadowStep('idle'); stopCapture(); return; }
+    if (!SR) {
+      setShadowError('⚠️ Riconoscimento vocale non supportato — usa Chrome, Edge o Safari');
+      setShadowStep('idle');
+      return;
+    }
     const recognition = new SR();
     const langInfo = ALL_LANGUAGES.find(l => l.code === selectedLang) ?? ALL_LANGUAGES[0];
     recognition.lang = langInfo.locale;
@@ -858,12 +833,6 @@ export default function App() {
 
     recognition.onresult = (e: any) => {
       resultReceived = true;
-      stopCapture();
-      // Normalise to max 80 bars and scale to 0-1
-      const raw = amps.slice(0, 80);
-      const maxAmp = Math.max(...raw, 1);
-      setShadowUserAmps(raw.map(v => v / maxAmp));
-
       const spoken = (e.results[0][0].transcript as string).trim();
       setShadowSpoken(spoken);
       const expectedWords = normalizeText(shadowPhrase.phrase).split(' ');
@@ -880,7 +849,6 @@ export default function App() {
       });
     };
     recognition.onerror = (e: any) => {
-      stopCapture();
       resultReceived = true; // prevent onend from also showing error
       const msg = e.error === 'not-allowed'
         ? '🚫 Permesso microfono negato — controlla le impostazioni del browser'
@@ -891,7 +859,6 @@ export default function App() {
       setShadowStep('idle');
     };
     recognition.onend = () => {
-      stopCapture();
       if (!resultReceived) {
         setShadowError('🎙️ Nessuna voce rilevata — riprova parlando più vicino al microfono');
         setShadowStep('idle');
