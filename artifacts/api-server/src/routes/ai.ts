@@ -74,7 +74,6 @@ router.post("/translate", async (req: Request, res: Response) => {
   try {
     const completion = await openrouter.chat.completions.create({
       model: MODEL,
-      max_tokens: 8192,
       messages: [
         {
           role: "system",
@@ -123,7 +122,7 @@ Rules:
 - Start the conversation with a natural, in-character greeting that sets the scene
 - Help the user practice vocabulary and phrases relevant to this real-life situation${profileCtx}`;
   } else {
-    systemContent = `You are a friendly ${langName} language tutor helping an Italian speaker practice ${langName}. 
+    systemContent = `You are a friendly ${langName} language tutor helping an Italian speaker practice ${langName}.
 Rules:
 - Always respond in ${langName}
 - Keep responses short and natural (2-4 sentences)
@@ -135,7 +134,6 @@ Rules:
   try {
     const completion = await openrouter.chat.completions.create({
       model: MODEL,
-      max_tokens: 8192,
       messages: [
         { role: "system", content: systemContent },
         ...messages,
@@ -162,7 +160,6 @@ router.post("/grammar", async (req: Request, res: Response) => {
   try {
     const completion = await openrouter.chat.completions.create({
       model: MODEL,
-      max_tokens: 300,
       messages: [
         {
           role: "system",
@@ -202,7 +199,6 @@ router.post("/shadow", async (req: Request, res: Response) => {
   try {
     const completion = await openrouter.chat.completions.create({
       model: MODEL,
-      max_tokens: 300,
       messages: [
         {
           role: "system",
