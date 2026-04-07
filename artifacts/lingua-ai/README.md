@@ -3,17 +3,18 @@
 ![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)
 ![Node](https://img.shields.io/badge/Node-%3E%3D18-brightgreen)
 ![React](https://img.shields.io/badge/React-19-blue)
-![Vite](https://img.shields.io/badge/Vite-6-purple)
+![Vite](https://img.shields.io/badge/Vite-7-purple)
 ![PWA](https://img.shields.io/badge/PWA-ready-orange)
 
-> PWA per imparare le lingue straniere partendo dall'italiano, con traduzione, AI tutor, shadowing, roleplay e pratica pronuncia.
+> PWA per imparare le lingue straniere partendo dall'italiano, con traduzione, AI tutor, shadowing, roleplay, grammatica X-Ray, segnalibri, quiz, condivisione e supporto offline completo.
 
 ---
 
 ## Funzionalità
 
 ### Traduzione
-- Traduzione **italiano → 29+ lingue** tramite istanze pubbliche Lingva
+- Traduzione **italiano → 29+ lingue** tramite istanze pubbliche Lingva (richieste parallele con timeout 4s)
+- Fallback automatico su **MyMemory API** (gratuita, senza chiave) se Lingva non risponde
 - 5 lingue rapide (Inglese, Spagnolo, Francese, Tedesco, Portoghese) + dropdown "Altre lingue"
 - Flag reali da `flagcdn.com` (compatibili Windows)
 
@@ -57,9 +58,17 @@
 - Livelli: Base → Intermedio → Avanzato → Esperto
 - Consigli personalizzati in base all'utilizzo
 
-### Demo interattiva
+### Demo - Help
 - 4 script demo con cursore animato, narrazione in italiano e scroll automatico
-- Attivabile dall'accordion "Demo & Funzionalità" in cima alla pagina
+- Guida rapida con 8 sezioni filtrabili per testo (highlight risultati)
+- **"🔍 Cerca"**: filtra le sezioni della guida in tempo reale
+- **"🤖 Chiedi AI"**: risposta personalizzata da DeepSeek sull'uso dell'app (endpoint `/api/ai/app-help`)
+
+### Modalità offline
+- Cache traduzioni in `localStorage` (`lingua_ai_translation_cache`, max 40 voci)
+- Service Worker via `vite-plugin-pwa` (Workbox): Stale-While-Revalidate per statici, Network-first per API, Cache-first per font
+- Banner offline + badge "💾 Da cache offline" sul risultato
+- Banner aggiornamento PWA con pulsante "Aggiorna"
 
 ---
 
@@ -68,7 +77,7 @@
 ### Layout
 ```
 Header (logo + titolo + sottotitolo arancione)
-🇮🇹 ▶ Demo & Funzionalità   [accordion]
+🇮🇹 ▶ Demo - Help          [accordion]
 Selettore lingua (5 fissi + Altre lingue)
 Textarea "Scrivi in italiano..."
 🎙 DETTA  |  ✈ TRADUCI  |  🧳 TUTOR AI
@@ -125,14 +134,26 @@ Apri `http://localhost:<PORT>/lingua-ai/` nel browser.
 
 | Categoria | Tecnologia |
 |---|---|
-| Frontend | React 19 + TypeScript + Vite 6 |
+| Frontend | React 19 + TypeScript + Vite 7 |
 | Styling | Inline styles (React.CSSProperties) + index.css |
 | Font | Inter (Google Fonts) |
-| AI | DeepSeek via OpenRouter |
-| Traduzione | Lingva API (gratuita, no chiave) |
-| Voce | Web Speech API |
-| Persistenza | localStorage |
-| Deploy | PWA (`manifest.json` + icona) |
+| AI | DeepSeek (`deepseek/deepseek-chat`) via OpenRouter |
+| Traduzione | Lingva API (parallela) + MyMemory fallback |
+| Voce | Web Speech API (sintesi + riconoscimento) |
+| PWA | `vite-plugin-pwa` + Workbox (Service Worker) |
+| Persistenza | localStorage (5 chiavi) |
+| Deploy | Express + file statici |
+
+---
+
+## localStorage
+
+| Chiave | Contenuto |
+|---|---|
+| `lingua_ai_profile` | Profilo utente (nome, età, occupazione, ecc.) |
+| `lingua_ai_progress` | Progressi (streak, minuti, traduzioni, ecc.) |
+| `lingua_ai_bookmarks` | Segnalibri salvati |
+| `lingua_ai_translation_cache` | Cache traduzioni offline (max 40 voci) |
 
 ---
 
@@ -145,12 +166,28 @@ Apri `http://localhost:<PORT>/lingua-ai/` nel browser.
 
 ---
 
+## Endpoint API principali
+
+| Metodo | Percorso | Descrizione |
+|---|---|---|
+| `POST` | `/api/ai/translate` | Traduzione AI con fonetica e grammatica |
+| `POST` | `/api/ai/chat` | Chat libera / roleplay |
+| `POST` | `/api/ai/shadowing` | Genera frase per shadowing |
+| `POST` | `/api/ai/grammar-xray` | Analisi grammaticale parola |
+| `GET` | `/api/ai/lingva` | Proxy Lingva + fallback MyMemory |
+| `POST` | `/api/ai/app-help` | Risposta AI su funzionalità dell'app |
+
+---
+
 ## File principali
 
 | File | Descrizione |
 |---|---|
-| `src/App.tsx` | Frontend (~2430 righe): UI, state, demo, quiz, bookmark |
-| `src/index.css` | Sistema 3D: hover sezioni, `.lang-btn`, `.action-btn`, cursore demo |
+| `src/App.tsx` | Frontend (~2650 righe): UI, state, offline, demo, quiz, bookmark |
+| `src/styles.ts` | Oggetto `styles` con CSS custom property tokens |
+| `src/index.css` | Stili globali + `:root` CSS custom properties |
+| `src/vite-env.d.ts` | Dichiarazioni tipo per `virtual:pwa-register/react` |
+| `vite.config.ts` | Config Vite + VitePWA (Workbox strategies) |
 | `index.html` | Caricamento font Inter da Google Fonts |
 
 ---

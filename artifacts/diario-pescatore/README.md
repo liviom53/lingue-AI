@@ -2,7 +2,7 @@
 
 ![PWA](https://img.shields.io/badge/PWA-ready-blue)
 ![React](https://img.shields.io/badge/React-19-blue)
-![Vite](https://img.shields.io/badge/Vite-6-purple)
+![Vite](https://img.shields.io/badge/Vite-7-purple)
 
 > PWA per tenere traccia delle uscite di pesca, con statistiche, gestione attrezzatura, meteo, maree e molto altro.
 
@@ -59,8 +59,8 @@
 ### Parco Auto
 - Gestione veicoli usati per le uscite
 
-### AI
-- Assistente AI per consigli di pesca
+### Assistente AI
+- Consigli personalizzati di pesca tramite DeepSeek AI
 
 ---
 
@@ -84,7 +84,7 @@ pnpm --filter @workspace/diario-pescatore run dev
 
 | Categoria | Tecnologia |
 |---|---|
-| Frontend | React 19 + TypeScript + Vite 6 |
+| Frontend | React 19 + TypeScript + Vite 7 |
 | Styling | Tailwind CSS + shadcn/ui |
 | Persistenza | localStorage |
 | Deploy | PWA (`manifest.json` + icona) |
@@ -93,6 +93,12 @@ pnpm --filter @workspace/diario-pescatore run dev
 
 ## Percorso produzione
 
-`/` — servito come file statici in produzione
+`/` — file statici serviti dall'API server Express
 
 Produzione: `https://web-app-creator--liviomazzocchi.replit.app/`
+
+---
+
+## Licenza
+
+MIT © limax
