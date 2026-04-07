@@ -376,4 +376,55 @@ router.post("/ipa", async (req: Request, res: Response) => {
   }
 });
 
+// ── Tatoeba quiz: frasi reali IT→targetLang, 4 opzioni ──────────────────────
+const TATOEBA_LANG: Record<string, string> = {
+  en: 'eng', es: 'spa', fr: 'fra', de: 'deu', pt: 'por',
+  ru: 'rus', zh: 'cmn', ja: 'jpn', ko: 'kor', ar: 'ara',
+  hi: 'hin', tr: 'tur', nl: 'nld', pl: 'pol', uk: 'ukr',
+  ro: 'ron', el: 'ell', sv: 'swe', da: 'dan', fi: 'fin',
+  cs: 'ces', hu: 'hun', he: 'heb', th: 'tha', vi: 'vie',
+  id: 'ind', fa: 'fas', ca: 'cat', no: 'nor',
+};
+
+router.get('/tatoeba-quiz', async (req: Request, res: Response) => {
+  const targetLang = (req.query.targetLang as string ?? '').trim();
+  const tCode = TATOEBA_LANG[targetLang];
+  if (!tCode) {
+    res.status(400).json({ error: `Lingua non supportata: ${targetLang}` });
+    return;
+  }
+  try {
+    const seed = Math.floor(Math.random() * 9999);
+    const url = `https://tatoeba.org/en/api_v0/search?from=ita&to=${tCode}&sort=random&rand_seed=${seed}&limit=14&trans_filter=limit`;
+    const r = await fetch(url, {
+      headers: { 'Accept': 'application/json', 'User-Agent': 'LingueAI/1.0' },
+      signal: AbortSignal.timeout(8000),
+    });
+    if (!r.ok) throw new Error(`Tatoeba HTTP ${r.status}`);
+    const data = await r.json() as any;
+
+    const pairs: { it: string; tr: string }[] = [];
+    for (const result of (data.results ?? [])) {
+      if (!result.text) continue;
+      // translations[0] = dirette, translations[1] = indirette — accetta entrambe
+      const direct: any[] = result.translations?.[0] ?? [];
+      const indirect: any[] = result.translations?.[1] ?? [];
+      const first = (direct[0] ?? indirect[0]);
+      const trText: string | undefined = first?.text;
+      if (!trText) continue;
+      pairs.push({ it: result.text.trim(), tr: trText.trim() });
+      if (pairs.length >= 10) break;
+    }
+
+    if (pairs.length < 4) {
+      res.status(503).json({ error: 'Poche frasi disponibili su Tatoeba per questa lingua. Riprova.' });
+      return;
+    }
+
+    res.json({ questions: pairs });
+  } catch (err: any) {
+    res.status(502).json({ error: err.message ?? 'Errore Tatoeba' });
+  }
+});
+
 export default router;

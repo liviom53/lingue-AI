@@ -304,6 +304,16 @@ export default function App() {
   const [quizSelected, setQuizSelected] = useState<string | null>(null);
   const [quizScore, setQuizScore] = useState(0);
   const [quizTotal, setQuizTotal] = useState(0);
+  // Quiz Tatoeba
+  const [showTatoeba, setShowTatoeba] = useState(false);
+  const [tatPairs, setTatPairs] = useState<{ it: string; tr: string }[]>([]);
+  const [tatIdx, setTatIdx] = useState(0);
+  const [tatOptions, setTatOptions] = useState<string[]>([]);
+  const [tatSelected, setTatSelected] = useState<string | null>(null);
+  const [tatScore, setTatScore] = useState(0);
+  const [tatTotal, setTatTotal] = useState(0);
+  const [tatLoading, setTatLoading] = useState(false);
+  const [tatError, setTatError] = useState<string | null>(null);
   // Grammatica X-Ray
   const [xrayWord, setXrayWord] = useState<string | null>(null);
   const [xrayData, setXrayData] = useState<{ pos: string; gender: string; tense: string; info: string } | null>(null);
@@ -525,6 +535,38 @@ export default function App() {
     const options = [...distractors, correct.tr].sort(() => Math.random() - 0.5);
     setQuizQ({ bm: correct, options });
     setQuizSelected(null);
+  };
+
+  const buildTatOptions = (pairs: { it: string; tr: string }[], idx: number) => {
+    const correct = pairs[idx].tr;
+    const distractors = pairs
+      .filter((_, i) => i !== idx)
+      .sort(() => Math.random() - 0.5)
+      .slice(0, 3)
+      .map(p => p.tr);
+    return [...distractors, correct].sort(() => Math.random() - 0.5);
+  };
+
+  const fetchTatoebaQuiz = async (lang: string) => {
+    setTatLoading(true);
+    setTatError(null);
+    setTatPairs([]);
+    setTatIdx(0);
+    setTatSelected(null);
+    setTatScore(0);
+    setTatTotal(0);
+    try {
+      const res = await fetch(`/api/ai/tatoeba-quiz?targetLang=${lang}`);
+      const data = await res.json() as any;
+      if (!res.ok) throw new Error(data.error ?? 'Errore Tatoeba');
+      const pairs: { it: string; tr: string }[] = data.questions;
+      setTatPairs(pairs);
+      setTatOptions(buildTatOptions(pairs, 0));
+    } catch (e: any) {
+      setTatError(e.message ?? 'Errore di rete');
+    } finally {
+      setTatLoading(false);
+    }
   };
 
   const handleTranslate = async (langOverride?: string, textOverride?: string) => {
@@ -2210,6 +2252,126 @@ export default function App() {
                           Prossima
                         </button>
                       </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+        </section>
+
+        {/* Quiz Tatoeba */}
+        <section style={{ ...styles.card, border: '1px solid #6366f1' }}>
+          <button
+            onClick={() => {
+              const next = !showTatoeba;
+              setShowTatoeba(next);
+              if (next && tatPairs.length === 0) fetchTatoebaQuiz(selectedLang);
+            }}
+            style={{ width: '100%', background: 'none', border: 'none', color: '#818cf8', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: 0, fontSize: '0.9rem', fontWeight: 'bold' }}
+          >
+            <span>📚 Quiz Tatoeba — frasi reali da madrelingua</span>
+            {showTatoeba ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+          </button>
+          {showTatoeba && (
+            <div style={{ marginTop: '14px' }}>
+              {tatLoading ? (
+                <div style={{ textAlign: 'center', padding: '20px 0', color: '#64748b' }}>
+                  <Loader2 size={24} style={{ animation: 'spin 1s linear infinite', display: 'inline-block' }} />
+                  <p style={{ margin: '8px 0 0', fontSize: '0.85rem' }}>Carico frasi da Tatoeba…</p>
+                </div>
+              ) : tatError ? (
+                <div style={{ textAlign: 'center', padding: '16px 0' }}>
+                  <p style={{ color: '#ef4444', fontSize: '0.85rem', margin: '0 0 10px' }}>⚠️ {tatError}</p>
+                  <button onClick={() => fetchTatoebaQuiz(selectedLang)} style={{ ...styles.btn, backgroundColor: '#6366f1' }}>Riprova</button>
+                </div>
+              ) : tatPairs.length === 0 ? (
+                <div style={{ textAlign: 'center' }}>
+                  <button onClick={() => fetchTatoebaQuiz(selectedLang)} style={{ ...styles.btn, backgroundColor: '#6366f1' }}>
+                    Inizia quiz frasi reali
+                  </button>
+                </div>
+              ) : (
+                <div>
+                  {/* Progress bar */}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                    <span style={{ fontSize: '0.7rem', color: '#64748b', textTransform: 'uppercase' }}>
+                      Domanda {Math.min(tatIdx + 1, tatPairs.length)} di {tatPairs.length}
+                    </span>
+                    <span style={{ fontSize: '0.75rem', color: '#818cf8', fontWeight: 'bold' }}>
+                      {tatScore}/{tatTotal} ✓
+                    </span>
+                  </div>
+                  <div style={{ height: '4px', backgroundColor: '#1e293b', borderRadius: '2px', marginBottom: '14px' }}>
+                    <div style={{ height: '100%', backgroundColor: '#6366f1', borderRadius: '2px', width: `${((tatIdx) / tatPairs.length) * 100}%`, transition: 'width 0.3s' }} />
+                  </div>
+
+                  {tatIdx < tatPairs.length ? (
+                    <>
+                      <p style={{ margin: '0 0 6px', fontSize: '0.7rem', color: '#64748b', textTransform: 'uppercase' }}>
+                        Come si dice in {ALL_LANGUAGES.find(l => l.code === selectedLang)?.name ?? selectedLang}?
+                      </p>
+                      <p style={{ margin: '0 0 14px', fontSize: '1rem', fontWeight: 'bold', color: '#f8fafc', padding: '10px 12px', backgroundColor: '#0f172a', borderRadius: '8px', lineHeight: '1.5' }}>
+                        🇮🇹 &ldquo;{tatPairs[tatIdx].it}&rdquo;
+                      </p>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '12px' }}>
+                        {tatOptions.map(opt => {
+                          const isCorrect = opt === tatPairs[tatIdx].tr;
+                          const isSelected = opt === tatSelected;
+                          let bg = '#1e293b';
+                          let border = '1px solid #334155';
+                          if (tatSelected) {
+                            if (isCorrect) { bg = '#1e1b4b'; border = '1px solid #6366f1'; }
+                            else if (isSelected) { bg = '#450a0a'; border = '1px solid #ef4444'; }
+                          }
+                          return (
+                            <button key={opt} disabled={!!tatSelected} onClick={() => {
+                              setTatSelected(opt);
+                              setTatTotal(t => t + 1);
+                              if (isCorrect) setTatScore(s => s + 1);
+                            }} style={{
+                              padding: '10px 8px', borderRadius: '8px', border, background: bg,
+                              color: tatSelected && isCorrect ? '#a5b4fc' : tatSelected && isSelected ? '#fca5a5' : '#e2e8f0',
+                              cursor: tatSelected ? 'default' : 'pointer', fontSize: '0.8rem', textAlign: 'center', lineHeight: '1.4', transition: 'all 0.2s',
+                            }}>
+                              {opt}
+                            </button>
+                          );
+                        })}
+                      </div>
+                      {tatSelected && (
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <p style={{ margin: 0, fontSize: '0.85rem', color: tatSelected === tatPairs[tatIdx].tr ? '#818cf8' : '#ef4444', fontWeight: 'bold' }}>
+                            {tatSelected === tatPairs[tatIdx].tr ? '✅ Esatto!' : `❌ "${tatPairs[tatIdx].tr}"`}
+                          </p>
+                          <button onClick={() => {
+                            const next = tatIdx + 1;
+                            if (next < tatPairs.length) {
+                              setTatIdx(next);
+                              setTatOptions(buildTatOptions(tatPairs, next));
+                              setTatSelected(null);
+                            } else {
+                              setTatIdx(tatPairs.length);
+                            }
+                          }} style={{ padding: '6px 14px', backgroundColor: '#6366f1', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '0.8rem' }}>
+                            {tatIdx + 1 < tatPairs.length ? 'Prossima →' : 'Fine →'}
+                          </button>
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <div style={{ textAlign: 'center', padding: '20px 0' }}>
+                      <p style={{ fontSize: '2rem', margin: '0 0 8px' }}>🎉</p>
+                      <p style={{ fontSize: '1.1rem', fontWeight: 'bold', color: '#f8fafc', margin: '0 0 4px' }}>
+                        Quiz completato!
+                      </p>
+                      <p style={{ fontSize: '0.9rem', color: '#818cf8', margin: '0 0 16px' }}>
+                        Punteggio: <strong>{tatScore}</strong> / {tatTotal}
+                        {tatTotal > 0 && ` (${Math.round((tatScore / tatTotal) * 100)}%)`}
+                      </p>
+                      <button onClick={() => fetchTatoebaQuiz(selectedLang)} style={{ ...styles.btn, backgroundColor: '#6366f1' }}>
+                        🔄 Nuove frasi
+                      </button>
                     </div>
                   )}
                 </div>
