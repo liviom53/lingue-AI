@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
-import { Mic, Volume2, Send, Loader2, AlertCircle, Bot, X, ChevronDown, ChevronUp, Copy, Check, Share2, BookmarkPlus, BookmarkCheck } from 'lucide-react';
+import { Mic, Volume2, Send, Loader2, AlertCircle, Bot, X, ChevronDown, ChevronUp, Copy, Check, Share2, BookmarkPlus, BookmarkCheck, RefreshCw } from 'lucide-react';
+import { useRegisterSW } from 'virtual:pwa-register/react';
 import appIcon from '@assets/icon-192_1775392140519.png';
 import { styles } from './styles';
 
@@ -248,6 +249,15 @@ export default function App() {
   const [error, setError] = useState<string | null>(null);
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [fromCache, setFromCache] = useState(false);
+
+  // ── Aggiornamento PWA ───────────────────────────────────────────────────────
+  const {
+    needRefresh: [needRefresh],
+    updateServiceWorker,
+  } = useRegisterSW({
+    onRegistered(r) { console.log('SW registrato:', r); },
+    onRegisterError(e) { console.warn('SW errore:', e); },
+  });
   const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
   const [selectedVoiceURI, setSelectedVoiceURI] = useState('');
   const [speechRate, setSpeechRate] = useState(0.6);
@@ -997,6 +1007,19 @@ export default function App() {
             <p style={{ color: '#f97316', fontSize: 'clamp(0.9rem, 3.8vw, 1.45rem)', margin: '4px 0 0', whiteSpace: 'nowrap' }}>Inizia a parlarla male... poi si vedrà</p>
           </div>
         </header>
+
+        {/* Banner aggiornamento PWA */}
+        {needRefresh && (
+          <div style={{ background: '#1e293b', border: '1px solid #a855f7', borderRadius: '10px', padding: '10px 14px', marginBottom: '8px', fontSize: '0.82rem', color: '#d8b4fe', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
+            <span>🔄 Nuova versione disponibile</span>
+            <button
+              onClick={() => updateServiceWorker(true)}
+              style={{ display: 'flex', alignItems: 'center', gap: '5px', background: '#7c3aed', color: '#fff', border: 'none', borderRadius: '6px', padding: '4px 12px', cursor: 'pointer', fontWeight: 'bold', fontSize: '0.8rem', whiteSpace: 'nowrap' }}
+            >
+              <RefreshCw size={13} /> Aggiorna
+            </button>
+          </div>
+        )}
 
         {/* Banner offline */}
         {!isOnline && (
