@@ -67,7 +67,8 @@ const ALLOWED_ORIGINS = [
 
 export function checkOrigin(req: Request, res: Response, next: NextFunction) {
   const origin = req.headers.origin ?? req.headers.referer ?? "";
-  if (!origin) return next();
+  // Allow: no origin header, "null" origin (sandboxed iframe / canvas preview)
+  if (!origin || origin === "null") return next();
 
   const allowed = ALLOWED_ORIGINS.some((pattern) => pattern.test(origin));
   if (!allowed) {
