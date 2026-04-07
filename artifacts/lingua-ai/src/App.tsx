@@ -2903,6 +2903,44 @@ export default function App() {
         )}
         </section>
 
+        {/* Donazioni */}
+        <section style={{ ...styles.card, border: '1px solid #f59e0b', marginTop: '12px', textAlign: 'center' }}>
+          <p style={{ margin: '0 0 4px', fontSize: '0.75rem', color: '#f59e0b', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 700 }}>☕ Supporta il progetto</p>
+          <p style={{ margin: '0 0 14px', fontSize: '0.82rem', color: '#cbd5e1', lineHeight: '1.5' }}>
+            Se l'app ti è utile, considera una piccola donazione — aiuta a mantenerla gratuita e a migliorarla!
+          </p>
+          <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', flexWrap: 'wrap' }}>
+            <a
+              href="https://www.paypal.com/donate?business=livio.mazzocchi%40gmail.com&currency_code=EUR"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                display: 'inline-flex', alignItems: 'center', gap: '6px',
+                padding: '10px 20px', borderRadius: '10px',
+                background: '#0070ba', color: '#fff',
+                fontWeight: 700, fontSize: '0.88rem', textDecoration: 'none',
+                boxShadow: '0 3px 0 #005ea6',
+              }}
+            >
+              💳 PayPal
+            </a>
+            <a
+              href="https://ko-fi.com/liviomazzocchi"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                display: 'inline-flex', alignItems: 'center', gap: '6px',
+                padding: '10px 20px', borderRadius: '10px',
+                background: '#ff5e5b', color: '#fff',
+                fontWeight: 700, fontSize: '0.88rem', textDecoration: 'none',
+                boxShadow: '0 3px 0 #cc4a47',
+              }}
+            >
+              ☕ Ko-fi
+            </a>
+          </div>
+        </section>
+
         {/* Footer Privacy */}
         <footer style={{ textAlign: 'center', marginTop: '18px', paddingBottom: '12px' }}>
           <div style={{ display: 'flex', justifyContent: 'center', gap: '6px', flexWrap: 'wrap', marginBottom: '8px' }}>
