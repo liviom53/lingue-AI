@@ -1,0 +1,182 @@
+@import "tailwindcss";
+
+/* ── Design tokens ───────────────────────────────────── */
+:root {
+  /* Palette base */
+  --c-bg:            #080e1c;
+  --c-surface:       #0f172a;
+  --c-surface-2:     #1e293b;
+  --c-surface-3:     #2d3f52;
+  --c-border:        rgba(90,120,170,0.25);
+  --c-border-top:    rgba(160,210,255,0.35);
+
+  /* Testo */
+  --c-text:          #f8fafc;
+  --c-text-muted:    #94a3b8;
+  --c-text-dim:      #64748b;
+
+  /* Accenti */
+  --c-orange:        #fb923c;
+  --c-orange-dark:   #b85a10;
+  --c-green:         #10b981;
+  --c-green-light:   #34d399;
+  --c-purple:        #a855f7;
+  --c-purple-light:  #c084fc;
+  --c-indigo:        #4f46e5;
+  --c-blue:          #3b82f6;
+  --c-yellow:        #f59e0b;
+  --c-red:           #ef4444;
+  --c-teal:          #14b8a6;
+
+  /* Card gradient */
+  --c-card-from:     #3d5f82;
+  --c-card-mid:      #1e2d3f;
+  --c-card-to:       #0e1620;
+
+  /* Border-radius */
+  --r-card:          14px;
+  --r-btn:           8px;
+  --r-sm:            6px;
+
+  /* Tipografia */
+  --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  /* Spaziatura */
+  --gap:    12px;
+  --pad:    12px;
+}
+
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: var(--font-sans);
+}
+
+/* ── Sfondo con profondità spaziale ─────────────────── */
+body {
+  font-family: var(--font-sans);
+  background:
+    radial-gradient(ellipse 160% 40% at 50% -5%,  #183060 0%, transparent 60%),
+    radial-gradient(ellipse 90%  55% at 85% 105%, #1c0d44 0%, transparent 50%),
+    radial-gradient(ellipse 70%  40% at 10% 105%, #0d2a1a 0%, transparent 50%),
+    #080e1c;
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+}
+
+/* ── Sezioni 3D: hover press-down ───────────────────── */
+section {
+  position: relative;
+  transition: transform 0.20s cubic-bezier(0.2,0,0.2,1),
+              box-shadow 0.20s cubic-bezier(0.2,0,0.2,1),
+              filter 0.20s ease;
+  will-change: transform;
+}
+
+section:hover {
+  transform: translateY(2px);
+  filter: brightness(0.97);
+  box-shadow:
+    inset 0 3px 0 rgba(255,255,255,0.22),
+    inset 4px 0 0 rgba(255,255,255,0.13),
+    inset -4px 0 0 rgba(0,0,0,0.35),
+    inset 0 -3px 0 rgba(0,0,0,0.45),
+    0 1px 0 #0c1624,
+    0 2px 0 #09111e,
+    0 4px 12px rgba(0,0,0,0.55),
+    0 2px 6px rgba(0,0,0,0.40) !important;
+}
+
+/* Griglia lingue: nessun lift al hover della sezione */
+section.lang-section:hover {
+  transform: none !important;
+  box-shadow: inherit !important;
+}
+
+/* Bottoni griglia lingua: hover press-down */
+.lang-btn {
+  transition:
+    transform 0.14s cubic-bezier(0.2,0,0.2,1),
+    filter    0.14s ease,
+    box-shadow 0.14s cubic-bezier(0.2,0,0.2,1) !important;
+}
+.lang-btn:hover {
+  transform: translateY(2px) !important;
+  filter: brightness(0.94);
+  box-shadow:
+    inset 0 2px 6px rgba(0,0,0,0.45),
+    0 1px 3px rgba(0,0,0,0.25) !important;
+}
+.lang-btn:active {
+  transform: translateY(3px) !important;
+  filter: brightness(0.88);
+  box-shadow:
+    inset 0 2px 8px rgba(0,0,0,0.65),
+    0 1px 2px rgba(0,0,0,0.30) !important;
+}
+
+/* Sezione input: nessun lift al hover */
+section.input-section:hover {
+  transform: none !important;
+  box-shadow: inherit !important;
+}
+
+/* Bottoni azione (DETTA / TRADUCI / TUTOR AI): hover press-down */
+.action-btn {
+  transition:
+    transform  0.14s cubic-bezier(0.2,0,0.2,1),
+    filter     0.14s ease,
+    box-shadow 0.14s cubic-bezier(0.2,0,0.2,1) !important;
+}
+.action-btn:hover:not([disabled]) {
+  transform: translateY(2px) !important;
+  filter: brightness(0.94);
+  box-shadow:
+    inset 0 2px 6px rgba(0,0,0,0.45),
+    0 1px 3px rgba(0,0,0,0.25) !important;
+}
+.action-btn:active:not([disabled]) {
+  transform: translateY(3px) !important;
+  filter: brightness(0.88);
+  box-shadow:
+    inset 0 2px 8px rgba(0,0,0,0.65),
+    0 1px 2px rgba(0,0,0,0.30) !important;
+}
+
+/* ── Bottoni: transizione fluida ────────────────────── */
+button {
+  transition: transform 0.09s cubic-bezier(0.2,0,0,1),
+              box-shadow 0.09s cubic-bezier(0.2,0,0,1),
+              filter     0.09s ease;
+  will-change: transform;
+}
+
+/* Hover press-down generico (tutti i bottoni non coperti da classi specifiche) */
+button:hover:not([disabled]) {
+  transform: translateY(2px);
+  filter: brightness(0.94);
+  box-shadow:
+    inset 0 2px 5px rgba(0,0,0,0.40),
+    0 1px 3px rgba(0,0,0,0.22);
+}
+
+/* Press-down al click: compressione fisica */
+button:active:not([disabled]) {
+  transform: translateY(3px) !important;
+  filter: brightness(0.88) !important;
+  box-shadow:
+    inset 0 2px 8px rgba(0,0,0,0.65),
+    inset 0 1px 3px rgba(0,0,0,0.40),
+    0 1px 2px rgba(0,0,0,0.25) !important;
+}
+
+/* ── Cursore demo ────────────────────────────────────── */
+#demo-cursor {
+  pointer-events: none;
+  position: fixed;
+  z-index: 99999;
+  transition: left 0.55s cubic-bezier(0.4,0,0.2,1),
+              top  0.55s cubic-bezier(0.4,0,0.2,1);
+}
