@@ -236,6 +236,7 @@ export default function App() {
   const [chatInput, setChatInput] = useState('');
   const [chatLoading, setChatLoading] = useState(false);
   const [showMoreLangs, setShowMoreLangs] = useState(false);
+  const [showLangSection, setShowLangSection] = useState(true);
   const [showVoiceSettings, setShowVoiceSettings] = useState(false);
   const [copied, setCopied] = useState(false);
   const [showPrivacy, setShowPrivacy] = useState(false);
@@ -1081,87 +1082,103 @@ export default function App() {
           )}
         </div>
 
-        <section className="lang-section" style={styles.card}>
-          <div data-demo="lang-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px', paddingBottom: '6px' }}>
-            {LANGUAGES.map(l => {
-              const active = selectedLang === l.code;
-              return (
-                <button
-                  key={l.code}
-                  className="lang-btn"
-                  onClick={() => { setSelectedLang(l.code); setShowMoreLangs(false); }}
-                  style={{
-                    ...styles.btn,
-                    marginTop: 0,
-                    width: '100%',
-                    ...(active ? styles.btnOrange : {}),
-                  }}
-                >
-                  <FlagImg fc={l.fc} name={l.name} /> {l.name}
-                </button>
-              );
-            })}
-            <div ref={moreLangsRef} style={{ position: 'relative' }}>
-              {(() => {
-                const active = MORE_LANGUAGES.some(l => l.code === selectedLang);
-                return (
+        <section className="lang-section" style={{ ...styles.card, border: '1px solid #38bdf8' }}>
+          {(() => {
+            const curLang = LANGUAGES.find(l => l.code === selectedLang) || MORE_LANGUAGES.find(l => l.code === selectedLang);
+            return (
               <button
-                className="lang-btn"
-                onClick={() => setShowMoreLangs(v => !v)}
-                style={{
-                  ...styles.btn,
-                  marginTop: 0,
-                  width: '100%',
-                  whiteSpace: 'nowrap',
-                  fontSize: 'clamp(0.7rem, 3.5vw, 1rem)',
-                  ...(active ? styles.btnOrange : {}),
-                }}
+                onClick={() => setShowLangSection(v => !v)}
+                style={{ width: '100%', background: 'none', border: 'none', color: '#7dd3fc', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: 0, fontSize: '0.9rem', fontWeight: 'bold', marginBottom: showLangSection ? '10px' : 0 }}
               >
-                {(() => { const ml = MORE_LANGUAGES.find(l => l.code === selectedLang); return ml ? <><FlagImg fc={ml.fc} name={ml.name} /> {ml.name}</> : <>🌍 Altre lingue</>; })()}
-                <ChevronDown size={14} style={{ marginLeft: '2px', transform: showMoreLangs ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
+                <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  🌍 Lingua: {curLang && <FlagImg fc={curLang.fc} name={curLang.name} />}{curLang?.name ?? selectedLang}
+                </span>
+                {showLangSection ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
               </button>
-              );
-              })()}
-              {showMoreLangs && (
-                <div style={{
-                  position: 'absolute',
-                  top: '100%',
-                  right: 0,
-                  zIndex: 100,
-                  backgroundColor: '#1e293b',
-                  border: '1px solid #334155',
-                  borderRadius: '8px',
-                  marginTop: '4px',
-                  width: '200px',
-                  maxHeight: '280px',
-                  overflowY: 'auto',
-                  boxShadow: '0 8px 24px rgba(0,0,0,0.4)',
-                }}>
-                  {MORE_LANGUAGES.map(l => (
+            );
+          })()}
+          {showLangSection && (
+            <div data-demo="lang-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px', paddingBottom: '6px' }}>
+              {LANGUAGES.map(l => {
+                const active = selectedLang === l.code;
+                return (
+                  <button
+                    key={l.code}
+                    className="lang-btn"
+                    onClick={() => { setSelectedLang(l.code); setShowMoreLangs(false); }}
+                    style={{
+                      ...styles.btn,
+                      marginTop: 0,
+                      width: '100%',
+                      ...(active ? styles.btnOrange : {}),
+                    }}
+                  >
+                    <FlagImg fc={l.fc} name={l.name} /> {l.name}
+                  </button>
+                );
+              })}
+              <div ref={moreLangsRef} style={{ position: 'relative' }}>
+                {(() => {
+                  const active = MORE_LANGUAGES.some(l => l.code === selectedLang);
+                  return (
                     <button
-                      key={l.code}
-                      onClick={() => { setSelectedLang(l.code); setShowMoreLangs(false); }}
+                      className="lang-btn"
+                      onClick={() => setShowMoreLangs(v => !v)}
                       style={{
+                        ...styles.btn,
+                        marginTop: 0,
                         width: '100%',
-                        padding: '9px 14px',
-                        backgroundColor: selectedLang === l.code ? '#fb923c' : 'transparent',
-                        color: '#fff',
-                        border: 'none',
-                        cursor: 'pointer',
-                        textAlign: 'left',
-                        fontSize: '0.95rem',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px',
+                        whiteSpace: 'nowrap',
+                        fontSize: 'clamp(0.7rem, 3.5vw, 1rem)',
+                        ...(active ? styles.btnOrange : {}),
                       }}
                     >
-                      <FlagImg fc={l.fc} name={l.name} /> {l.name}
+                      {(() => { const ml = MORE_LANGUAGES.find(l => l.code === selectedLang); return ml ? <><FlagImg fc={ml.fc} name={ml.name} /> {ml.name}</> : <>🌍 Altre lingue</>; })()}
+                      <ChevronDown size={14} style={{ marginLeft: '2px', transform: showMoreLangs ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
                     </button>
-                  ))}
-                </div>
-              )}
+                  );
+                })()}
+                {showMoreLangs && (
+                  <div style={{
+                    position: 'absolute',
+                    top: '100%',
+                    right: 0,
+                    zIndex: 100,
+                    backgroundColor: '#1e293b',
+                    border: '1px solid #334155',
+                    borderRadius: '8px',
+                    marginTop: '4px',
+                    width: '200px',
+                    maxHeight: '280px',
+                    overflowY: 'auto',
+                    boxShadow: '0 8px 24px rgba(0,0,0,0.4)',
+                  }}>
+                    {MORE_LANGUAGES.map(l => (
+                      <button
+                        key={l.code}
+                        onClick={() => { setSelectedLang(l.code); setShowMoreLangs(false); }}
+                        style={{
+                          width: '100%',
+                          padding: '9px 14px',
+                          backgroundColor: selectedLang === l.code ? '#fb923c' : 'transparent',
+                          color: '#fff',
+                          border: 'none',
+                          cursor: 'pointer',
+                          textAlign: 'left',
+                          fontSize: '0.95rem',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '8px',
+                        }}
+                      >
+                        <FlagImg fc={l.fc} name={l.name} /> {l.name}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
+          )}
         </section>
 
         <section className="input-section" style={styles.card}>
