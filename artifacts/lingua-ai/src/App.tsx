@@ -148,10 +148,14 @@ interface UserProfile {
   sesso: string;
   occupazione: string;
   citta: string;
+  studi: string;
+  hobby: string;
+  interessi: string;
+  musica: string;
   altro: string;
 }
 
-const defaultProfile = (): UserProfile => ({ nome: '', eta: '', sesso: '', occupazione: '', citta: '', altro: '' });
+const defaultProfile = (): UserProfile => ({ nome: '', eta: '', sesso: '', occupazione: '', citta: '', studi: '', hobby: '', interessi: '', musica: '', altro: '' });
 
 const PROFILE_KEY = 'lingua_ai_profile';
 const loadProfile = (): UserProfile => {
@@ -2578,11 +2582,86 @@ export default function App() {
                     onChange={e => updateProfile('occupazione', e.target.value)}
                   />
                 </div>
+                <div style={{ marginBottom: '10px' }}>
+                  <label style={labelStyle}>Studi</label>
+                  <select
+                    style={{ ...inputStyle, appearance: 'none' }}
+                    value={profile.studi}
+                    onChange={e => updateProfile('studi', e.target.value)}
+                  >
+                    <option value="">— seleziona —</option>
+                    <option value="Liceo classico / linguistico">Liceo classico / linguistico</option>
+                    <option value="Liceo scientifico">Liceo scientifico</option>
+                    <option value="Istituto tecnico / professionale">Istituto tecnico / professionale</option>
+                    <option value="Diploma">Diploma</option>
+                    <option value="Università (umanistica)">Università — area umanistica</option>
+                    <option value="Università (scientifica / tecnica)">Università — area scientifica / tecnica</option>
+                    <option value="Università (economia / giurisprudenza)">Università — economia / giurisprudenza</option>
+                    <option value="Laurea magistrale / dottorato">Laurea magistrale / dottorato</option>
+                    <option value="Autodidatta">Autodidatta</option>
+                    <option value="Scuola media">Scuola media</option>
+                  </select>
+                </div>
+                <div style={{ marginBottom: '10px' }}>
+                  <label style={labelStyle}>Hobby</label>
+                  <input
+                    style={inputStyle}
+                    placeholder="es. Fotografia, cucina, escursionismo…"
+                    value={profile.hobby}
+                    onChange={e => updateProfile('hobby', e.target.value)}
+                  />
+                </div>
+                {/* Interessi — chip multi-select */}
+                <div style={{ marginBottom: '10px' }}>
+                  <label style={labelStyle}>Interessi</label>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '4px' }}>
+                    {['Viaggi','Cucina','Sport','Tecnologia','Arte','Cinema','Libri','Natura','Gaming','Moda','Scienza','Storia','Politica','Economia','Yoga'].map(chip => {
+                      const selected = profile.interessi.split(',').map(s => s.trim()).includes(chip);
+                      return (
+                        <button
+                          key={chip}
+                          type="button"
+                          onClick={() => {
+                            const curr = profile.interessi.split(',').map(s => s.trim()).filter(Boolean);
+                            const next = selected ? curr.filter(c => c !== chip) : [...curr, chip];
+                            updateProfile('interessi', next.join(', '));
+                          }}
+                          style={{ padding: '4px 10px', borderRadius: '999px', border: `1px solid ${selected ? '#3b82f6' : '#334155'}`, background: selected ? '#1d4ed8' : '#1e293b', color: selected ? '#fff' : '#94a3b8', fontSize: '0.78rem', cursor: 'pointer', fontWeight: selected ? 600 : 400, transition: 'all 0.15s' }}
+                        >
+                          {chip}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+                {/* Musica — chip multi-select */}
+                <div style={{ marginBottom: '10px' }}>
+                  <label style={labelStyle}>Musica preferita</label>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '4px' }}>
+                    {['Pop','Rock','Jazz','Classica','Hip-hop / Rap','Elettronica','R&B / Soul','Folk / Country','Metal','Indie','Reggae','Latino'].map(chip => {
+                      const selected = profile.musica.split(',').map(s => s.trim()).includes(chip);
+                      return (
+                        <button
+                          key={chip}
+                          type="button"
+                          onClick={() => {
+                            const curr = profile.musica.split(',').map(s => s.trim()).filter(Boolean);
+                            const next = selected ? curr.filter(c => c !== chip) : [...curr, chip];
+                            updateProfile('musica', next.join(', '));
+                          }}
+                          style={{ padding: '4px 10px', borderRadius: '999px', border: `1px solid ${selected ? '#a855f7' : '#334155'}`, background: selected ? '#7e22ce' : '#1e293b', color: selected ? '#fff' : '#94a3b8', fontSize: '0.78rem', cursor: 'pointer', fontWeight: selected ? 600 : 400, transition: 'all 0.15s' }}
+                        >
+                          {chip}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
                 <div>
-                  <label style={labelStyle}>Altro (interessi, motivo dello studio…)</label>
+                  <label style={labelStyle}>Note libere (motivo dello studio, obiettivi…)</label>
                   <textarea
                     style={{ ...inputStyle, resize: 'none', minHeight: '60px' }}
-                    placeholder="es. Studio l'inglese per lavoro, amo i viaggi..."
+                    placeholder="es. Studio l'inglese per lavoro, voglio leggere romanzi in spagnolo..."
                     value={profile.altro}
                     onChange={e => updateProfile('altro', e.target.value)}
                   />

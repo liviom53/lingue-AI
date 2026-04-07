@@ -43,6 +43,10 @@ interface UserProfile {
   sesso?: string;
   occupazione?: string;
   citta?: string;
+  studi?: string;
+  hobby?: string;
+  interessi?: string;
+  musica?: string;
   altro?: string;
 }
 
@@ -54,9 +58,13 @@ function buildProfileContext(p?: UserProfile): string {
   if (p.sesso) parts.push(`Sesso: ${p.sesso}`);
   if (p.occupazione) parts.push(`Occupazione: ${p.occupazione}`);
   if (p.citta) parts.push(`Città: ${p.citta}`);
+  if (p.studi) parts.push(`Studi: ${p.studi}`);
+  if (p.hobby) parts.push(`Hobby: ${p.hobby}`);
+  if (p.interessi) parts.push(`Interessi: ${p.interessi}`);
+  if (p.musica) parts.push(`Musica preferita: ${p.musica}`);
   if (p.altro) parts.push(`Note: ${p.altro}`);
   if (parts.length === 0) return "";
-  return `\n\nUser profile (use this to personalize your responses — choose relevant vocabulary, examples, and register based on age, profession, city, etc.):\n${parts.join(", ")}`;
+  return `\n\nProfilo utente (usa questi dati per personalizzare le risposte — scegli vocabolario, esempi e registro in base a età, professione, interessi, studi, musica, ecc.):\n${parts.join("; ")}`;
 }
 
 router.post("/translate", async (req: Request, res: Response) => {
