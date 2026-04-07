@@ -298,12 +298,6 @@ export default function App() {
   const [bookmarked, setBookmarked] = useState(false);
   const [shared, setShared] = useState(false);
   const [vocabFilter, setVocabFilter] = useState<'all' | 'bookmarks'>('all');
-  // Quiz
-  const [showQuiz, setShowQuiz] = useState(false);
-  const [quizQ, setQuizQ] = useState<{ bm: Bookmark; options: string[] } | null>(null);
-  const [quizSelected, setQuizSelected] = useState<string | null>(null);
-  const [quizScore, setQuizScore] = useState(0);
-  const [quizTotal, setQuizTotal] = useState(0);
   // Quiz Tatoeba
   const [showTatoeba, setShowTatoeba] = useState(false);
   const [tatPairs, setTatPairs] = useState<{ it: string; tr: string }[]>([]);
@@ -521,20 +515,6 @@ export default function App() {
     recognition.onresult = (e: any) => setInputText(e.results[0][0].transcript);
     recognition.onend = () => setIsListening(false);
     recognition.start();
-  };
-
-  const generateQuiz = (bmList: Bookmark[]) => {
-    if (bmList.length < 4) return;
-    const idx = Math.floor(Math.random() * bmList.length);
-    const correct = bmList[idx];
-    const distractors = bmList
-      .filter((_, i) => i !== idx)
-      .sort(() => Math.random() - 0.5)
-      .slice(0, 3)
-      .map(b => b.tr);
-    const options = [...distractors, correct.tr].sort(() => Math.random() - 0.5);
-    setQuizQ({ bm: correct, options });
-    setQuizSelected(null);
   };
 
   const buildTatOptions = (pairs: { it: string; tr: string }[], idx: number) => {
@@ -2180,82 +2160,6 @@ export default function App() {
                   </button>
                 )}
               </div>
-            </div>
-          )}
-        </section>
-
-        {/* Quiz veloce */}
-        <section style={{ ...styles.card, border: '1px solid #10b981' }}>
-          <button
-            onClick={() => {
-              setShowQuiz(v => !v);
-              if (!showQuiz && bookmarks.length >= 4) generateQuiz(bookmarks);
-            }}
-            style={{ width: '100%', background: 'none', border: 'none', color: '#10b981', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: 0, fontSize: '0.9rem', fontWeight: 'bold' }}
-          >
-            <span>🧠 Quiz veloce — metti alla prova i preferiti</span>
-            {showQuiz ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
-          </button>
-          {showQuiz && (
-            <div style={{ marginTop: '14px' }}>
-              {bookmarks.length < 4 ? (
-                <div style={{ textAlign: 'center', padding: '20px 0', color: '#475569', fontSize: '0.85rem' }}>
-                  <p style={{ margin: '0 0 6px', fontSize: '2rem' }}>📚</p>
-                  <p style={{ margin: 0 }}>Salva almeno <strong style={{ color: '#fbbf24' }}>4 segnalibri</strong> (⭐) dopo le traduzioni per sbloccare il quiz!</p>
-                  <p style={{ margin: '6px 0 0', fontSize: '0.75rem', color: '#334155' }}>Hai {bookmarks.length} su 4 preferiti salvati</p>
-                </div>
-              ) : quizQ === null ? (
-                <div style={{ textAlign: 'center' }}>
-                  <button onClick={() => generateQuiz(bookmarks)} style={{ ...styles.btn, backgroundColor: '#7c3aed' }}>
-                    Inizia quiz
-                  </button>
-                </div>
-              ) : (
-                <div>
-                  <p style={{ margin: '0 0 6px', fontSize: '0.7rem', color: '#64748b', textTransform: 'uppercase' }}>Come si dice in {quizQ.bm.langName}?</p>
-                  <p style={{ margin: '0 0 14px', fontSize: '1.1rem', fontWeight: 'bold', color: '#f8fafc', padding: '10px', backgroundColor: '#0f172a', borderRadius: '8px', lineHeight: '1.5' }}>
-                    🇮🇹 &ldquo;{quizQ.bm.it}&rdquo;
-                  </p>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '12px' }}>
-                    {quizQ.options.map(opt => {
-                      const isCorrect = opt === quizQ.bm.tr;
-                      const isSelected = opt === quizSelected;
-                      let bg = '#1e293b';
-                      let border = '1px solid #334155';
-                      if (quizSelected) {
-                        if (isCorrect) { bg = '#064e3b'; border = '1px solid #10b981'; }
-                        else if (isSelected) { bg = '#450a0a'; border = '1px solid #ef4444'; }
-                      }
-                      return (
-                        <button key={opt} disabled={!!quizSelected} onClick={() => {
-                          setQuizSelected(opt);
-                          setQuizTotal(t => t + 1);
-                          if (isCorrect) setQuizScore(s => s + 1);
-                        }} style={{
-                          padding: '10px 8px', borderRadius: '8px', border, background: bg,
-                          color: quizSelected && isCorrect ? '#6ee7b7' : quizSelected && isSelected ? '#fca5a5' : '#e2e8f0',
-                          cursor: quizSelected ? 'default' : 'pointer', fontSize: '0.82rem', textAlign: 'center', lineHeight: '1.3', transition: 'all 0.2s',
-                        }}>
-                          {opt}
-                        </button>
-                      );
-                    })}
-                  </div>
-                  {quizSelected && (
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <p style={{ margin: 0, fontSize: '0.85rem', color: quizSelected === quizQ.bm.tr ? '#10b981' : '#ef4444', fontWeight: 'bold' }}>
-                        {quizSelected === quizQ.bm.tr ? '✅ Esatto!' : `❌ Risposta: "${quizQ.bm.tr}"`}
-                      </p>
-                      <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                        <span style={{ fontSize: '0.75rem', color: '#64748b' }}>{quizScore}/{quizTotal}</span>
-                        <button onClick={() => generateQuiz(bookmarks)} style={{ padding: '6px 14px', backgroundColor: '#7c3aed', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '0.8rem' }}>
-                          Prossima
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
             </div>
           )}
         </section>
