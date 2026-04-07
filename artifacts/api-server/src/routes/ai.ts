@@ -347,4 +347,33 @@ router.post("/lingva", async (req: Request, res: Response) => {
   });
 });
 
+router.post("/ipa", async (req: Request, res: Response) => {
+  const { text, targetLang } = req.body as { text: string; targetLang: string };
+  if (!text || !targetLang) {
+    res.status(400).json({ error: "Missing text or targetLang" });
+    return;
+  }
+  const langName = LANG_NAMES[targetLang] ?? targetLang;
+  try {
+    const completion = await openrouter.chat.completions.create({
+      model: MODEL,
+      messages: [
+        {
+          role: "system",
+          content: `You are a phonetics expert. Given a ${langName} phrase, respond ONLY with valid JSON (no markdown, no extra text):
+{"ipa":"...","syllables":"..."}
+- ipa: the IPA transcription using standard IPA symbols, enclosed in /forward slashes/
+- syllables: the phrase split into syllables with a middle dot · between them (e.g. "hel·lo wor·ld")`,
+        },
+        { role: "user", content: text },
+      ],
+    });
+    const raw = completion.choices[0]?.message?.content ?? "{}";
+    const clean = raw.replace(/^```json\s*/i, "").replace(/```$/, "").trim();
+    res.json(JSON.parse(clean));
+  } catch (err: any) {
+    res.status(500).json({ error: err.message ?? "AI error" });
+  }
+});
+
 export default router;

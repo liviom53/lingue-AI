@@ -261,8 +261,13 @@ export default function App() {
   const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
   const [selectedVoiceURI, setSelectedVoiceURI] = useState('');
   const [speechRate, setSpeechRate] = useState(0.6);
+  const [loopCount, setLoopCount] = useState(1);
+  const loopActiveRef = useRef(false);
   const [ipaText, setIpaText] = useState<string | null>(null);
   const [phonetic, setPhonetic] = useState<string | null>(null);
+  const [ipaData, setIpaData] = useState<{ ipa: string; syllables: string } | null>(null);
+  const [ipaLoading, setIpaLoading] = useState(false);
+  const [shadowUserAmps, setShadowUserAmps] = useState<number[]>([]);
   const [aiExplanation, setAiExplanation] = useState<{ explanation: string; example: string } | null>(null);
   const [showChat, setShowChat] = useState(false);
   const [chatExpanded, setChatExpanded] = useState(false);
@@ -430,21 +435,22 @@ export default function App() {
   const langVoices = voices.filter(v => v.lang.startsWith(selectedLang));
   const availableVoices = langVoices.length > 0 ? langVoices : voices;
 
-  const speak = (text: string) => {
+  const speak = (text: string, rateOverride?: number) => {
     // During demo (or right after stopping it) the Italian narration handles audio
     if (demoActiveRef.current || blockSpeakRef.current) return;
-    // Stop anything currently playing
+    // Stop anything currently playing + cancel active loop
     window.speechSynthesis.cancel();
+    loopActiveRef.current = true;
+    let iteration = 0;
 
     const doSpeak = () => {
       const ut = new SpeechSynthesisUtterance(text.trimEnd() + '\u00A0\u00A0\u00A0');
       ut.lang = currentLocale;
-      ut.rate = speechRate;
+      ut.rate = rateOverride ?? speechRate;
       const voice = availableVoices.find(v => v.voiceURI === selectedVoiceURI);
       if (voice) ut.voice = voice;
 
       // Chrome desktop bug: synthesis stalls after ~15s idle.
-      // Keep it alive with a periodic ping while speaking.
       const keepAlive = setInterval(() => {
         if (!window.speechSynthesis.speaking) {
           clearInterval(keepAlive);
@@ -454,14 +460,45 @@ export default function App() {
         }
       }, 10000);
 
-      ut.onend = () => clearInterval(keepAlive);
-      ut.onerror = () => clearInterval(keepAlive);
+      ut.onend = () => {
+        clearInterval(keepAlive);
+        iteration++;
+        if (loopActiveRef.current && iteration < loopCount) {
+          setTimeout(doSpeak, 500);
+        } else {
+          loopActiveRef.current = false;
+        }
+      };
+      ut.onerror = () => { clearInterval(keepAlive); loopActiveRef.current = false; };
 
       window.speechSynthesis.speak(ut);
     };
 
     // Small delay so cancel() finishes before the next speak() call (Chrome quirk)
     setTimeout(doSpeak, 50);
+  };
+
+  const stopLoop = () => {
+    loopActiveRef.current = false;
+    window.speechSynthesis.cancel();
+  };
+
+  const fetchIpa = async () => {
+    if (!translatedText) return;
+    setIpaLoading(true);
+    try {
+      const r = await fetch('/api/ai/ipa', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: translatedText, targetLang: selectedLang }),
+      });
+      const data = await r.json() as any;
+      setIpaData(data.ipa ? data : null);
+    } catch {
+      setIpaData(null);
+    } finally {
+      setIpaLoading(false);
+    }
   };
 
   const startInputSpeech = () => {
@@ -501,6 +538,7 @@ export default function App() {
     setTranslatedText('');
     setAiExplanation(null);
     setPhonetic(null);
+    setIpaData(null);
     setBookmarked(false);
     setFromCache(false);
 
@@ -560,6 +598,7 @@ export default function App() {
     setAiExplanation(null);
     setIpaText(null);
     setPhonetic(null);
+    setIpaData(null);
     setBookmarked(false);
 
     try {
@@ -735,12 +774,49 @@ export default function App() {
   const startShadowListen = () => {
     if (!shadowPhrase) return;
     setShadowStep('listening');
+    setShadowUserAmps([]);
+
+    // ── Cattura ampiezza microfono via Web Audio API ──────────────────────────
+    let animFrame: number | null = null;
+    let mediaStream: MediaStream | null = null;
+    let audioCtxLocal: AudioContext | null = null;
+    const amps: number[] = [];
+
+    const stopCapture = () => {
+      if (animFrame !== null) cancelAnimationFrame(animFrame);
+      if (mediaStream) mediaStream.getTracks().forEach(t => t.stop());
+      if (audioCtxLocal) audioCtxLocal.close().catch(() => {});
+    };
+
+    navigator.mediaDevices?.getUserMedia({ audio: true }).then(stream => {
+      mediaStream = stream;
+      audioCtxLocal = new AudioContext();
+      const source = audioCtxLocal.createMediaStreamSource(stream);
+      const analyser = audioCtxLocal.createAnalyser();
+      analyser.fftSize = 64;
+      source.connect(analyser);
+      const data = new Uint8Array(analyser.frequencyBinCount);
+      const capture = () => {
+        analyser.getByteTimeDomainData(data);
+        const rms = Math.sqrt(data.reduce((s, v) => s + (v - 128) ** 2, 0) / data.length);
+        amps.push(rms);
+        animFrame = requestAnimationFrame(capture);
+      };
+      animFrame = requestAnimationFrame(capture);
+    }).catch(() => {});
+
     const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    if (!SR) { setShadowStep('idle'); return; }
+    if (!SR) { setShadowStep('idle'); stopCapture(); return; }
     const recognition = new SR();
     const langInfo = ALL_LANGUAGES.find(l => l.code === selectedLang) ?? ALL_LANGUAGES[0];
     recognition.lang = langInfo.locale;
     recognition.onresult = (e: any) => {
+      stopCapture();
+      // Normalise to max 80 bars and scale to 0-1
+      const raw = amps.slice(0, 80);
+      const maxAmp = Math.max(...raw, 1);
+      setShadowUserAmps(raw.map(v => v / maxAmp));
+
       const spoken = (e.results[0][0].transcript as string).trim();
       setShadowSpoken(spoken);
       const expectedWords = normalizeText(shadowPhrase.phrase).split(' ');
@@ -756,7 +832,7 @@ export default function App() {
         return updated;
       });
     };
-    recognition.onerror = () => setShadowStep('idle');
+    recognition.onerror = () => { stopCapture(); setShadowStep('idle'); };
     recognition.onend = () => {};
     recognition.start();
   };
@@ -1524,18 +1600,67 @@ export default function App() {
                   <span>Velocità</span>
                   <span style={{ color: '#f8fafc' }}>{speechRate.toFixed(1)}x</span>
                 </label>
+                {/* Preset velocità */}
+                <div style={{ display: 'flex', gap: '6px', marginBottom: '8px' }}>
+                  {([
+                    { label: '🐢 Lento', rate: 0.4 },
+                    { label: '▶ Normale', rate: 0.9 },
+                    { label: '🚀 Veloce', rate: 1.8 },
+                  ] as const).map(({ label, rate }) => (
+                    <button
+                      key={rate}
+                      onClick={() => setSpeechRate(rate)}
+                      style={{
+                        flex: 1, padding: '5px 4px', borderRadius: '6px', border: 'none',
+                        background: Math.abs(speechRate - rate) < 0.05 ? '#ea580c' : '#1e293b',
+                        color: Math.abs(speechRate - rate) < 0.05 ? '#fff' : '#94a3b8',
+                        fontSize: '0.72rem', fontWeight: 'bold', cursor: 'pointer',
+                      }}
+                    >{label}</button>
+                  ))}
+                </div>
                 <input
                   type="range"
                   min={0.1}
-                  max={1}
+                  max={2.0}
                   step={0.1}
                   value={speechRate}
                   onChange={e => setSpeechRate(Number(e.target.value))}
                   style={{ width: '100%', accentColor: '#fb923c' }}
                 />
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.7rem', color: '#64748b', marginTop: '2px' }}>
-                  <span>0.1x (lento)</span>
-                  <span>1x (normale)</span>
+                  <span>0.1x</span>
+                  <span>2.0x</span>
+                </div>
+              </div>
+              {/* Loop automatico */}
+              <div style={{ marginTop: '10px' }}>
+                <label style={{ fontSize: '0.8rem', color: '#94a3b8', display: 'block', marginBottom: '6px' }}>
+                  🔁 Loop automatico
+                </label>
+                <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                  {[1, 2, 3, 5].map(n => (
+                    <button
+                      key={n}
+                      onClick={() => setLoopCount(n)}
+                      style={{
+                        padding: '5px 14px', borderRadius: '6px', border: 'none',
+                        background: loopCount === n ? '#4f46e5' : '#1e293b',
+                        color: loopCount === n ? '#fff' : '#94a3b8',
+                        fontSize: '0.75rem', fontWeight: 'bold', cursor: 'pointer',
+                      }}
+                    >{n === 1 ? '1× (off)' : `${n}×`}</button>
+                  ))}
+                  {loopCount > 1 && (
+                    <button
+                      onClick={stopLoop}
+                      style={{
+                        padding: '5px 10px', borderRadius: '6px', border: 'none',
+                        background: '#7f1d1d', color: '#fca5a5',
+                        fontSize: '0.72rem', cursor: 'pointer',
+                      }}
+                    >⏹ Stop</button>
+                  )}
                 </div>
               </div>
             </>
@@ -1596,7 +1721,7 @@ export default function App() {
                   {bookmarked ? <BookmarkCheck size={20} /> : <BookmarkPlus size={20} />}
                 </button>
                 <button
-                  title="Condividi traduzione"
+                  title={shared ? 'Copiato!' : 'Condividi traduzione'}
                   onClick={() => {
                     const langName = ALL_LANGUAGES.find(l => l.code === selectedLang)?.name ?? selectedLang;
                     const text = `🇮🇹 "${inputText.trim()}"\n➡ ${langName}: "${translatedText}"`;
@@ -1610,7 +1735,6 @@ export default function App() {
                     }
                   }}
                   style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '2px', color: shared ? '#10b981' : '#64748b' }}
-                  title={shared ? 'Copiato!' : 'Condividi'}
                 >
                   {shared ? <Check size={20} /> : <Share2 size={20} />}
                 </button>
@@ -1679,6 +1803,30 @@ export default function App() {
               }}>
                 <span style={{ fontStyle: 'normal', fontWeight: 'bold', marginRight: '6px' }}>pronuncia</span>{ipaText}
               </p>
+            )}
+            {/* IPA + Sillabazione per tutte le lingue */}
+            {!ipaData && (
+              <button
+                onClick={fetchIpa}
+                disabled={ipaLoading}
+                style={{
+                  display: 'inline-flex', alignItems: 'center', gap: '5px',
+                  background: '#1e293b', border: '1px solid #1e3a5f',
+                  color: '#94a3b8', borderRadius: '6px', padding: '4px 10px',
+                  cursor: ipaLoading ? 'not-allowed' : 'pointer', fontSize: '0.74rem',
+                  marginTop: '6px', opacity: ipaLoading ? 0.6 : 1,
+                }}
+              >
+                {ipaLoading ? <Loader2 size={11} style={{ animation: 'spin 1s linear infinite' }} /> : '🔤'} IPA + sillabazione
+              </button>
+            )}
+            {ipaData && (
+              <div style={{ marginTop: '6px', background: '#0f172a', borderRadius: '8px', padding: '8px 12px', border: '1px solid #1e3a5f', display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                <span style={{ fontSize: '0.68rem', color: '#475569', textTransform: 'uppercase', letterSpacing: '0.06em' }}>🔤 IPA · sillabazione</span>
+                <span style={{ fontSize: '1rem', color: '#93c5fd', fontFamily: 'monospace', letterSpacing: '0.05em' }}>{ipaData.ipa}</span>
+                <span style={{ fontSize: '0.9rem', color: '#6ee7b7', letterSpacing: '0.12em' }}>{ipaData.syllables}</span>
+                <button onClick={() => setIpaData(null)} style={{ alignSelf: 'flex-end', background: 'none', border: 'none', color: '#475569', cursor: 'pointer', fontSize: '0.7rem', padding: 0, marginTop: '2px' }}>✕ chiudi</button>
+              </div>
             )}
             {aiExplanation && (
               <div style={{ marginTop: '10px', padding: '8px', backgroundColor: '#0f172a', borderRadius: '8px', border: '1px solid #fb923c' }}>
@@ -1791,7 +1939,35 @@ export default function App() {
                           {shadowScore === 100 ? '🎉 Perfetto!' : shadowScore >= 60 ? '👍 Quasi!' : '❌ Riprova!'}
                         </span>
                       </div>
-                      <p style={{ margin: 0, fontSize: '0.8rem', color: '#64748b' }}>Hai detto: <em style={{ color: '#94a3b8' }}>{shadowSpoken}</em></p>
+                      <p style={{ margin: '0 0 8px', fontSize: '0.8rem', color: '#64748b' }}>Hai detto: <em style={{ color: '#94a3b8' }}>{shadowSpoken}</em></p>
+                      {shadowUserAmps.length > 0 && (
+                        <div>
+                          <p style={{ margin: '0 0 4px', fontSize: '0.68rem', color: '#475569', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                            🎙 Forma d'onda vocale registrata
+                          </p>
+                          <div style={{
+                            display: 'flex', alignItems: 'flex-end', gap: '1px',
+                            height: '36px', background: '#0f172a', borderRadius: '6px',
+                            padding: '4px 6px', overflow: 'hidden',
+                          }}>
+                            {shadowUserAmps.map((amp, i) => (
+                              <div
+                                key={i}
+                                style={{
+                                  flex: 1,
+                                  height: `${Math.max(4, amp * 100)}%`,
+                                  background: amp > 0.3
+                                    ? (shadowScore >= 60 ? '#a78bfa' : '#f87171')
+                                    : '#1e293b',
+                                  borderRadius: '1px',
+                                  minWidth: '2px',
+                                  transition: 'height 0.1s',
+                                }}
+                              />
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
