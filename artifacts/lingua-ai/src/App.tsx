@@ -202,6 +202,36 @@ const saveProgress = (p: ProgressStats) => {
   try { localStorage.setItem(PROGRESS_KEY, JSON.stringify(p)); } catch {}
 };
 
+// ── Cache traduzioni offline ────────────────────────────────────────────────
+const CACHE_KEY = 'lingua_ai_translation_cache';
+const CACHE_MAX = 40;
+
+interface CachedTranslation {
+  text: string;
+  lang: string;
+  translation: string;
+  pronunciation: string | null;
+  cachedAt: number;
+}
+
+const loadCache = (): CachedTranslation[] => {
+  try { const s = localStorage.getItem(CACHE_KEY); if (s) return JSON.parse(s); } catch {}
+  return [];
+};
+
+const saveToCache = (entry: CachedTranslation) => {
+  try {
+    const cache = loadCache().filter(e => !(e.text === entry.text && e.lang === entry.lang));
+    cache.unshift(entry);
+    localStorage.setItem(CACHE_KEY, JSON.stringify(cache.slice(0, CACHE_MAX)));
+  } catch {}
+};
+
+const lookupCache = (text: string, lang: string): CachedTranslation | null => {
+  const norm = text.trim().toLowerCase();
+  return loadCache().find(e => e.text.trim().toLowerCase() === norm && e.lang === lang) ?? null;
+};
+
 export default function App() {
   const [selectedLang, setSelectedLang] = useState('en');
   const [inputText, setInputText] = useState('');
@@ -216,6 +246,8 @@ export default function App() {
     wordResults: { expected: string; correct: boolean }[];
   } | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
+  const [fromCache, setFromCache] = useState(false);
   const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
   const [selectedVoiceURI, setSelectedVoiceURI] = useState('');
   const [speechRate, setSpeechRate] = useState(0.6);
@@ -278,6 +310,17 @@ export default function App() {
   const chatEndRef = useRef<HTMLDivElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const moreLangsRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const goOnline  = () => setIsOnline(true);
+    const goOffline = () => setIsOnline(false);
+    window.addEventListener('online',  goOnline);
+    window.addEventListener('offline', goOffline);
+    return () => {
+      window.removeEventListener('online',  goOnline);
+      window.removeEventListener('offline', goOffline);
+    };
+  }, []);
 
   useEffect(() => {
     const today = new Date().toISOString().split('T')[0];
@@ -434,7 +477,6 @@ export default function App() {
 
   const handleTranslate = async (langOverride?: string) => {
     if (!inputText.trim()) return;
-    // langOverride permette alle demo di bypassare il closure stale su selectedLang
     const lang = typeof langOverride === 'string' ? langOverride : selectedLang;
     setLoading(true);
     setError(null);
@@ -443,11 +485,30 @@ export default function App() {
     setAiExplanation(null);
     setPhonetic(null);
     setBookmarked(false);
+    setFromCache(false);
+
+    // ── Offline: prova la cache ──────────────────────────────────────────────
+    if (!navigator.onLine) {
+      const cached = lookupCache(inputText, lang);
+      if (cached) {
+        setTranslatedText(cached.translation);
+        setIpaText(cached.pronunciation ?? null);
+        setFromCache(true);
+        speak(cached.translation);
+        setLoading(false);
+        return;
+      }
+      setError('Sei offline e questa frase non è in cache. Riconnettiti per tradurre.');
+      setLoading(false);
+      return;
+    }
 
     try {
       const { translation, pronunciation } = await translateText(inputText, lang);
       setTranslatedText(translation);
       speak(translation);
+      // Salva in cache per uso offline futuro
+      saveToCache({ text: inputText, lang, translation, pronunciation: pronunciation ?? null, cachedAt: Date.now() });
       setProgress(prev => {
         const word = translation.toLowerCase().trim();
         const wordsLearned = prev.wordsLearned.includes(word) ? prev.wordsLearned : [...prev.wordsLearned, word];
@@ -937,6 +998,17 @@ export default function App() {
           </div>
         </header>
 
+        {/* Banner offline */}
+        {!isOnline && (
+          <div style={{ background: '#1e293b', border: '1px solid #f97316', borderRadius: '10px', padding: '10px 14px', marginBottom: '8px', fontSize: '0.82rem', color: '#fdba74' }}>
+            <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>📵 Sei offline</div>
+            <div style={{ color: '#94a3b8', lineHeight: 1.5 }}>
+              Funzionano ancora: <strong style={{ color: '#e2e8f0' }}>segnalibri, quiz, profilo, pronuncia</strong>.<br />
+              La traduzione usa la cache (frasi già cercate). Nuove frasi richiedono connessione.
+            </div>
+          </div>
+        )}
+
         {/* Menu Demo & Funzionalità */}
         <section style={{ ...styles.card, border: '1px solid #10b981', marginBottom: '4px' }}>
           <button
@@ -1246,6 +1318,11 @@ export default function App() {
 
         {translatedText && (
           <section style={{ ...styles.card, border: '2px solid #10b981' }}>
+            {fromCache && (
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', background: '#1e3a5f', color: '#7dd3fc', borderRadius: '6px', padding: '2px 8px', fontSize: '0.72rem', fontWeight: 'bold', marginBottom: '8px' }}>
+                💾 Da cache offline
+              </div>
+            )}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
               <div data-demo="translated-text" style={{ flex: 1, fontSize: '1.2rem', fontWeight: 'bold', lineHeight: '1.7', flexWrap: 'wrap', display: 'flex', gap: '4px' }}>
                 {translatedText.split(' ').map((word, i) => (
