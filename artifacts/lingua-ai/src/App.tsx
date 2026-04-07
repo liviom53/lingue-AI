@@ -1594,7 +1594,7 @@ export default function App() {
             value={inputText}
             onChange={e => setInputText(e.target.value)}
             onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleTranslate(); } }}
-            placeholder="Scrivi in italiano..."
+            placeholder="Scrivi o detta in Italiano..."
           />
           <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', marginTop: '16px' }}>
             <button
