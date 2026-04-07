@@ -277,6 +277,7 @@ export default function App() {
   const [showTabPanel, setShowTabPanel] = useState(false);
   const [showDemoMenu, setShowDemoMenu] = useState(false);
   const [showFunzionalitaApp, setShowFunzionalitaApp] = useState(false);
+  const [showHelp, setShowHelp] = useState(false);
   const [activeDemoNum, setActiveDemoNum] = useState<1|2|3|4>(1);
   const [progress, setProgress] = useState<ProgressStats>(loadProgress);
   const [profile, setProfile] = useState<UserProfile>(loadProfile);
@@ -1052,6 +1053,7 @@ export default function App() {
                 { key: 'demo3', icon: '🤖', label: 'Demo Chat AI',    sub: 'Conversa con DeepSeek', active: false, onClick: () => startDemo(3) },
                 { key: 'demo4', icon: '⭐', label: 'Demo Vocabolario', sub: 'Salva e ripassa',       active: false, onClick: () => startDemo(4) },
                 { key: 'video', icon: '🎬', label: 'Funzionalità App', sub: showFunzionalitaApp ? 'Chiudi ▲' : 'Scopri il video demo ▼', active: showFunzionalitaApp, onClick: () => setShowFunzionalitaApp(v => !v) },
+                { key: 'help',  icon: '❓', label: 'Aiuto',            sub: showHelp ? 'Chiudi ▲' : 'Come usare l\'app ▼',             active: showHelp,             onClick: () => setShowHelp(v => !v) },
               ]).map(({ key, icon, label, sub, active, onClick }) => (
                 <button
                   key={key}
@@ -1069,6 +1071,99 @@ export default function App() {
                   <span style={{ fontSize: '0.75rem', color: active ? '#a78bfa' : '#94a3b8', fontWeight: 400 }}>{sub}</span>
                 </button>
               ))}
+              {showHelp && (
+                <div style={{ marginTop: '6px', borderRadius: '10px', border: '1px solid #1e3a5f', backgroundColor: '#0f172a', overflow: 'hidden' }}>
+                  {/* Intestazione */}
+                  <div style={{ background: 'linear-gradient(135deg,#1e3a5f,#0f172a)', padding: '12px 14px 8px', borderBottom: '1px solid #1e3a5f' }}>
+                    <div style={{ fontWeight: 'bold', fontSize: '0.9rem', color: '#e2e8f0', marginBottom: '2px' }}>❓ Come usare Lingue & AI</div>
+                    <div style={{ fontSize: '0.73rem', color: '#64748b' }}>Guida rapida alle funzionalità</div>
+                  </div>
+                  <div style={{ padding: '10px 12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    {([
+                      {
+                        icon: '🌍', title: 'Traduzione',
+                        items: [
+                          'Scrivi una frase in italiano nel campo di testo',
+                          'Scegli la lingua di destinazione (bandierine)',
+                          'Premi "Traduci" per la traduzione rapida oppure "Spiega con AI" per una traduzione contestualizzata con pronuncia fonetica e spiegazione grammaticale',
+                        ],
+                      },
+                      {
+                        icon: '🔬', title: 'X-Ray grammaticale',
+                        items: [
+                          'Clicca su qualsiasi parola della traduzione per analizzarla',
+                          'Vedrai: parte del discorso, genere, tempo verbale e curiosità sulla parola',
+                          'Ottimo per capire come funziona la lingua, non solo cosa significa',
+                        ],
+                      },
+                      {
+                        icon: '🔊', title: 'Pronuncia & Ascolto',
+                        items: [
+                          'Clicca 🔊 per ascoltare la traduzione con sintesi vocale',
+                          'Regola la velocità con lo slider (lento/veloce)',
+                          'Scegli la voce preferita dal selettore (se disponibile)',
+                        ],
+                      },
+                      {
+                        icon: '🎙️', title: 'Shadowing & Pratica',
+                        items: [
+                          'Sezione "Shadowing": ascolta una frase generata dall\'AI',
+                          'Ripetila ad alta voce — il microfono valuta la tua pronuncia parola per parola',
+                          'Lo score ti dice quanto hai pronunciato correttamente',
+                        ],
+                      },
+                      {
+                        icon: '🤖', title: 'Chat AI & Roleplay',
+                        items: [
+                          'Apri la sezione Chat per conversare con il tutor DeepSeek',
+                          'Scegli uno scenario (bar, hotel, stazione…) per un roleplay immersivo',
+                          'Il tutor corregge i tuoi errori alla fine di ogni risposta con 💡',
+                        ],
+                      },
+                      {
+                        icon: '⭐', title: 'Segnalibri & Quiz',
+                        items: [
+                          'Salva una traduzione con ⭐ per aggiungerla al vocabolario',
+                          'Nella sezione Vocabolario trovi tutte le parole salvate',
+                          'Clicca "Quiz" per testare la memoria: 4 opzioni, la giusta è solo una',
+                        ],
+                      },
+                      {
+                        icon: '👤', title: 'Profilo personale',
+                        items: [
+                          'Inserisci nome, età, occupazione e città',
+                          'L\'AI usa queste info per personalizzare spiegazioni ed esempi',
+                          'Es: se sei medico, gli esempi saranno in ambito medico',
+                        ],
+                      },
+                      {
+                        icon: '📵', title: 'Modalità offline',
+                        items: [
+                          'Le traduzioni già cercate restano disponibili senza connessione',
+                          'Segnalibri, quiz e pronuncia funzionano sempre offline',
+                          'Installa l\'app (PWA) dal browser per usarla come app nativa',
+                        ],
+                      },
+                    ]).map(({ icon, title, items }) => (
+                      <div key={title} style={{ background: '#1e293b', borderRadius: '8px', padding: '10px 12px', border: '1px solid #1e3a5f' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '7px', marginBottom: '6px' }}>
+                          <span style={{ fontSize: '1rem' }}>{icon}</span>
+                          <span style={{ fontWeight: 'bold', fontSize: '0.82rem', color: '#e2e8f0' }}>{title}</span>
+                        </div>
+                        <ul style={{ margin: 0, paddingLeft: '16px', display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                          {items.map((item, i) => (
+                            <li key={i} style={{ fontSize: '0.74rem', color: '#94a3b8', lineHeight: 1.5 }}>{item}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    ))}
+                    <div style={{ textAlign: 'center', fontSize: '0.72rem', color: '#475569', paddingTop: '2px' }}>
+                      💡 Suggerimento: usa le demo guidate qui sopra per vedere ogni funzione in azione
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {showFunzionalitaApp && (
                 <div style={{ marginTop: '6px', borderRadius: '10px', overflow: 'hidden', border: '1px solid #4c1d95', backgroundColor: '#0f172a' }}>
                   <div style={{ borderRadius: '10px 10px 0 0', overflow: 'hidden' }}>
