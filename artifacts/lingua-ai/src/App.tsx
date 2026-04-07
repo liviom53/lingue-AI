@@ -1048,7 +1048,7 @@ export default function App() {
           >
             <span style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
               <FlagImg fc="it" name="Italiano" />
-              <span>▶ Demo &amp; Funzionalità</span>
+              <span>▶ Demo - Help</span>
             </span>
             {showDemoMenu ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
           </button>
