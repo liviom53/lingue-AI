@@ -1248,8 +1248,8 @@ export default function App() {
                 { key: 'demo2', icon: '🎙️', label: 'Demo Shadowing',  sub: 'Ripeti e impara',       active: false, onClick: () => startDemo(2) },
                 { key: 'demo3', icon: '🤖', label: 'Demo Chat AI',    sub: 'Conversa con DeepSeek', active: false, onClick: () => startDemo(3) },
                 { key: 'demo4', icon: '⭐', label: 'Demo Vocabolario', sub: 'Salva e ripassa',       active: false, onClick: () => startDemo(4) },
-                { key: 'video', icon: '🎬', label: 'Funzionalità App', sub: showFunzionalitaApp ? 'Chiudi ▲' : 'Scopri il video demo ▼', active: showFunzionalitaApp, onClick: () => setShowFunzionalitaApp(v => !v) },
                 { key: 'help',  icon: '❓', label: 'Aiuto',            sub: showHelp ? 'Chiudi ▲' : 'Come usare l\'app ▼',             active: showHelp,             onClick: () => setShowHelp(v => !v) },
+                { key: 'video', icon: '🎬', label: 'Funzionalità App', sub: showFunzionalitaApp ? 'Chiudi ▲' : 'Scopri il video demo ▼', active: showFunzionalitaApp, onClick: () => setShowFunzionalitaApp(v => !v) },
               ]).map(({ key, icon, label, sub, active, onClick }) => (
                 <button
                   key={key}
