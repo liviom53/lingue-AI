@@ -300,6 +300,11 @@ export default function App() {
   const [progress, setProgress] = useState<ProgressStats>(loadProgress);
   const [profile, setProfile] = useState<UserProfile>(loadProfile);
   const [profileSaved, setProfileSaved] = useState(false);
+  const [showProfilePopup, setShowProfilePopup] = useState(() => {
+    if (localStorage.getItem('profile_popup_dismissed') === '1') return false;
+    const p = loadProfile();
+    return !p.nome?.trim();
+  });
   // Roleplay
   const [roleplayScenario, setRoleplayScenario] = useState<string | null>(null);
   // Segnalibri
@@ -1168,6 +1173,54 @@ export default function App() {
             <div style={{ color: '#94a3b8', lineHeight: 1.5 }}>
               Funzionano ancora: <strong style={{ color: '#e2e8f0' }}>segnalibri, quiz, profilo, pronuncia</strong>.<br />
               La traduzione usa la cache (frasi già cercate). Nuove frasi richiedono connessione.
+            </div>
+          </div>
+        )}
+
+        {/* Popup: completa il profilo */}
+        {showProfilePopup && (
+          <div
+            onClick={() => setShowProfilePopup(false)}
+            style={{ position: 'fixed', inset: 0, zIndex: 999, background: 'rgba(0,0,0,0.65)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }}
+          >
+            <div
+              onClick={e => e.stopPropagation()}
+              style={{ background: 'linear-gradient(140deg, #1e3a5f 0%, #1e293b 60%, #0f1c2d 100%)', border: '1px solid #60a5fa', borderRadius: '18px', padding: '28px 24px 22px', maxWidth: '380px', width: '100%', boxShadow: '0 24px 60px rgba(0,0,0,0.7)' }}
+            >
+              <div style={{ fontSize: '2.2rem', textAlign: 'center', marginBottom: '8px' }}>👤</div>
+              <h2 style={{ margin: '0 0 10px', fontSize: '1.15rem', fontWeight: 700, textAlign: 'center', color: '#f8fafc' }}>
+                Compila il tuo profilo
+              </h2>
+              <p style={{ margin: '0 0 20px', fontSize: '0.88rem', color: '#94a3b8', textAlign: 'center', lineHeight: 1.55 }}>
+                L&apos;AI usa nome, età, livello e interessi per personalizzare traduzione, spiegazioni e vocabolario — più dati dai, più precisa diventa.
+              </p>
+              <button
+                onClick={() => {
+                  setShowProfilePopup(false);
+                  setShowTabPanel(true);
+                  setActiveTab('profilo');
+                  setTimeout(() => {
+                    document.querySelector('[data-demo="tab-panel-toggle"]')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                  }, 150);
+                }}
+                style={{ width: '100%', padding: '12px', borderRadius: '10px', border: 'none', background: '#3b82f6', color: '#fff', fontWeight: 700, fontSize: '1rem', cursor: 'pointer', marginBottom: '10px' }}
+              >
+                Vai al profilo →
+              </button>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <button
+                  onClick={() => setShowProfilePopup(false)}
+                  style={{ background: 'none', border: 'none', color: '#64748b', fontSize: '0.82rem', cursor: 'pointer', padding: '4px 0' }}
+                >
+                  Più tardi
+                </button>
+                <button
+                  onClick={() => { setShowProfilePopup(false); localStorage.setItem('profile_popup_dismissed', '1'); }}
+                  style={{ background: 'none', border: 'none', color: '#475569', fontSize: '0.78rem', cursor: 'pointer', padding: '4px 0' }}
+                >
+                  Non mostrare più
+                </button>
+              </div>
             </div>
           </div>
         )}
