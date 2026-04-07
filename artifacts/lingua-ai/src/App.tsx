@@ -293,7 +293,7 @@ export default function App() {
   const [showPrivacy, setShowPrivacy] = useState(false);
   const [activeTab, setActiveTab] = useState<'profilo' | 'progressi' | 'calendario' | 'vocabolario' | 'demo'>('profilo');
   const [showTabPanel, setShowTabPanel] = useState(false);
-  const [showDonazioni, setShowDonazioni] = useState(false);
+  const [showDonazioni, setShowDonazioni] = useState(true);
   const [showDemoMenu, setShowDemoMenu] = useState(false);
   const [showFunzionalitaApp, setShowFunzionalitaApp] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
