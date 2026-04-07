@@ -2,30 +2,21 @@ import { useState, useEffect, useRef } from 'react';
 import { Mic, Volume2, Send, Loader2, AlertCircle, Bot, X, ChevronDown, ChevronUp, Copy, Check, Share2, BookmarkPlus, BookmarkCheck } from 'lucide-react';
 import appIcon from '@assets/icon-192_1775392140519.png';
 
-const LINGVA_INSTANCES = [
-  'https://lingva.ml',
-  'https://lingva.garudalinux.org',
-  'https://translate.plausibility.cloud',
-];
-
 async function translateText(text: string, targetLang: string): Promise<{ translation: string; pronunciation?: string }> {
-  const encoded = encodeURIComponent(text);
-  for (const instance of LINGVA_INSTANCES) {
-    try {
-      const res = await fetch(`${instance}/api/v1/it/${targetLang}/${encoded}`);
-      if (!res.ok) continue;
-      const data = await res.json();
-      if (data.translation) {
-        return {
-          translation: data.translation,
-          pronunciation: data.info?.pronunciation?.translation || undefined,
-        };
-      }
-    } catch {
-      continue;
-    }
+  const res = await fetch('/api/ai/lingva', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ text, targetLang }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({})) as any;
+    throw new Error(err.error ?? 'Nessun server di traduzione raggiungibile. Riprova tra qualche secondo.');
   }
-  throw new Error('Nessun server di traduzione raggiungibile. Riprova tra qualche secondo.');
+  const data = await res.json() as any;
+  return {
+    translation: data.translation,
+    pronunciation: data.pronunciation ?? undefined,
+  };
 }
 
 function ipaToReadable(ipa: string): string {

@@ -220,4 +220,37 @@ Respond ONLY with valid JSON (no markdown):
   }
 });
 
+// ── Lingva proxy (avoids browser CORS issues) ────────────────────────────
+const LINGVA_INSTANCES = [
+  'https://lingva.ml',
+  'https://lingva.garudalinux.org',
+  'https://translate.plausibility.cloud',
+];
+
+router.post("/lingva", async (req: Request, res: Response) => {
+  const { text, targetLang } = req.body as { text: string; targetLang: string };
+  if (!text || !targetLang) {
+    res.status(400).json({ error: "Missing text or targetLang" });
+    return;
+  }
+  const encoded = encodeURIComponent(text);
+  for (const instance of LINGVA_INSTANCES) {
+    try {
+      const r = await fetch(`${instance}/api/v1/it/${targetLang}/${encoded}`);
+      if (!r.ok) continue;
+      const data = await r.json() as any;
+      if (data.translation) {
+        res.json({
+          translation: data.translation,
+          pronunciation: data.info?.pronunciation?.translation ?? null,
+        });
+        return;
+      }
+    } catch {
+      continue;
+    }
+  }
+  res.status(502).json({ error: "Nessun server di traduzione raggiungibile. Riprova tra qualche secondo." });
+});
+
 export default router;

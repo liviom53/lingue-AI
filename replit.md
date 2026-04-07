@@ -102,6 +102,12 @@ artifacts/
 - `async (langOverride?: string)` — guard è `typeof langOverride === 'string'`
 - Demo passano codice lingua esplicito; il bottone usa wrapper `() => handleTranslate()`
 
+### Architettura traduzione
+- Il frontend chiama `POST /api/ai/lingva` sul proprio backend (no CORS)
+- Il backend prova in sequenza 3 istanze Lingva server-side e restituisce `{ translation, pronunciation }`
+- Se tutte falliscono → 502 con messaggio utente in italiano
+- `translateText()` in App.tsx è ora un semplice fetch verso `/api/ai/lingva`
+
 ### `localStorage` keys
 - `lingua_ai_progress` — progressi
 - `lingua_ai_profile` — profilo utente
