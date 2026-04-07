@@ -5,13 +5,17 @@ import { Scene2 } from './video_scenes/Scene2';
 import { Scene3 } from './video_scenes/Scene3';
 import { Scene4 } from './video_scenes/Scene4';
 import { Scene5 } from './video_scenes/Scene5';
+import { Scene6 } from './video_scenes/Scene6';
+import { Scene7 } from './video_scenes/Scene7';
 
 const SCENE_DURATIONS = { 
-  hook: 7000, 
-  translate: 8000, 
-  xray: 8000, 
-  practice: 7500, 
-  outro: 7000 
+  hook: 13000, 
+  translate: 13000, 
+  xray: 12000, 
+  grammar: 13000, 
+  shadowing: 13000,
+  quiz: 12000,
+  outro: 13000 
 };
 
 // Background gradient positions per scene for continuous motion
@@ -21,6 +25,8 @@ const bgPositions = [
   { x: '-20%', y: '30%', scale: 0.9, rotate: 90 },
   { x: '30%', y: '-10%', scale: 1.3, rotate: 135 },
   { x: '0%', y: '0%', scale: 1, rotate: 180 },
+  { x: '15%', y: '15%', scale: 1.1, rotate: 225 },
+  { x: '-5%', y: '-5%', scale: 1.4, rotate: 270 },
 ];
 
 export default function VideoTemplate() {
@@ -29,6 +35,9 @@ export default function VideoTemplate() {
   return (
     <div className="relative w-full h-screen overflow-hidden bg-[#0f172a] text-white">
       
+      {/* Background Audio */}
+      <audio src="https://cdn.pixabay.com/download/audio/2022/10/14/audio_9939f792cb.mp3?filename=rock-it-121431.mp3" autoPlay loop muted={false} />
+
       {/* Background Video Loop */}
       <div className="absolute inset-0 opacity-40 mix-blend-screen">
         <video 
@@ -47,7 +56,7 @@ export default function VideoTemplate() {
           className="absolute w-[80vw] h-[80vw] rounded-full blur-[100px] opacity-30"
           style={{ background: 'radial-gradient(circle, #fb923c, transparent 70%)', top: '-20%', left: '-10%' }}
           animate={bgPositions[currentScene]}
-          transition={{ duration: 4, ease: "easeInOut" }}
+          transition={{ duration: 8, ease: "easeInOut" }}
         />
         <motion.div 
           className="absolute w-[70vw] h-[70vw] rounded-full blur-[100px] opacity-30"
@@ -57,7 +66,7 @@ export default function VideoTemplate() {
             y: bgPositions[currentScene].x,
             scale: bgPositions[currentScene].scale,
           }}
-          transition={{ duration: 4.5, ease: "easeInOut" }}
+          transition={{ duration: 9, ease: "easeInOut" }}
         />
         <motion.div 
           className="absolute w-[60vw] h-[60vw] rounded-full blur-[100px] opacity-20"
@@ -66,7 +75,7 @@ export default function VideoTemplate() {
             scale: [1, 1.2, 1],
             opacity: [0.1, 0.3, 0.1]
           }}
-          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+          transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
         />
       </div>
 
@@ -83,8 +92,10 @@ export default function VideoTemplate() {
         {currentScene === 0 && <Scene1 key="hook" />}
         {currentScene === 1 && <Scene2 key="translate" />}
         {currentScene === 2 && <Scene3 key="xray" />}
-        {currentScene === 3 && <Scene4 key="practice" />}
-        {currentScene === 4 && <Scene5 key="outro" />}
+        {currentScene === 3 && <Scene4 key="grammar" />}
+        {currentScene === 4 && <Scene5 key="shadowing" />}
+        {currentScene === 5 && <Scene6 key="quiz" />}
+        {currentScene === 6 && <Scene7 key="outro" />}
       </AnimatePresence>
     </div>
   );

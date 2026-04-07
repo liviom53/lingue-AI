@@ -6,134 +6,88 @@ export function Scene3() {
 
   useEffect(() => {
     const timers = [
-      setTimeout(() => setPhase(1), 200),   // Main sentence
-      setTimeout(() => setPhase(2), 1000),  // X-Ray split
-      setTimeout(() => setPhase(3), 2000),  // DeepSeek Tutor panel
-      setTimeout(() => setPhase(4), 3200),  // Typing explanation
-      setTimeout(() => setPhase(5), 4400),  // Exit
+      setTimeout(() => setPhase(1), 500),   // Word appears
+      setTimeout(() => setPhase(2), 2500),  // IPA starts revealing
+      setTimeout(() => setPhase(3), 5000),  // Audio waves
+      setTimeout(() => setPhase(4), 8500),  // Text
+      setTimeout(() => setPhase(5), 11000), // Exit
     ];
     return () => timers.forEach(t => clearTimeout(t));
   }, []);
 
-  const sentence = [
-    { word: "I", color: "text-white", tag: "Pronome" },
-    { word: "missed", color: "text-[#fb923c]", tag: "Verbo (pass.)" },
-    { word: "the", color: "text-white", tag: "Articolo" },
-    { word: "train", color: "text-[#10b981]", tag: "Sostantivo" }
-  ];
+  const ipaChars = "[ ˈ d a ŋ k ə ˌ ʃ ø ː n ]".split(' ');
 
   return (
     <motion.div 
-      className="absolute inset-0 flex flex-col items-center justify-center z-10 w-full"
-      initial={{ opacity: 0, scale: 1.2 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, y: '-20vh', filter: 'blur(10px)' }}
-      transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+      className="absolute inset-0 flex flex-col items-center justify-center z-10"
+      initial={{ opacity: 0, rotateX: -20, scale: 0.8 }}
+      animate={{ opacity: 1, rotateX: 0, scale: 1 }}
+      exit={{ opacity: 0, rotateY: 90, scale: 1.5 }}
+      transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
     >
-      {/* Title */}
-      <motion.div
-        className="absolute top-20 left-20"
-        initial={{ opacity: 0, x: -30 }}
-        animate={phase >= 1 ? { opacity: 1, x: 0 } : { opacity: 0, x: -30 }}
-        transition={{ duration: 0.6 }}
-      >
-        <h2 className="text-[3vw] font-black leading-tight text-white mb-2">
-          Analisi <span className="text-[#a855f7]">X-Ray</span>
-        </h2>
-        <p className="text-[1.5vw] text-white/70">
-          Tocca qualsiasi parola per capirne la grammatica
-        </p>
-      </motion.div>
-
-      {/* Main interactive area */}
-      <div className="w-full max-w-6xl mt-10">
-        
-        {/* The Sentence with X-Ray breakdown */}
-        <div className="flex justify-center gap-4 mb-16 relative">
-          {sentence.map((item, i) => (
-            <motion.div
-              key={i}
-              className="flex flex-col items-center"
-              initial={{ y: 0 }}
-              animate={phase >= 2 ? { y: i % 2 === 0 ? -20 : 20 } : { y: 0 }}
-              transition={{ type: "spring", stiffness: 300, damping: 20, delay: phase >= 2 ? i * 0.1 : 0 }}
-            >
-              <motion.span 
-                className={`text-[5vw] font-black tracking-tight ${item.color}`}
-                initial={{ opacity: 0, y: 20 }}
-                animate={phase >= 1 ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-                transition={{ duration: 0.4, delay: i * 0.1 }}
-              >
-                {item.word}
-              </motion.span>
-              
-              {/* Grammatical Tag */}
-              <motion.div
-                className="mt-2 px-3 py-1 rounded border border-white/20 bg-white/5 text-[1vw] text-white/80 whitespace-nowrap"
-                initial={{ opacity: 0, scale: 0.5, y: -10 }}
-                animate={phase >= 2 ? { opacity: 1, scale: 1, y: 0 } : { opacity: 0, scale: 0.5, y: -10 }}
-                transition={{ type: "spring", stiffness: 400, damping: 25, delay: phase >= 2 ? i * 0.1 + 0.2 : 0 }}
-              >
-                {item.tag}
-              </motion.div>
-              
-              {/* Connection Line */}
-              <motion.div
-                className="w-[1px] bg-white/20 absolute h-12"
-                style={{ top: i % 2 === 0 ? '80%' : '-40%' }}
-                initial={{ opacity: 0 }}
-                animate={phase >= 2 ? { opacity: 1 } : { opacity: 0 }}
-              />
-            </motion.div>
-          ))}
-
-          {/* Highlight ring on "missed" */}
+      {/* Decorative Waveforms Background */}
+      <div className="absolute inset-0 flex items-center justify-center opacity-20 pointer-events-none">
+        {[...Array(30)].map((_, i) => (
           <motion.div
-            className="absolute border-2 border-[#fb923c] rounded-lg"
-            style={{ width: '22%', height: '140%', left: '20%', top: '-20%' }}
-            initial={{ opacity: 0, scale: 1.2 }}
-            animate={phase >= 2 ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 1.2 }}
-            transition={{ type: "spring", delay: 0.5 }}
+            key={i}
+            className="w-[1vw] bg-[#a855f7] mx-[0.5vw] rounded-full"
+            initial={{ height: '2vh' }}
+            animate={phase >= 3 ? {
+              height: `${10 + Math.random() * 80}vh`
+            } : { height: '2vh' }}
+            transition={{
+              duration: 0.4 + Math.random() * 0.4,
+              repeat: Infinity,
+              repeatType: "mirror",
+              ease: "easeInOut",
+              delay: phase >= 3 ? i * 0.05 : 0
+            }}
           />
+        ))}
+      </div>
+
+      <div className="relative z-10 text-center">
+        {/* Main Word */}
+        <motion.h2
+          className="text-[10vw] font-black text-white leading-none mb-[4vh] drop-shadow-2xl"
+          initial={{ opacity: 0, y: '5vh' }}
+          animate={phase >= 1 ? { opacity: 1, y: 0 } : { opacity: 0, y: '5vh' }}
+          transition={{ duration: 1, type: "spring" }}
+        >
+          Dankeschön
+        </motion.h2>
+
+        {/* IPA Transcription */}
+        <div className="text-[6vw] font-mono text-[#a855f7] font-bold bg-[#0f172a]/80 px-[6vw] py-[3vh] rounded-[2vw] border-[0.3vw] border-[#a855f7]/30 inline-block shadow-[0_0_100px_rgba(168,85,247,0.4)]">
+          {ipaChars.map((char, i) => (
+            <motion.span
+              key={i}
+              className="inline-block mx-[0.5vw]"
+              initial={{ opacity: 0, scale: 0, y: '2vh' }}
+              animate={phase >= 2 ? { opacity: 1, scale: 1, y: 0 } : { opacity: 0, scale: 0, y: '2vh' }}
+              transition={{
+                duration: 0.4,
+                delay: phase >= 2 ? i * 0.15 : 0,
+                type: "spring",
+                stiffness: 400
+              }}
+            >
+              {char}
+            </motion.span>
+          ))}
         </div>
 
-        {/* AI Tutor Chat Panel */}
+        {/* Badge */}
         <motion.div
-          className="bg-[#1e293b]/80 backdrop-blur-xl border border-white/10 rounded-2xl p-6 mx-auto max-w-3xl shadow-[0_20px_50px_rgba(0,0,0,0.5)]"
-          initial={{ opacity: 0, y: 50, rotateX: -20 }}
-          animate={phase >= 3 ? { opacity: 1, y: 0, rotateX: 0 } : { opacity: 0, y: 50, rotateX: -20 }}
-          transition={{ type: "spring", stiffness: 200, damping: 20 }}
+          className="mt-[8vh]"
+          initial={{ opacity: 0, y: '3vh' }}
+          animate={phase >= 4 ? { opacity: 1, y: 0 } : { opacity: 0, y: '3vh' }}
+          transition={{ duration: 0.8 }}
         >
-          <div className="flex items-center gap-3 mb-4 pb-4 border-b border-white/10">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-[#a855f7] to-[#fb923c] flex items-center justify-center">
-              <span className="text-white font-bold text-sm">AI</span>
-            </div>
-            <div>
-              <div className="text-white font-bold text-lg">AI Tutor DeepSeek</div>
-              <div className="text-[#a855f7] text-sm">Spiegazione grammaticale</div>
-            </div>
-          </div>
-          
-          <div className="text-[1.3vw] text-white/90 leading-relaxed font-mono relative">
-            <motion.div
-              initial={{ width: "0%" }}
-              animate={phase >= 4 ? { width: "100%" } : { width: "0%" }}
-              transition={{ duration: 1.5, ease: "linear" }}
-              className="overflow-hidden whitespace-nowrap border-r-2 border-[#fb923c]"
-            >
-              "Missed" è il passato semplice di "miss".
-            </motion.div>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={phase >= 4 ? { opacity: 1 } : { opacity: 0 }}
-              transition={{ delay: 1.5 }}
-              className="mt-2 text-white/60"
-            >
-              In inglese si usa per esprimere la perdita di un mezzo di trasporto o la mancanza di una persona.
-            </motion.div>
-          </div>
+          <span className="bg-white text-[#0f172a] text-[3vw] font-black uppercase px-[4vw] py-[2vh] rounded-[1vw]">
+            Pronuncia perfetta con IPA
+          </span>
         </motion.div>
-
       </div>
     </motion.div>
   );

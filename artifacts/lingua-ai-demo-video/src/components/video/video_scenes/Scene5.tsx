@@ -6,92 +6,109 @@ export function Scene5() {
 
   useEffect(() => {
     const timers = [
-      setTimeout(() => setPhase(1), 300),   // App mockups spread
-      setTimeout(() => setPhase(2), 1200),  // Logo + Tagline
-      setTimeout(() => setPhase(3), 2000),  // Download buttons
+      setTimeout(() => setPhase(1), 500),   // Shadowing Card
+      setTimeout(() => setPhase(2), 2500),  // Shadowing Waveform
+      setTimeout(() => setPhase(3), 5000),  // Chat Card
+      setTimeout(() => setPhase(4), 6500),  // Chat Messages
+      setTimeout(() => setPhase(5), 9000),  // Subtitle
+      setTimeout(() => setPhase(6), 12000), // Exit
     ];
     return () => timers.forEach(t => clearTimeout(t));
   }, []);
 
   return (
     <motion.div 
-      className="absolute inset-0 flex flex-col items-center justify-center z-10"
-      initial={{ opacity: 0, scale: 0.8 }}
+      className="absolute inset-0 flex items-center justify-center z-10 px-[4vw]"
+      initial={{ opacity: 0, scale: 1.2 }}
       animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, y: '20vh' }}
+      exit={{ opacity: 0, y: '-100vh', filter: 'blur(20px)' }}
       transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
     >
-      
-      {/* App Mockups Fan Out */}
-      <div className="relative w-full h-[40vh] flex items-center justify-center mb-10 perspective-1000">
-        {[
-          { color: "bg-[#3b82f6]/20", border: "border-[#3b82f6]/40", rotateY: -30, x: -300, z: -100, delay: 0 },
-          { color: "bg-[#1e293b]/80", border: "border-white/20", rotateY: 0, x: 0, z: 0, delay: 0.2 },
-          { color: "bg-[#a855f7]/20", border: "border-[#a855f7]/40", rotateY: 30, x: 300, z: -100, delay: 0.1 },
-        ].map((mockup, i) => (
-          <motion.div
-            key={i}
-            className={`absolute w-[200px] h-[400px] rounded-3xl ${mockup.color} ${mockup.border} border-2 backdrop-blur-md shadow-2xl flex items-center justify-center overflow-hidden`}
-            initial={{ opacity: 0, y: 100, x: 0, rotateY: 0, z: -500 }}
-            animate={phase >= 1 ? { 
-              opacity: i === 1 ? 1 : 0.6, 
-              y: 0, 
-              x: mockup.x, 
-              rotateY: mockup.rotateY,
-              z: mockup.z 
-            } : { opacity: 0, y: 100, x: 0, rotateY: 0, z: -500 }}
-            transition={{ type: "spring", stiffness: 200, damping: 20, delay: mockup.delay }}
-            style={{ transformStyle: "preserve-3d" }}
-          >
-            {/* Fake UI lines inside mockups */}
-            <div className="w-full h-full p-4 flex flex-col gap-4 opacity-50">
-              <div className="w-full h-8 bg-white/20 rounded-full" />
-              <div className="w-3/4 h-4 bg-white/10 rounded-full" />
-              <div className="w-1/2 h-4 bg-white/10 rounded-full" />
-              <div className="mt-auto w-full h-32 bg-white/10 rounded-2xl" />
-            </div>
-          </motion.div>
-        ))}
-      </div>
-
-      {/* Logo & Tagline */}
-      <div className="text-center z-20">
-        <motion.h1 
-          className="text-[6vw] font-black tracking-tighter text-white leading-none mb-2 text-gradient"
-          initial={{ opacity: 0, y: 20, scale: 0.9 }}
-          animate={phase >= 2 ? { opacity: 1, y: 0, scale: 1 } : { opacity: 0, y: 20, scale: 0.9 }}
-          transition={{ type: "spring", stiffness: 300, damping: 20 }}
-        >
-          Lingua AI
-        </motion.h1>
+      <div className="w-full flex justify-between items-center gap-[3vw] max-w-[90vw]">
         
-        <motion.p 
-          className="text-[2vw] font-medium text-white/70"
-          initial={{ opacity: 0 }}
-          animate={phase >= 2 ? { opacity: 1 } : { opacity: 0 }}
-          transition={{ duration: 0.8, delay: 0.2 }}
+        {/* Left: Shadowing */}
+        <motion.div
+          className="flex-1 bg-[#1e293b]/80 backdrop-blur-xl rounded-[2vw] p-[3vw] border-[0.2vw] border-[#10b981]/50 shadow-[0_0_50px_rgba(16,185,129,0.2)]"
+          initial={{ opacity: 0, x: '-10vw', rotateY: -20 }}
+          animate={phase >= 1 ? { opacity: 1, x: 0, rotateY: 0 } : { opacity: 0, x: '-10vw', rotateY: -20 }}
+          transition={{ type: "spring", stiffness: 200, damping: 20 }}
+          style={{ perspective: 1000 }}
         >
-          Inizia a parlarla male... poi si vedrà.
-        </motion.p>
+          <div className="text-[#10b981] font-black text-[2vw] mb-[3vh] uppercase tracking-wider">
+            Shadowing
+          </div>
+          <p className="text-[3.5vw] font-black text-white leading-tight mb-[6vh] drop-shadow-lg">
+            "La cuenta, por favor."
+          </p>
+
+          {/* Waveform */}
+          <div className="flex items-center gap-[1vw] h-[12vh] bg-[#0f172a]/50 rounded-[1.5vw] p-[1.5vw]">
+            <div className="w-[8vh] h-[8vh] rounded-full bg-[#10b981] flex items-center justify-center shadow-[0_0_30px_rgba(16,185,129,0.6)] shrink-0">
+              <svg width="4vh" height="4vh" viewBox="0 0 24 24" fill="white"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" x2="12" y1="19" y2="22"></line></svg>
+            </div>
+            <div className="flex-1 flex gap-[0.3vw] items-center justify-center h-full px-[1vw] overflow-hidden">
+              {[...Array(30)].map((_, i) => (
+                <motion.div
+                  key={i}
+                  className="w-[0.5vw] bg-[#10b981] rounded-full"
+                  animate={phase >= 2 ? {
+                    height: ['20%', '90%', '40%', '100%', '30%'][i % 5]
+                  } : { height: '10%' }}
+                  transition={{ 
+                    duration: 0.3 + (Math.random() * 0.4), 
+                    repeat: Infinity, 
+                    repeatType: "mirror",
+                    delay: phase >= 2 ? i * 0.05 : 0
+                  }}
+                />
+              ))}
+            </div>
+          </div>
+          
+          <div className="mt-[4vh] text-center text-[#10b981] font-black text-[2vw] uppercase">
+            Ripeti e impara
+          </div>
+        </motion.div>
+
+        {/* Right: Chat AI */}
+        <motion.div
+          className="flex-1 bg-[#1e293b]/80 backdrop-blur-xl rounded-[2vw] p-[3vw] border-[0.2vw] border-[#3b82f6]/50 shadow-[0_0_50px_rgba(59,130,246,0.2)]"
+          initial={{ opacity: 0, x: '10vw', rotateY: 20 }}
+          animate={phase >= 3 ? { opacity: 1, x: 0, rotateY: 0 } : { opacity: 0, x: '10vw', rotateY: 20 }}
+          transition={{ type: "spring", stiffness: 200, damping: 20 }}
+          style={{ perspective: 1000 }}
+        >
+          <div className="text-[#3b82f6] font-black text-[2vw] mb-[4vh] uppercase tracking-wider flex items-center justify-between">
+            <span>Chat AI</span>
+            <span className="bg-[#fb923c] text-white text-[1.2vw] px-[1vw] py-[0.5vh] rounded-full font-bold">DeepSeek</span>
+          </div>
+
+          <div className="space-y-[3vh]">
+            <motion.div 
+              className="bg-[#3b82f6] text-white rounded-[1.5vw] rounded-tr-none p-[2vw] text-[2vw] font-bold self-end ml-[3vw] shadow-lg"
+              initial={{ opacity: 0, scale: 0.8, x: '5vw' }}
+              animate={phase >= 4 ? { opacity: 1, scale: 1, x: 0 } : { opacity: 0, scale: 0.8, x: '5vw' }}
+              transition={{ type: "spring", stiffness: 400, damping: 25 }}
+            >
+              Ciao! Parliamo in spagnolo?
+            </motion.div>
+            
+            <motion.div 
+              className="bg-[#0f172a] border border-[#a855f7]/50 rounded-[1.5vw] rounded-tl-none p-[2vw] text-white text-[2vw] font-bold self-start mr-[3vw] shadow-lg"
+              initial={{ opacity: 0, scale: 0.8, x: '-5vw' }}
+              animate={phase >= 4 ? { opacity: 1, scale: 1, x: 0 } : { opacity: 0, scale: 0.8, x: '-5vw' }}
+              transition={{ type: "spring", stiffness: 400, damping: 25, delay: 0.5 }}
+            >
+              ¡Claro que sí! ¿De qué quieres hablar?
+            </motion.div>
+          </div>
+
+          <div className="mt-[4vh] text-center text-[#3b82f6] font-black text-[2vw] uppercase">
+            DeepSeek AI sempre con te
+          </div>
+        </motion.div>
+
       </div>
-
-      {/* CTA Buttons */}
-      <motion.div 
-        className="flex gap-6 mt-12 z-20"
-        initial={{ opacity: 0, y: 30 }}
-        animate={phase >= 3 ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
-        transition={{ type: "spring", stiffness: 400, damping: 25 }}
-      >
-        <div className="px-8 py-4 bg-white text-[#0f172a] rounded-full font-bold text-xl flex items-center gap-3">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.08z"/><path d="M12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/></svg>
-          App Store
-        </div>
-        <div className="px-8 py-4 bg-white/10 backdrop-blur-md text-white border border-white/20 rounded-full font-bold text-xl flex items-center gap-3">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M17.52 14.86c-.52 0-1.05-.18-1.46-.53l-3.32-2.85 2.1-2.1 3.25 2.79c1.07.92 1.18 2.54.26 3.61-.22.25-.52.48-.83.65-2.42 1.34-5.32 1.76-8.22 1.19-1.99-.39-3.74-1.38-5.14-2.85C2.46 9.09 2 6.64 2 4.19c0-1.19.96-2.15 2.15-2.15h1.74c1.19 0 2.15.96 2.15 2.15v2.96c0 1.19-.96 2.15-2.15 2.15H4.66c.21 1.65.84 3.22 1.83 4.55 1.05 1.41 2.39 2.55 3.96 3.32 1.56.76 3.29 1.18 5.04 1.25l.02-2.88h.01c.21-1.65.84-3.22 1.83-4.55 1.05-1.41 2.39-2.55 3.96-3.32 1.56-.76 3.29-1.18 5.04-1.25V4.18c0-1.18-.95-2.14-2.14-2.14h-1.74c-1.19 0-2.15.96-2.15 2.15v2.96c0 1.19.96 2.15 2.15 2.15h1.22c-.22 1.65-.85 3.22-1.84 4.55-1.05 1.41-2.39 2.55-3.96 3.32-1.56.76-3.29 1.18-5.04 1.25z"/></svg>
-          Google Play
-        </div>
-      </motion.div>
-
     </motion.div>
   );
 }
