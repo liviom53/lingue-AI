@@ -1485,6 +1485,11 @@ export default function App() {
               <Mic size={18} />
               {isPracticing ? 'In ascolto…' : practiceResult ? 'RIPROVA' : 'PRATICA PRONUNCIA'}
             </button>
+            {!('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) && (
+              <p style={{ margin: '6px 0 0', fontSize: '0.72rem', color: '#94a3b8' }}>
+                ℹ️ Riconoscimento vocale non supportato su questo browser — usa Chrome, Edge o Safari
+              </p>
+            )}
           </section>
         )}
 
@@ -1524,6 +1529,11 @@ export default function App() {
                       {shadowStep === 'listening' ? 'In ascolto…' : 'Ripeti ora!'}
                     </button>
                   </div>
+                  {!('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) && (
+                    <p style={{ margin: '6px 0 0', fontSize: '0.72rem', color: '#94a3b8' }}>
+                      ℹ️ Riconoscimento vocale non supportato su questo browser — usa Chrome, Edge o Safari
+                    </p>
+                  )}
                   {shadowStep === 'result' && shadowScore !== null && (
                     <div style={{ marginTop: '10px', padding: '10px', backgroundColor: '#1e293b', borderRadius: '8px' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '6px' }}>
