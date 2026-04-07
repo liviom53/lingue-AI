@@ -220,12 +220,61 @@ Respond ONLY with valid JSON (no markdown):
   }
 });
 
-// ── Lingva proxy (avoids browser CORS issues) ────────────────────────────
+// ── Traduzione proxy: Lingva (parallelo, race) → MyMemory (fallback) ────────
 const LINGVA_INSTANCES = [
   'https://lingva.ml',
   'https://lingva.garudalinux.org',
   'https://translate.plausibility.cloud',
 ];
+
+const LINGVA_TIMEOUT_MS = 4000;
+
+/** Prova una singola istanza Lingva con timeout */
+async function tryLingva(
+  instance: string,
+  encoded: string,
+  targetLang: string,
+): Promise<{ translation: string; pronunciation: string | null }> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), LINGVA_TIMEOUT_MS);
+  try {
+    const r = await fetch(
+      `${instance}/api/v1/it/${targetLang}/${encoded}`,
+      { signal: controller.signal },
+    );
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    const data = await r.json() as any;
+    if (!data.translation) throw new Error("No translation in response");
+    return {
+      translation: data.translation,
+      pronunciation: data.info?.pronunciation?.translation ?? null,
+    };
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+/** MyMemory — fallback gratuito e stabile, nessuna chiave richiesta */
+async function tryMyMemory(
+  text: string,
+  targetLang: string,
+): Promise<{ translation: string; pronunciation: null }> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 8000);
+  try {
+    const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=it|${targetLang}`;
+    const r = await fetch(url, { signal: controller.signal });
+    if (!r.ok) throw new Error(`MyMemory HTTP ${r.status}`);
+    const data = await r.json() as any;
+    const translated: string = data?.responseData?.translatedText;
+    if (!translated || translated.toUpperCase() === text.toUpperCase()) {
+      throw new Error("MyMemory returned no meaningful translation");
+    }
+    return { translation: translated, pronunciation: null };
+  } finally {
+    clearTimeout(timer);
+  }
+}
 
 router.post("/lingva", async (req: Request, res: Response) => {
   const { text, targetLang } = req.body as { text: string; targetLang: string };
@@ -234,23 +283,31 @@ router.post("/lingva", async (req: Request, res: Response) => {
     return;
   }
   const encoded = encodeURIComponent(text);
-  for (const instance of LINGVA_INSTANCES) {
-    try {
-      const r = await fetch(`${instance}/api/v1/it/${targetLang}/${encoded}`);
-      if (!r.ok) continue;
-      const data = await r.json() as any;
-      if (data.translation) {
-        res.json({
-          translation: data.translation,
-          pronunciation: data.info?.pronunciation?.translation ?? null,
-        });
-        return;
-      }
-    } catch {
-      continue;
+
+  // 1️⃣ Prova tutte le istanze Lingva in parallelo — vince la più veloce
+  const lingvaResults = await Promise.allSettled(
+    LINGVA_INSTANCES.map(inst => tryLingva(inst, encoded, targetLang))
+  );
+  for (const r of lingvaResults) {
+    if (r.status === "fulfilled") {
+      res.json(r.value);
+      return;
     }
   }
-  res.status(502).json({ error: "Nessun server di traduzione raggiungibile. Riprova tra qualche secondo." });
+
+  // 2️⃣ Fallback: MyMemory (affidabile, gratuito, senza chiave)
+  try {
+    const result = await tryMyMemory(text, targetLang);
+    res.json(result);
+    return;
+  } catch (mmErr: any) {
+    console.error("MyMemory fallback failed:", mmErr.message);
+  }
+
+  // 3️⃣ Tutti i provider falliti
+  res.status(502).json({
+    error: "Nessun servizio di traduzione raggiungibile. Riprova tra qualche secondo.",
+  });
 });
 
 export default router;
