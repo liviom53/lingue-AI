@@ -1536,7 +1536,7 @@ export default function App() {
                 className="action-btn"
                 style={{
                   ...styles.btn, marginTop: 0,
-                  backgroundColor: '#e8d0a0', color: '#1e293b', fontSize: '0.85rem',
+                  backgroundColor: '#e8d0a0', color: '#1e293b',
                   borderTop: '1px solid rgba(255,255,255,0.30)',
                   boxShadow: [
                     'inset 0 1px 0 rgba(255,255,255,0.30)',
