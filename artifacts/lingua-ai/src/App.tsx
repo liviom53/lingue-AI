@@ -1104,8 +1104,8 @@ export default function App() {
                       <button
                         onClick={() => { setHelpFilter(helpSearch); setHelpAiResult(null); }}
                         style={{
-                          flex: 1, padding: '7px 10px', borderRadius: '8px', border: 'none',
-                          background: helpSearch.trim() ? 'linear-gradient(135deg,#ea580c,#f97316)' : '#334155',
+                          flex: 1, padding: '8px 10px', borderRadius: '8px', border: 'none',
+                          background: 'linear-gradient(135deg,#ea580c,#f97316)',
                           color: '#fff', fontWeight: 'bold', fontSize: '0.79rem',
                           cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px',
                         }}
@@ -1113,9 +1113,9 @@ export default function App() {
                         🔍 Cerca
                       </button>
                       <button
-                        disabled={!helpSearch.trim() || helpAiLoading}
+                        disabled={helpAiLoading}
                         onClick={async () => {
-                          if (!helpSearch.trim()) return;
+                          const q = helpSearch.trim() || 'panoramica funzionalità';
                           setHelpAiLoading(true);
                           setHelpAiResult(null);
                           setHelpFilter('');
@@ -1123,7 +1123,7 @@ export default function App() {
                             const r = await fetch('/api/ai/app-help', {
                               method: 'POST',
                               headers: { 'Content-Type': 'application/json' },
-                              body: JSON.stringify({ query: helpSearch }),
+                              body: JSON.stringify({ query: q }),
                             });
                             const d = await r.json();
                             setHelpAiResult(d.answer ?? d.error ?? 'Nessuna risposta.');
@@ -1134,17 +1134,17 @@ export default function App() {
                           }
                         }}
                         style={{
-                          flex: 1, padding: '7px 10px', borderRadius: '8px',
+                          flex: 1, padding: '8px 10px', borderRadius: '8px',
                           border: '1px solid #a16207',
-                          background: helpSearch.trim() ? 'linear-gradient(135deg,#78350f,#92400e)' : '#1e293b',
-                          color: helpSearch.trim() ? '#fde68a' : '#475569',
+                          background: 'linear-gradient(135deg,#78350f,#92400e)',
+                          color: '#fde68a',
                           fontWeight: 'bold', fontSize: '0.79rem',
-                          cursor: helpSearch.trim() ? 'pointer' : 'not-allowed',
+                          cursor: helpAiLoading ? 'not-allowed' : 'pointer',
                           display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px',
                           opacity: helpAiLoading ? 0.6 : 1,
                         }}
                       >
-                        {helpAiLoading ? <Loader2 size={13} style={{ animation: 'spin 1s linear infinite' }} /> : '🤖'} Cerca con AI
+                        {helpAiLoading ? <Loader2 size={13} style={{ animation: 'spin 1s linear infinite' }} /> : '🤖'} Chiedi AI
                       </button>
                     </div>
 
@@ -1157,7 +1157,7 @@ export default function App() {
                     )}
                   </div>
 
-                  <div style={{ padding: '8px 12px 10px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <div style={{ padding: '8px 12px 10px', display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '46vh', overflowY: 'auto' }}>
                     {([
                       {
                         icon: '🌍', title: 'Traduzione',
