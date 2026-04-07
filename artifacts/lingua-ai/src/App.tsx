@@ -258,6 +258,15 @@ export default function App() {
     onRegistered(r) { console.log('SW registrato:', r); },
     onRegisterError(e) { console.warn('SW errore:', e); },
   });
+
+  // ── Installazione PWA (A2HS) ─────────────────────────────────────────────
+  const [installPrompt, setInstallPrompt] = useState<any>(null);
+  const [installDismissed, setInstallDismissed] = useState(() => localStorage.getItem('pwa_install_dismissed') === '1');
+  useEffect(() => {
+    const handler = (e: Event) => { e.preventDefault(); setInstallPrompt(e); };
+    window.addEventListener('beforeinstallprompt', handler);
+    return () => window.removeEventListener('beforeinstallprompt', handler);
+  }, []);
   const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
   const [selectedVoiceURI, setSelectedVoiceURI] = useState('');
   const [speechRate, setSpeechRate] = useState(0.6);
@@ -1106,11 +1115,11 @@ export default function App() {
   return (
     <div style={styles.main}>
       <div style={{ maxWidth: '500px', margin: '0 auto' }}>
-        <header style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '16px', marginBottom: '10px' }}>
-          <img src={appIcon} alt="Impara una Lingua" style={{ width: '90px', height: '90px', borderRadius: '14px', flexShrink: 0 }} />
-          <div>
-            <h1 style={{ margin: 0, fontSize: 'clamp(1.2rem, 5vw, 1.9rem)' }}>Impara una lingua con l&apos;AI</h1>
-            <p style={{ color: '#f97316', fontSize: 'clamp(0.9rem, 3.8vw, 1.45rem)', margin: '4px 0 0', whiteSpace: 'nowrap' }}>Inizia a parlarla male... poi si vedrà</p>
+        <header style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '12px', marginBottom: '10px' }}>
+          <img src={appIcon} alt="Impara una Lingua" style={{ width: '80px', height: '80px', borderRadius: '14px', flexShrink: 0 }} />
+          <div style={{ minWidth: 0, flex: 1 }}>
+            <h1 style={{ margin: 0, fontSize: 'clamp(1rem, 5vw, 1.9rem)', lineHeight: 1.2 }}>Impara una lingua con l&apos;AI</h1>
+            <p style={{ color: '#f97316', fontSize: 'clamp(0.8rem, 3.8vw, 1.45rem)', margin: '4px 0 0' }}>Inizia a parlarla male... poi si vedrà</p>
           </div>
         </header>
 
@@ -1124,6 +1133,31 @@ export default function App() {
             >
               <RefreshCw size={13} /> Aggiorna
             </button>
+          </div>
+        )}
+
+        {/* Banner installazione PWA */}
+        {installPrompt && !installDismissed && (
+          <div style={{ background: '#0f2a1a', border: '1px solid #10b981', borderRadius: '10px', padding: '10px 14px', marginBottom: '8px', fontSize: '0.82rem', color: '#6ee7b7', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
+            <span>📲 Installa l&apos;app sul telefono</span>
+            <div style={{ display: 'flex', gap: '6px' }}>
+              <button
+                onClick={async () => {
+                  installPrompt.prompt();
+                  const { outcome } = await installPrompt.userChoice;
+                  if (outcome === 'accepted') { setInstallPrompt(null); }
+                }}
+                style={{ background: '#10b981', color: '#fff', border: 'none', borderRadius: '6px', padding: '4px 12px', cursor: 'pointer', fontWeight: 'bold', fontSize: '0.8rem', whiteSpace: 'nowrap' }}
+              >
+                Installa
+              </button>
+              <button
+                onClick={() => { setInstallDismissed(true); localStorage.setItem('pwa_install_dismissed', '1'); }}
+                style={{ background: 'transparent', color: '#6ee7b7', border: '1px solid #10b981', borderRadius: '6px', padding: '4px 8px', cursor: 'pointer', fontSize: '0.8rem' }}
+              >
+                ✕
+              </button>
+            </div>
           </div>
         )}
 
