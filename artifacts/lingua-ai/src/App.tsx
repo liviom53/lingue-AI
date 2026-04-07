@@ -244,6 +244,7 @@ export default function App() {
   const [loading, setLoading] = useState(false);
   const [aiLoading, setAiLoading] = useState(false);
   const [isListening, setIsListening] = useState(false);
+  const [dictError, setDictError] = useState<string | null>(null);
   const [isPracticing, setIsPracticing] = useState(false);
   const [practiceResult, setPracticeResult] = useState<{
     score: number;
@@ -525,43 +526,46 @@ export default function App() {
     }
   };
 
-  // Richiede permesso microfono esplicitamente (necessario su Android Chrome)
-  // poi esegue il callback con il SpeechRecognition pronto
-  const withMicPermission = async (
-    onGranted: (SR: any) => void,
-    onDenied: (msg: string) => void
-  ) => {
-    const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    if (!SR) {
-      onDenied('⚠️ Riconoscimento vocale non supportato — usa Chrome o Safari');
-      return;
-    }
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      stream.getTracks().forEach(t => t.stop()); // rilascia subito il mic
-      onGranted(SR);
-    } catch (err: any) {
-      if (err?.name === 'NotAllowedError' || err?.name === 'PermissionDeniedError') {
-        onDenied('🚫 Permesso microfono negato — vai in Impostazioni → App → Chrome → Autorizzazioni → Microfono');
-      } else {
-        onDenied('⚠️ Impossibile accedere al microfono — riprova');
-      }
-    }
+  const micErrorMsg = (code: string) => {
+    if (code === 'not-allowed' || code === 'NotAllowedError')
+      return '🚫 Microfono bloccato — apri Chrome → 🔒 accanto all\'URL → Microfono → Consenti';
+    if (code === 'no-speech') return '🎙️ Nessuna voce sentita — riprova';
+    if (code === 'network') return '🌐 Errore di rete — controlla la connessione e riprova';
+    if (code === 'audio-capture') return '🎙️ Microfono non trovato — controlla le autorizzazioni';
+    return `⚠️ Errore microfono (${code}) — riprova`;
   };
 
   const startInputSpeech = () => {
-    withMicPermission(
-      (SR) => {
-        const recognition = new SR();
-        recognition.lang = 'it-IT';
-        recognition.onstart = () => setIsListening(true);
-        recognition.onresult = (e: any) => setInputText(e.results[0][0].transcript);
-        recognition.onerror = () => setIsListening(false);
-        recognition.onend = () => setIsListening(false);
-        recognition.start();
-      },
-      (msg) => alert(msg)
-    );
+    const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SR) {
+      setDictError('⚠️ Dettatura non supportata — usa Chrome o Safari');
+      return;
+    }
+    setDictError(null);
+    const recognition = new SR();
+    recognition.lang = 'it-IT';
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+    let gotResult = false;
+    recognition.onstart = () => setIsListening(true);
+    recognition.onresult = (e: any) => {
+      gotResult = true;
+      setInputText(e.results[0][0].transcript);
+      setIsListening(false);
+    };
+    recognition.onerror = (e: any) => {
+      gotResult = true;
+      setIsListening(false);
+      setDictError(micErrorMsg(e.error));
+    };
+    recognition.onend = () => {
+      setIsListening(false);
+      if (!gotResult) setDictError('🎙️ Nessuna voce sentita — riprova');
+    };
+    try { recognition.start(); } catch (e: any) {
+      setIsListening(false);
+      setDictError(micErrorMsg(e.name ?? 'unknown'));
+    }
   };
 
   const buildTatOptions = (pairs: { it: string; tr: string }[], idx: number) => {
@@ -701,40 +705,39 @@ export default function App() {
 
   const startPracticeSession = () => {
     if (!translatedText) return;
+    const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SR) { alert('⚠️ Riconoscimento vocale non supportato — usa Chrome o Safari'); return; }
     setIsPracticing(true);
     setPracticeResult(null);
-    withMicPermission(
-      (SR) => {
-        const recognition = new SR();
-        const langInfo = ALL_LANGUAGES.find(l => l.code === selectedLang) ?? ALL_LANGUAGES[0];
-        recognition.lang = langInfo.locale;
-        let resultReceived = false;
-        recognition.onresult = (e: any) => {
-          resultReceived = true;
-          const spoken = (e.results[0][0].transcript as string).trim();
-          const expectedWords = normalizeText(translatedText).split(' ');
-          const spokenWords = normalizeText(spoken).split(' ');
-          const wordResults = expectedWords.map((word, i) => ({
-            expected: word,
-            correct: spokenWords[i] === word,
-          }));
-          const correct = wordResults.filter(r => r.correct).length;
-          const score = Math.round((correct / expectedWords.length) * 100);
-          setPracticeResult({ score, spoken, wordResults });
-          setIsPracticing(false);
-          setProgress(prev => {
-            const practiceScores = [...prev.practiceScores, score];
-            const updated = { ...prev, practiceAttempts: prev.practiceAttempts + 1, practiceScores };
-            saveProgress(updated);
-            return updated;
-          });
-        };
-        recognition.onerror = () => { resultReceived = true; setIsPracticing(false); };
-        recognition.onend = () => { if (!resultReceived) setIsPracticing(false); };
-        recognition.start();
-      },
-      (msg) => { setIsPracticing(false); alert(msg); }
-    );
+    const recognition = new SR();
+    const langInfo = ALL_LANGUAGES.find(l => l.code === selectedLang) ?? ALL_LANGUAGES[0];
+    recognition.lang = langInfo.locale;
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+    let gotResult = false;
+    recognition.onresult = (e: any) => {
+      gotResult = true;
+      const spoken = (e.results[0][0].transcript as string).trim();
+      const expectedWords = normalizeText(translatedText).split(' ');
+      const spokenWords = normalizeText(spoken).split(' ');
+      const wordResults = expectedWords.map((word, i) => ({
+        expected: word,
+        correct: spokenWords[i] === word,
+      }));
+      const correct = wordResults.filter(r => r.correct).length;
+      const score = Math.round((correct / expectedWords.length) * 100);
+      setPracticeResult({ score, spoken, wordResults });
+      setIsPracticing(false);
+      setProgress(prev => {
+        const practiceScores = [...prev.practiceScores, score];
+        const updated = { ...prev, practiceAttempts: prev.practiceAttempts + 1, practiceScores };
+        saveProgress(updated);
+        return updated;
+      });
+    };
+    recognition.onerror = (e: any) => { gotResult = true; setIsPracticing(false); alert(micErrorMsg(e.error)); };
+    recognition.onend = () => { if (!gotResult) setIsPracticing(false); };
+    try { recognition.start(); } catch (e: any) { setIsPracticing(false); alert(micErrorMsg(e.name ?? 'unknown')); }
   };
 
   const handleChatSend = async (overrideScenario?: string) => {
@@ -847,58 +850,54 @@ export default function App() {
 
   const startShadowListen = () => {
     if (!shadowPhrase) return;
+    const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SR) {
+      setShadowError('⚠️ Riconoscimento vocale non supportato — usa Chrome o Safari');
+      return;
+    }
     setShadowStep('listening');
     setShadowError(null);
     setShadowUserAmps([]);
 
-    withMicPermission(
-      (SR) => {
-        const recognition = new SR();
-        const langInfo = ALL_LANGUAGES.find(l => l.code === selectedLang) ?? ALL_LANGUAGES[0];
-        recognition.lang = langInfo.locale;
-        recognition.maxAlternatives = 3;
-        let resultReceived = false;
+    const recognition = new SR();
+    const langInfo = ALL_LANGUAGES.find(l => l.code === selectedLang) ?? ALL_LANGUAGES[0];
+    recognition.lang = langInfo.locale;
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 3;
+    let gotResult = false;
 
-        recognition.onresult = (e: any) => {
-          resultReceived = true;
-          const spoken = (e.results[0][0].transcript as string).trim();
-          setShadowSpoken(spoken);
-          const expectedWords = normalizeText(shadowPhrase!.phrase).split(' ');
-          const spokenWords = normalizeText(spoken).split(' ');
-          const correct = expectedWords.filter((w, i) => spokenWords[i] === w).length;
-          const score = Math.round((correct / expectedWords.length) * 100);
-          setShadowScore(score);
-          setShadowStep('result');
-          setProgress(prev => {
-            const practiceScores = [...prev.practiceScores, score];
-            const updated = { ...prev, practiceAttempts: prev.practiceAttempts + 1, practiceScores };
-            saveProgress(updated);
-            return updated;
-          });
-        };
-        recognition.onerror = (e: any) => {
-          resultReceived = true;
-          const msg = e.error === 'not-allowed'
-            ? '🚫 Permesso microfono negato — vai in Impostazioni → App → Chrome → Autorizzazioni → Microfono'
-            : e.error === 'no-speech'
-            ? '🎙️ Nessuna voce rilevata — riprova parlando più vicino al microfono'
-            : '⚠️ Errore microfono — riprova';
-          setShadowError(msg);
-          setShadowStep('idle');
-        };
-        recognition.onend = () => {
-          if (!resultReceived) {
-            setShadowError('🎙️ Nessuna voce rilevata — riprova parlando più vicino al microfono');
-            setShadowStep('idle');
-          }
-        };
-        recognition.start();
-      },
-      (msg) => {
-        setShadowError(msg);
+    recognition.onresult = (e: any) => {
+      gotResult = true;
+      const spoken = (e.results[0][0].transcript as string).trim();
+      setShadowSpoken(spoken);
+      const expectedWords = normalizeText(shadowPhrase!.phrase).split(' ');
+      const spokenWords = normalizeText(spoken).split(' ');
+      const correct = expectedWords.filter((w, i) => spokenWords[i] === w).length;
+      const score = Math.round((correct / expectedWords.length) * 100);
+      setShadowScore(score);
+      setShadowStep('result');
+      setProgress(prev => {
+        const practiceScores = [...prev.practiceScores, score];
+        const updated = { ...prev, practiceAttempts: prev.practiceAttempts + 1, practiceScores };
+        saveProgress(updated);
+        return updated;
+      });
+    };
+    recognition.onerror = (e: any) => {
+      gotResult = true;
+      setShadowError(micErrorMsg(e.error));
+      setShadowStep('idle');
+    };
+    recognition.onend = () => {
+      if (!gotResult) {
+        setShadowError('🎙️ Nessuna voce sentita — riprova parlando più vicino al microfono');
         setShadowStep('idle');
       }
-    );
+    };
+    try { recognition.start(); } catch (e: any) {
+      setShadowError(micErrorMsg(e.name ?? 'unknown'));
+      setShadowStep('idle');
+    }
   };
 
   // ── Regola narrazione: ogni frase descrive SOLO ciò che è visibile in quel momento ──────
@@ -1639,6 +1638,11 @@ export default function App() {
             >
               <Mic size={18} /> DETTA
             </button>
+            {dictError && (
+              <p style={{ margin: '-10px 0 0', fontSize: '0.78rem', color: '#fbbf24', background: '#1e293b', borderRadius: '6px', padding: '6px 10px' }}>
+                {dictError}
+              </p>
+            )}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
               <button
                 className="action-btn"
