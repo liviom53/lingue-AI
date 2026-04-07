@@ -270,6 +270,8 @@ export default function App() {
   const [shadowScore, setShadowScore] = useState<number | null>(null);
   const [shadowSpoken, setShadowSpoken] = useState('');
   const [shadowLoading, setShadowLoading] = useState(false);
+  const [shadowCountdown, setShadowCountdown] = useState<number | null>(null);
+  const [practiceCountdown, setPracticeCountdown] = useState<number | null>(null);
   // Demo guidata
   const [demoActive, setDemoActive] = useState(false);
   const [demoStep, setDemoStep] = useState(0);
@@ -519,36 +521,31 @@ export default function App() {
     }
   };
 
-  const startPracticeSession = () => {
-    const SpeechRecognition =
-      (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    if (!SpeechRecognition) return;
-    const recognition = new SpeechRecognition();
-    recognition.lang = (ALL_LANGUAGES.find(l => l.code === selectedLang) ?? ALL_LANGUAGES[0]).locale;
-    recognition.onstart = () => {
-      setIsPracticing(true);
-      setPracticeResult(null);
-    };
-    recognition.onresult = (e: any) => {
-      const spoken = e.results[0][0].transcript;
-      const expectedWords = normalizeText(translatedText).split(' ');
-      const spokenWords = normalizeText(spoken).split(' ');
-      const wordResults = expectedWords.map((word, i) => ({
-        expected: word,
-        correct: spokenWords[i] === word,
-      }));
-      const correctCount = wordResults.filter(w => w.correct).length;
-      const score = Math.round((correctCount / expectedWords.length) * 100);
-      setPracticeResult({ score, spoken, wordResults });
-      setProgress(prev => {
-        const practiceScores = [...prev.practiceScores, score];
-        const updated = { ...prev, practiceAttempts: prev.practiceAttempts + 1, practiceScores };
-        saveProgress(updated);
-        return updated;
-      });
-    };
-    recognition.onend = () => setIsPracticing(false);
-    recognition.start();
+  const startPracticeSession = async () => {
+    if (!translatedText) return;
+    setIsPracticing(true);
+    setPracticeResult(null);
+    await geminiTranscribe(
+      translatedText,
+      (spoken, score) => {
+        const expectedWords = normalizeText(translatedText).split(' ');
+        const spokenWords = normalizeText(spoken).split(' ');
+        const wordResults = expectedWords.map((word, i) => ({
+          expected: word,
+          correct: spokenWords[i] === word,
+        }));
+        setPracticeResult({ score, spoken, wordResults });
+        setIsPracticing(false);
+        setProgress(prev => {
+          const practiceScores = [...prev.practiceScores, score];
+          const updated = { ...prev, practiceAttempts: prev.practiceAttempts + 1, practiceScores };
+          saveProgress(updated);
+          return updated;
+        });
+      },
+      setPracticeCountdown,
+      () => setIsPracticing(false),
+    );
   };
 
   const handleChatSend = async (overrideScenario?: string) => {
@@ -659,30 +656,108 @@ export default function App() {
     }
   };
 
-  const startShadowListen = () => {
-    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    if (!SpeechRecognition || !shadowPhrase) return;
-    const recognition = new SpeechRecognition();
-    recognition.lang = (ALL_LANGUAGES.find(l => l.code === selectedLang) ?? ALL_LANGUAGES[0]).locale;
-    setShadowStep('listening');
-    recognition.onresult = (e: any) => {
-      const spoken = e.results[0][0].transcript;
-      setShadowSpoken(spoken);
-      const expectedWords = normalizeText(shadowPhrase.phrase).split(' ');
+  // ── Gemini audio transcription (supports all 29+ languages) ─────────────
+  const geminiTranscribe = async (
+    expectedPhrase: string,
+    onResult: (spoken: string, score: number) => void,
+    setCountdown: React.Dispatch<React.SetStateAction<number | null>>,
+    onError: () => void,
+  ) => {
+    const langName = (ALL_LANGUAGES.find(l => l.code === selectedLang) ?? ALL_LANGUAGES[0]).name;
+    const GEMINI_KEY = import.meta.env.VITE_GEMINI_API_KEY;
+
+    const recordAndTranscribe = async () => {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mimeType = MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : 'audio/ogg';
+      const recorder = new MediaRecorder(stream, { mimeType });
+      const chunks: Blob[] = [];
+      recorder.ondataavailable = (e) => { if (e.data.size > 0) chunks.push(e.data); };
+
+      const SEC = 5;
+      setCountdown(SEC);
+      const tick = setInterval(() => setCountdown(prev => prev !== null && prev > 1 ? prev - 1 : null), 1000);
+
+      await new Promise<void>(res => {
+        recorder.onstop = () => res();
+        recorder.start();
+        setTimeout(() => recorder.stop(), SEC * 1000);
+      });
+      clearInterval(tick);
+      setCountdown(null);
+      stream.getTracks().forEach(t => t.stop());
+
+      const blob = new Blob(chunks, { type: mimeType });
+      const ab = await blob.arrayBuffer();
+      const base64 = btoa(new Uint8Array(ab).reduce((d, b) => d + String.fromCharCode(b), ''));
+
+      const res = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_KEY}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{
+              parts: [
+                { text: `Trascrivi esattamente ciò che viene detto in questo audio in ${langName}. Rispondi SOLO con il testo trascritto, senza aggiungere nulla.` },
+                { inline_data: { mime_type: mimeType, data: base64 } },
+              ],
+            }],
+          }),
+        }
+      );
+      const json = await res.json();
+      const spoken = (json.candidates?.[0]?.content?.parts?.[0]?.text ?? '').trim();
+      const expectedWords = normalizeText(expectedPhrase).split(' ');
       const spokenWords = normalizeText(spoken).split(' ');
       const correct = expectedWords.filter((w, i) => spokenWords[i] === w).length;
       const score = Math.round((correct / expectedWords.length) * 100);
-      setShadowScore(score);
-      setShadowStep('result');
-      setProgress(prev => {
-        const practiceScores = [...prev.practiceScores, score];
-        const updated = { ...prev, practiceAttempts: prev.practiceAttempts + 1, practiceScores };
-        saveProgress(updated);
-        return updated;
-      });
+      onResult(spoken, score);
     };
-    recognition.onend = () => { if (shadowStep === 'listening') setShadowStep('idle'); };
+
+    // Try Gemini first; fall back to Web Speech API if key missing or fetch fails
+    if (GEMINI_KEY) {
+      try {
+        await recordAndTranscribe();
+        return;
+      } catch { /* fall through to Web Speech API */ }
+    }
+
+    // Fallback: Web Speech API
+    const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SR) { onError(); return; }
+    const recognition = new SR();
+    recognition.lang = (ALL_LANGUAGES.find(l => l.code === selectedLang) ?? ALL_LANGUAGES[0]).locale;
+    recognition.onresult = (e: any) => {
+      const spoken = e.results[0][0].transcript;
+      const expectedWords = normalizeText(expectedPhrase).split(' ');
+      const spokenWords = normalizeText(spoken).split(' ');
+      const correct = expectedWords.filter((w, i) => spokenWords[i] === w).length;
+      const score = Math.round((correct / expectedWords.length) * 100);
+      onResult(spoken, score);
+    };
+    recognition.onend = onError;
     recognition.start();
+  };
+
+  const startShadowListen = async () => {
+    if (!shadowPhrase) return;
+    setShadowStep('listening');
+    await geminiTranscribe(
+      shadowPhrase.phrase,
+      (spoken, score) => {
+        setShadowSpoken(spoken);
+        setShadowScore(score);
+        setShadowStep('result');
+        setProgress(prev => {
+          const practiceScores = [...prev.practiceScores, score];
+          const updated = { ...prev, practiceAttempts: prev.practiceAttempts + 1, practiceScores };
+          saveProgress(updated);
+          return updated;
+        });
+      },
+      setShadowCountdown,
+      () => setShadowStep('idle'),
+    );
   };
 
   // ── Regola narrazione: ogni frase descrive SOLO ciò che è visibile in quel momento ──────
@@ -1473,18 +1548,16 @@ export default function App() {
                 </p>
               </div>
             )}
-            {!((window as any).SpeechRecognition || (window as any).webkitSpeechRecognition) ? (
-              <p style={{ fontSize: '0.8rem', color: '#f59e0b', marginTop: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                🎙️ Pratica pronuncia disponibile solo su <strong>Chrome</strong> o <strong>Edge</strong>
-              </p>
-            ) : (
-              <button
-                style={{ ...styles.btn, backgroundColor: isPracticing ? '#f59e0b' : '#10b981' }}
-                onClick={startPracticeSession}
-              >
-                <Mic size={18} /> {practiceResult && !isPracticing ? 'RIPROVA' : 'PRATICA PRONUNCIA'}
-              </button>
-            )}
+            <button
+              style={{ ...styles.btn, backgroundColor: isPracticing ? '#f59e0b' : '#10b981' }}
+              onClick={startPracticeSession}
+              disabled={isPracticing}
+            >
+              <Mic size={18} />
+              {isPracticing
+                ? practiceCountdown !== null ? `${practiceCountdown}″…` : 'Analisi…'
+                : practiceResult ? 'RIPROVA' : 'PRATICA PRONUNCIA'}
+            </button>
           </section>
         )}
 
@@ -1515,17 +1588,16 @@ export default function App() {
                     <button onClick={() => speak(shadowPhrase.phrase)} style={{ ...styles.btn, backgroundColor: '#4f46e5', flex: 1 }}>
                       <Volume2 size={16} /> Riascolta
                     </button>
-                    {(window as any).SpeechRecognition || (window as any).webkitSpeechRecognition ? (
-                      <button
-                        onClick={startShadowListen}
-                        disabled={shadowStep === 'listening'}
-                        style={{ ...styles.btn, backgroundColor: shadowStep === 'listening' ? '#f59e0b' : '#10b981', flex: 1 }}
-                      >
-                        <Mic size={16} /> {shadowStep === 'listening' ? 'Ascoltando...' : 'Ripeti ora!'}
-                      </button>
-                    ) : (
-                      <p style={{ fontSize: '0.75rem', color: '#f59e0b', margin: 0 }}>Solo Chrome/Edge</p>
-                    )}
+                    <button
+                      onClick={startShadowListen}
+                      disabled={shadowStep === 'listening'}
+                      style={{ ...styles.btn, backgroundColor: shadowStep === 'listening' ? '#f59e0b' : '#10b981', flex: 1 }}
+                    >
+                      <Mic size={16} />
+                      {shadowStep === 'listening'
+                        ? shadowCountdown !== null ? `${shadowCountdown}″…` : 'Analisi…'
+                        : 'Ripeti ora!'}
+                    </button>
                   </div>
                   {shadowStep === 'result' && shadowScore !== null && (
                     <div style={{ marginTop: '10px', padding: '10px', backgroundColor: '#1e293b', borderRadius: '8px' }}>
