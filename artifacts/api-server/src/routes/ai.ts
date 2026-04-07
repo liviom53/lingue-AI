@@ -220,6 +220,43 @@ Respond ONLY with valid JSON (no markdown):
   }
 });
 
+// ── Help AI: risponde a domande sull'uso dell'app ────────────────────────────
+const APP_HELP_CONTEXT = `Sei l'assistente di supporto dell'app "Lingue & AI", una PWA italiana per imparare lingue straniere.
+Funzionalità dell'app:
+- Traduzione rapida (Lingva/MyMemory): scrivi in italiano, scegli la lingua, premi "Traduci"
+- Traduzione AI (DeepSeek): "Spiega con AI" fornisce traduzione + pronuncia fonetica + spiegazione grammaticale + esempio
+- X-Ray grammaticale: clicca qualsiasi parola della traduzione per analisi (parte del discorso, genere, tempo, curiosità)
+- Pronuncia & Ascolto: sintesi vocale con 🔊, slider velocità, selezione voce
+- Shadowing: ascolta una frase AI, ripetila col microfono, ottieni uno score di pronuncia parola per parola
+- Chat AI & Roleplay: conversa con tutor DeepSeek, scenari (bar, hotel, stazione…), correzioni automatiche con 💡
+- Segnalibri & Quiz: salva traduzioni con ⭐, poi esercitati con quiz a 4 opzioni
+- Profilo personale: nome/età/occupazione personalizzano le risposte AI
+- Modalità offline: cache locale delle traduzioni, segnalibri e quiz sempre disponibili
+- PWA installabile: funziona come app nativa su telefono
+- 29+ lingue supportate: inglese, spagnolo, francese, tedesco, portoghese, russo, cinese, giapponese, coreano, arabo e altre
+Rispondi in italiano, in modo conciso e pratico (max 4 frasi). Spiega solo le funzioni pertinenti alla domanda.`;
+
+router.post("/app-help", async (req: Request, res: Response) => {
+  const { query } = req.body as { query: string };
+  if (!query?.trim()) {
+    res.status(400).json({ error: "Missing query" });
+    return;
+  }
+  try {
+    const completion = await openrouter.chat.completions.create({
+      model: MODEL,
+      messages: [
+        { role: "system", content: APP_HELP_CONTEXT },
+        { role: "user", content: query },
+      ],
+    });
+    const answer = completion.choices[0]?.message?.content ?? "";
+    res.json({ answer });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message ?? "AI error" });
+  }
+});
+
 // ── Traduzione proxy: Lingva (parallelo, race) → MyMemory (fallback) ────────
 const LINGVA_INSTANCES = [
   'https://lingva.ml',

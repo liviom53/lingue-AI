@@ -278,6 +278,10 @@ export default function App() {
   const [showDemoMenu, setShowDemoMenu] = useState(false);
   const [showFunzionalitaApp, setShowFunzionalitaApp] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
+  const [helpSearch, setHelpSearch] = useState('');
+  const [helpFilter, setHelpFilter] = useState('');
+  const [helpAiResult, setHelpAiResult] = useState<string | null>(null);
+  const [helpAiLoading, setHelpAiLoading] = useState(false);
   const [activeDemoNum, setActiveDemoNum] = useState<1|2|3|4>(1);
   const [progress, setProgress] = useState<ProgressStats>(loadProgress);
   const [profile, setProfile] = useState<UserProfile>(loadProfile);
@@ -1081,7 +1085,79 @@ export default function App() {
                     <div style={{ fontWeight: 'bold', fontSize: '0.9rem', color: '#e2e8f0', marginBottom: '2px' }}>❓ Come usare Lingue & AI</div>
                     <div style={{ fontSize: '0.73rem', color: '#64748b' }}>Guida rapida alle funzionalità</div>
                   </div>
-                  <div style={{ padding: '10px 12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+
+                  {/* Barra di ricerca */}
+                  <div style={{ padding: '10px 12px 0', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    <input
+                      type="text"
+                      placeholder="Cerca nell'aiuto… (es: pronuncia, quiz, offline)"
+                      value={helpSearch}
+                      onChange={e => { setHelpSearch(e.target.value); if (!e.target.value) { setHelpFilter(''); setHelpAiResult(null); } }}
+                      onKeyDown={e => { if (e.key === 'Enter') setHelpFilter(helpSearch); }}
+                      style={{
+                        width: '100%', boxSizing: 'border-box', padding: '8px 12px',
+                        borderRadius: '8px', border: '1px solid #1e3a5f', background: '#1e293b',
+                        color: '#e2e8f0', fontSize: '0.82rem', outline: 'none',
+                      }}
+                    />
+                    <div style={{ display: 'flex', gap: '6px' }}>
+                      <button
+                        onClick={() => { setHelpFilter(helpSearch); setHelpAiResult(null); }}
+                        style={{
+                          flex: 1, padding: '7px 10px', borderRadius: '8px', border: 'none',
+                          background: helpSearch.trim() ? 'linear-gradient(135deg,#ea580c,#f97316)' : '#334155',
+                          color: '#fff', fontWeight: 'bold', fontSize: '0.79rem',
+                          cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px',
+                        }}
+                      >
+                        🔍 Cerca
+                      </button>
+                      <button
+                        disabled={!helpSearch.trim() || helpAiLoading}
+                        onClick={async () => {
+                          if (!helpSearch.trim()) return;
+                          setHelpAiLoading(true);
+                          setHelpAiResult(null);
+                          setHelpFilter('');
+                          try {
+                            const r = await fetch('/api/ai/app-help', {
+                              method: 'POST',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify({ query: helpSearch }),
+                            });
+                            const d = await r.json();
+                            setHelpAiResult(d.answer ?? d.error ?? 'Nessuna risposta.');
+                          } catch {
+                            setHelpAiResult('Errore di connessione. Riprova.');
+                          } finally {
+                            setHelpAiLoading(false);
+                          }
+                        }}
+                        style={{
+                          flex: 1, padding: '7px 10px', borderRadius: '8px',
+                          border: '1px solid #a16207',
+                          background: helpSearch.trim() ? 'linear-gradient(135deg,#78350f,#92400e)' : '#1e293b',
+                          color: helpSearch.trim() ? '#fde68a' : '#475569',
+                          fontWeight: 'bold', fontSize: '0.79rem',
+                          cursor: helpSearch.trim() ? 'pointer' : 'not-allowed',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px',
+                          opacity: helpAiLoading ? 0.6 : 1,
+                        }}
+                      >
+                        {helpAiLoading ? <Loader2 size={13} style={{ animation: 'spin 1s linear infinite' }} /> : '🤖'} Cerca con AI
+                      </button>
+                    </div>
+
+                    {/* Risultato AI */}
+                    {helpAiResult && (
+                      <div style={{ background: '#1e3a5f', border: '1px solid #2563eb', borderRadius: '8px', padding: '10px 12px', fontSize: '0.8rem', color: '#bfdbfe', lineHeight: 1.6 }}>
+                        <div style={{ fontWeight: 'bold', color: '#93c5fd', marginBottom: '4px', fontSize: '0.75rem' }}>🤖 Risposta AI</div>
+                        {helpAiResult}
+                      </div>
+                    )}
+                  </div>
+
+                  <div style={{ padding: '8px 12px 10px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                     {([
                       {
                         icon: '🌍', title: 'Traduzione',
@@ -1147,61 +1223,51 @@ export default function App() {
                           'Installa l\'app (PWA) dal browser per usarla come app nativa',
                         ],
                       },
-                    ]).map(({ icon, title, items }) => (
-                      <div key={title} style={{ background: '#1e293b', borderRadius: '8px', padding: '10px 12px', border: '1px solid #1e3a5f' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '7px', marginBottom: '6px' }}>
-                          <span style={{ fontSize: '1rem' }}>{icon}</span>
-                          <span style={{ fontWeight: 'bold', fontSize: '0.82rem', color: '#e2e8f0' }}>{title}</span>
-                        </div>
-                        <ul style={{ margin: 0, paddingLeft: '16px', display: 'flex', flexDirection: 'column', gap: '3px' }}>
-                          {items.map((item, i) => (
-                            <li key={i} style={{ fontSize: '0.74rem', color: '#94a3b8', lineHeight: 1.5 }}>{item}</li>
-                          ))}
-                        </ul>
+                    ]).filter(({ title, items }) => {
+                        if (!helpFilter.trim()) return true;
+                        const q = helpFilter.toLowerCase();
+                        return title.toLowerCase().includes(q) || items.some(it => it.toLowerCase().includes(q));
+                      }).map(({ icon, title, items }) => {
+                        const q = helpFilter.toLowerCase();
+                        const highlight = (text: string) => {
+                          if (!helpFilter.trim()) return <>{text}</>;
+                          const idx = text.toLowerCase().indexOf(q);
+                          if (idx === -1) return <>{text}</>;
+                          return <>{text.slice(0, idx)}<mark style={{ background: '#854d0e', color: '#fef08a', borderRadius: '2px', padding: '0 1px' }}>{text.slice(idx, idx + q.length)}</mark>{text.slice(idx + q.length)}</>;
+                        };
+                        return (
+                          <div key={title} style={{ background: '#1e293b', borderRadius: '8px', padding: '10px 12px', border: `1px solid ${helpFilter.trim() ? '#854d0e' : '#1e3a5f'}` }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '7px', marginBottom: '6px' }}>
+                              <span style={{ fontSize: '1rem' }}>{icon}</span>
+                              <span style={{ fontWeight: 'bold', fontSize: '0.82rem', color: '#e2e8f0' }}>{highlight(title)}</span>
+                            </div>
+                            <ul style={{ margin: 0, paddingLeft: '16px', display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                              {items.map((item, i) => (
+                                <li key={i} style={{ fontSize: '0.74rem', color: '#94a3b8', lineHeight: 1.5 }}>{highlight(item)}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        );
+                      })}
+                    {helpFilter.trim() && !([
+                      { title: 'Traduzione', items: ['Scrivi una frase in italiano nel campo di testo','Scegli la lingua di destinazione (bandierine)','Premi "Traduci" per la traduzione rapida oppure "Spiega con AI"'] },
+                      { title: 'X-Ray grammaticale', items: ['parte del discorso','genere','tempo verbale'] },
+                      { title: 'Pronuncia & Ascolto', items: ['sintesi vocale','slider','voce'] },
+                      { title: 'Shadowing & Pratica', items: ['shadowing','microfono','score'] },
+                      { title: 'Chat AI & Roleplay', items: ['chat','roleplay','scenario','correzioni'] },
+                      { title: 'Segnalibri & Quiz', items: ['segnalibri','quiz','vocabolario'] },
+                      { title: 'Profilo personale', items: ['profilo','età','occupazione','città'] },
+                      { title: 'Modalità offline', items: ['offline','cache','pwa'] },
+                    ].some(({ title, items }) => title.toLowerCase().includes(helpFilter.toLowerCase()) || items.some(it => it.toLowerCase().includes(helpFilter.toLowerCase())))) && (
+                      <div style={{ textAlign: 'center', fontSize: '0.78rem', color: '#64748b', padding: '8px' }}>
+                        Nessuna sezione trovata. Prova con "Cerca con AI" per una risposta personalizzata.
                       </div>
-                    ))}
-                    <div style={{ textAlign: 'center', fontSize: '0.72rem', color: '#475569', paddingTop: '2px' }}>
-                      💡 Suggerimento: usa le demo guidate qui sopra per vedere ogni funzione in azione
-                    </div>
-
-                    {/* Pulsanti prova rapida */}
-                    <div style={{ borderTop: '1px solid #1e3a5f', paddingTop: '10px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                      <div style={{ fontSize: '0.73rem', color: '#64748b', textAlign: 'center', marginBottom: '2px' }}>
-                        Prova subito con una frase di esempio:
+                    )}
+                    {!helpFilter.trim() && (
+                      <div style={{ textAlign: 'center', fontSize: '0.72rem', color: '#475569', paddingTop: '2px' }}>
+                        💡 Suggerimento: usa le demo guidate qui sopra per vedere ogni funzione in azione
                       </div>
-                      <div style={{ display: 'flex', gap: '8px' }}>
-                        <button
-                          onClick={() => {
-                            setShowHelp(false);
-                            setShowDemoMenu(false);
-                            handleTranslate(undefined, 'Buongiorno, come stai oggi?');
-                          }}
-                          style={{
-                            flex: 1, padding: '9px 10px', borderRadius: '8px', border: 'none',
-                            background: 'linear-gradient(135deg,#ea580c,#f97316)',
-                            color: '#fff', fontWeight: 'bold', fontSize: '0.8rem',
-                            cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
-                          }}
-                        >
-                          🔍 Cerca
-                        </button>
-                        <button
-                          onClick={() => {
-                            setShowHelp(false);
-                            setShowDemoMenu(false);
-                            handleAiTranslate('Buongiorno, come stai oggi?');
-                          }}
-                          style={{
-                            flex: 1, padding: '9px 10px', borderRadius: '8px', border: '1px solid #a16207',
-                            background: 'linear-gradient(135deg,#78350f,#92400e)',
-                            color: '#fde68a', fontWeight: 'bold', fontSize: '0.8rem',
-                            cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
-                          }}
-                        >
-                          🤖 Cerca con AI
-                        </button>
-                      </div>
-                    </div>
+                    )}
                   </div>
                 </div>
               )}
