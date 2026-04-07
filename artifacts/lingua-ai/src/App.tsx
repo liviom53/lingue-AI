@@ -2284,44 +2284,32 @@ export default function App() {
           )}
         </section>
 
-        {/* Toggle per profilo/progressi */}
-        <div data-demo="tab-panel-toggle" style={{ margin: '16px 0 8px' }}>
+        {/* Profilo & Progressi */}
+        <section data-demo="tab-panel-toggle" style={{ ...styles.card, border: '1px solid #60a5fa' }}>
           <button
             onClick={() => setShowTabPanel(v => !v)}
-            style={{
-              width: '100%',
-              background: 'none',
-              border: '1px solid #60a5fa',
-              borderRadius: showTabPanel ? '10px 10px 0 0' : '10px',
-              color: '#60a5fa',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              padding: '10px 14px',
-              fontSize: '0.85rem',
-              fontWeight: 'bold',
-            }}
+            style={{ width: '100%', background: 'none', border: 'none', color: '#60a5fa', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: 0, fontSize: '0.9rem', fontWeight: 'bold' }}
           >
-            <span>👤 Profilo &nbsp;·&nbsp; 📊 Progressi</span>
-            {showTabPanel ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+            <span>⭐ Profilo & Progressi</span>
+            {showTabPanel ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
           </button>
-        </div>
 
         {showTabPanel && (
-        <section style={{ border: '1px solid #60a5fa', borderTop: 'none', borderRadius: '0 0 10px 10px', padding: '10px 10px 4px', marginBottom: '8px', backgroundColor: '#1e293b' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px', margin: '0 0 8px' }}>
+        <div data-demo="tab-profilo" style={{ marginTop: '14px' }}>
+        {/* Tab pills orizzontali */}
+        <div style={{ display: 'flex', gap: '6px', marginBottom: '14px', overflowX: 'auto', paddingBottom: '2px' }}>
           {([
             { id: 'profilo',     label: '👤 Profilo' },
             { id: 'progressi',  label: '📊 Progressi' },
             { id: 'calendario', label: '📅 Calendario' },
             { id: 'vocabolario',label: '📚 Vocabolario' },
           ] as const).map(({ id, label }) => (
-            <button key={id} data-demo={id === 'profilo' ? 'tab-profilo' : undefined} onClick={() => setActiveTab(id)} style={{
-              padding: '9px 6px', border: '1px solid #334155', borderRadius: '8px', cursor: 'pointer',
-              fontWeight: 'bold', fontSize: '0.82rem',
-              backgroundColor: activeTab === id ? '#fb923c' : '#1e293b',
-              color: activeTab === id ? '#fff' : '#94a3b8',
+            <button key={id} onClick={() => setActiveTab(id)} style={{
+              flexShrink: 0,
+              padding: '7px 14px', border: 'none', borderRadius: '999px', cursor: 'pointer',
+              fontWeight: 'bold', fontSize: '0.8rem',
+              backgroundColor: activeTab === id ? '#60a5fa' : '#1e293b',
+              color: activeTab === id ? '#0f172a' : '#94a3b8',
               transition: 'background 0.2s',
             }}>
               {label}
@@ -2744,8 +2732,9 @@ export default function App() {
             </div>
           );
         })()}
-        </section>
+        </div>
         )}
+        </section>
 
         {/* Footer Privacy */}
         <footer style={{ textAlign: 'center', marginTop: '18px', paddingBottom: '12px' }}>
