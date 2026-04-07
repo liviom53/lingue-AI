@@ -486,9 +486,11 @@ export default function App() {
     setQuizSelected(null);
   };
 
-  const handleTranslate = async (langOverride?: string) => {
-    if (!inputText.trim()) return;
+  const handleTranslate = async (langOverride?: string, textOverride?: string) => {
+    const text = textOverride ?? inputText;
+    if (!text.trim()) return;
     const lang = typeof langOverride === 'string' ? langOverride : selectedLang;
+    if (textOverride) setInputText(textOverride);
     setLoading(true);
     setError(null);
     setPracticeResult(null);
@@ -500,7 +502,7 @@ export default function App() {
 
     // ── Offline: prova la cache ──────────────────────────────────────────────
     if (!navigator.onLine) {
-      const cached = lookupCache(inputText, lang);
+      const cached = lookupCache(text, lang);
       if (cached) {
         setTranslatedText(cached.translation);
         setIpaText(cached.pronunciation ?? null);
@@ -515,11 +517,10 @@ export default function App() {
     }
 
     try {
-      const { translation, pronunciation } = await translateText(inputText, lang);
+      const { translation, pronunciation } = await translateText(text, lang);
       setTranslatedText(translation);
       speak(translation);
-      // Salva in cache per uso offline futuro
-      saveToCache({ text: inputText, lang, translation, pronunciation: pronunciation ?? null, cachedAt: Date.now() });
+      saveToCache({ text, lang, translation, pronunciation: pronunciation ?? null, cachedAt: Date.now() });
       setProgress(prev => {
         const word = translation.toLowerCase().trim();
         const wordsLearned = prev.wordsLearned.includes(word) ? prev.wordsLearned : [...prev.wordsLearned, word];
@@ -544,8 +545,10 @@ export default function App() {
     }
   };
 
-  const handleAiTranslate = async () => {
-    if (!inputText.trim()) return;
+  const handleAiTranslate = async (textOverride?: string) => {
+    const text = textOverride ?? inputText;
+    if (!text.trim()) return;
+    if (textOverride) setInputText(textOverride);
     setAiLoading(true);
     setError(null);
     setPracticeResult(null);
@@ -559,7 +562,7 @@ export default function App() {
       const res = await fetch('/api/ai/translate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: inputText, targetLang: selectedLang, userProfile: profile }),
+        body: JSON.stringify({ text, targetLang: selectedLang, userProfile: profile }),
       });
       if (!res.ok) throw new Error('Errore AI. Riprova.');
       const data = await res.json();
@@ -1159,6 +1162,45 @@ export default function App() {
                     ))}
                     <div style={{ textAlign: 'center', fontSize: '0.72rem', color: '#475569', paddingTop: '2px' }}>
                       💡 Suggerimento: usa le demo guidate qui sopra per vedere ogni funzione in azione
+                    </div>
+
+                    {/* Pulsanti prova rapida */}
+                    <div style={{ borderTop: '1px solid #1e3a5f', paddingTop: '10px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                      <div style={{ fontSize: '0.73rem', color: '#64748b', textAlign: 'center', marginBottom: '2px' }}>
+                        Prova subito con una frase di esempio:
+                      </div>
+                      <div style={{ display: 'flex', gap: '8px' }}>
+                        <button
+                          onClick={() => {
+                            setShowHelp(false);
+                            setShowDemoMenu(false);
+                            handleTranslate(undefined, 'Buongiorno, come stai oggi?');
+                          }}
+                          style={{
+                            flex: 1, padding: '9px 10px', borderRadius: '8px', border: 'none',
+                            background: 'linear-gradient(135deg,#ea580c,#f97316)',
+                            color: '#fff', fontWeight: 'bold', fontSize: '0.8rem',
+                            cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
+                          }}
+                        >
+                          🔍 Cerca
+                        </button>
+                        <button
+                          onClick={() => {
+                            setShowHelp(false);
+                            setShowDemoMenu(false);
+                            handleAiTranslate('Buongiorno, come stai oggi?');
+                          }}
+                          style={{
+                            flex: 1, padding: '9px 10px', borderRadius: '8px', border: '1px solid #a16207',
+                            background: 'linear-gradient(135deg,#78350f,#92400e)',
+                            color: '#fde68a', fontWeight: 'bold', fontSize: '0.8rem',
+                            cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
+                          }}
+                        >
+                          🤖 Cerca con AI
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
