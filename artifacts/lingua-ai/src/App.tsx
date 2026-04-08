@@ -279,12 +279,38 @@ export default function App() {
 
   // ── Installazione PWA (A2HS) ─────────────────────────────────────────────
   const [installPrompt, setInstallPrompt] = useState<any>(null);
-  const [installDismissed, setInstallDismissed] = useState(() => localStorage.getItem('pwa_install_dismissed') === '1');
+  const [installDismissed, setInstallDismissed] = useState(() => {
+    const ts = Number(localStorage.getItem('pwa_install_dismissed_ts') ?? 0);
+    return ts > 0 && Date.now() - ts < 7 * 24 * 60 * 60 * 1000; // rinnova dopo 7 giorni
+  });
+  const [installDone, setInstallDone] = useState(false);
+  const [showIosHint, setShowIosHint] = useState(false);
+  const isIos = /iphone|ipad|ipod/i.test(navigator.userAgent) && !(window as any).MSStream;
+  const isInStandaloneMode = window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone;
+
   useEffect(() => {
     const handler = (e: Event) => { e.preventDefault(); setInstallPrompt(e); };
     window.addEventListener('beforeinstallprompt', handler);
-    return () => window.removeEventListener('beforeinstallprompt', handler);
+    const onInstalled = () => { setInstallDone(true); setInstallPrompt(null); };
+    window.addEventListener('appinstalled', onInstalled);
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handler);
+      window.removeEventListener('appinstalled', onInstalled);
+    };
   }, []);
+
+  const handleInstallClick = async () => {
+    if (!installPrompt) return;
+    installPrompt.prompt();
+    const { outcome } = await installPrompt.userChoice;
+    if (outcome === 'accepted') { setInstallPrompt(null); setInstallDone(true); }
+  };
+
+  const dismissInstall = () => {
+    setInstallDismissed(true);
+    localStorage.setItem('pwa_install_dismissed_ts', String(Date.now()));
+  };
+
   const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
   const [selectedVoiceURI, setSelectedVoiceURI] = useState('');
   const [speechRate, setSpeechRate] = useState(0.6);
@@ -1252,6 +1278,17 @@ export default function App() {
             <h1 style={{ margin: 0, fontSize: 'clamp(1rem, 5vw, 1.9rem)', lineHeight: 1.2 }}>Impara una lingua con l&apos;AI</h1>
             <p style={{ color: '#f97316', fontSize: 'clamp(0.8rem, 3.8vw, 1.45rem)', margin: '4px 0 0' }}>Inizia a parlarla male... poi si vedrà</p>
           </div>
+          {/* Tasto installazione persistente nell'header */}
+          {!isInStandaloneMode && !installDone && (installPrompt || isIos) && (
+            <button
+              aria-label="Installa l'app sul dispositivo"
+              onClick={isIos ? () => setShowIosHint(v => !v) : handleInstallClick}
+              style={{ flexShrink: 0, background: 'linear-gradient(135deg,#10b981,#059669)', color: '#fff', border: 'none', borderRadius: '10px', padding: '6px 10px', cursor: 'pointer', fontSize: '0.72rem', fontWeight: 'bold', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1px', boxShadow: '0 2px 8px rgba(16,185,129,0.4)' }}
+            >
+              <span style={{ fontSize: '1.2rem' }}>📲</span>
+              <span>Installa</span>
+            </button>
+          )}
         </header>
 
         {/* Banner aggiornamento PWA */}
@@ -1267,28 +1304,67 @@ export default function App() {
           </div>
         )}
 
-        {/* Banner installazione PWA */}
-        {installPrompt && !installDismissed && (
-          <div style={{ background: '#0f2a1a', border: '1px solid #10b981', borderRadius: '10px', padding: '10px 14px', marginBottom: '8px', fontSize: '0.82rem', color: '#6ee7b7', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
-            <span>📲 Installa l&apos;app sul telefono</span>
-            <div style={{ display: 'flex', gap: '6px' }}>
+        {/* Banner installazione PWA — Android/Chrome/Edge */}
+        {installPrompt && !installDismissed && !installDone && !isInStandaloneMode && (
+          <div role="region" aria-label="Installa l'app" style={{ background: 'linear-gradient(135deg,#052e16,#064e3b)', border: '1.5px solid #10b981', borderRadius: '12px', padding: '14px 16px', marginBottom: '10px', boxShadow: '0 4px 20px rgba(16,185,129,0.25)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
+              <span style={{ fontSize: '2rem' }}>📲</span>
+              <div>
+                <p style={{ margin: 0, fontSize: '0.92rem', fontWeight: 'bold', color: '#6ee7b7' }}>Installa l&apos;app gratuitamente</p>
+                <p style={{ margin: '2px 0 0', fontSize: '0.75rem', color: '#34d399' }}>Usala offline · Niente browser · Avvio rapido</p>
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: '8px' }}>
               <button
-                onClick={async () => {
-                  installPrompt.prompt();
-                  const { outcome } = await installPrompt.userChoice;
-                  if (outcome === 'accepted') { setInstallPrompt(null); }
-                }}
-                style={{ background: '#10b981', color: '#fff', border: 'none', borderRadius: '6px', padding: '4px 12px', cursor: 'pointer', fontWeight: 'bold', fontSize: '0.8rem', whiteSpace: 'nowrap' }}
+                aria-label="Installa l'app sul dispositivo"
+                onClick={handleInstallClick}
+                style={{ flex: 1, background: 'linear-gradient(135deg,#10b981,#059669)', color: '#fff', border: 'none', borderRadius: '8px', padding: '10px', cursor: 'pointer', fontWeight: 'bold', fontSize: '0.9rem', boxShadow: '0 2px 8px rgba(16,185,129,0.5)' }}
               >
-                Installa
+                ✅ Installa ora
               </button>
               <button
-                onClick={() => { setInstallDismissed(true); localStorage.setItem('pwa_install_dismissed', '1'); }}
-                style={{ background: 'transparent', color: '#6ee7b7', border: '1px solid #10b981', borderRadius: '6px', padding: '4px 8px', cursor: 'pointer', fontSize: '0.8rem' }}
+                aria-label="Ricordamelo più tardi"
+                onClick={dismissInstall}
+                style={{ background: 'transparent', color: '#6ee7b7', border: '1px solid #10b981', borderRadius: '8px', padding: '10px 14px', cursor: 'pointer', fontSize: '0.82rem', whiteSpace: 'nowrap' }}
               >
-                ✕
+                Dopo
               </button>
             </div>
+          </div>
+        )}
+
+        {/* Banner installazione iOS (Safari) */}
+        {isIos && !isInStandaloneMode && !installDone && (
+          <div role="region" aria-label="Installa su iPhone o iPad" style={{ background: 'linear-gradient(135deg,#1e1b4b,#312e81)', border: '1.5px solid #818cf8', borderRadius: '12px', padding: '14px 16px', marginBottom: '10px', boxShadow: '0 4px 20px rgba(129,140,248,0.2)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: showIosHint ? '10px' : 0 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{ fontSize: '1.4rem' }}>🍎</span>
+                <p style={{ margin: 0, fontSize: '0.88rem', fontWeight: 'bold', color: '#a5b4fc' }}>Installa su iPhone / iPad</p>
+              </div>
+              <button
+                aria-expanded={showIosHint}
+                aria-label={showIosHint ? 'Chiudi istruzioni installazione iOS' : 'Mostra istruzioni installazione iOS'}
+                onClick={() => setShowIosHint(v => !v)}
+                style={{ background: 'none', border: '1px solid #818cf8', borderRadius: '6px', color: '#a5b4fc', padding: '4px 10px', cursor: 'pointer', fontSize: '0.78rem' }}
+              >
+                {showIosHint ? 'Chiudi' : 'Come?'}
+              </button>
+            </div>
+            {showIosHint && (
+              <ol style={{ margin: 0, paddingLeft: '18px', color: '#c7d2fe', fontSize: '0.82rem', lineHeight: 1.7 }}>
+                <li>Tocca <strong>□↑</strong> (Condividi) in Safari</li>
+                <li>Scorri e seleziona <strong>"Aggiungi a schermata Home"</strong></li>
+                <li>Tocca <strong>Aggiungi</strong> — l&apos;app compare come icona</li>
+              </ol>
+            )}
+          </div>
+        )}
+
+        {/* Conferma installazione riuscita */}
+        {installDone && (
+          <div role="status" aria-live="polite" style={{ background: 'linear-gradient(135deg,#052e16,#064e3b)', border: '1.5px solid #10b981', borderRadius: '12px', padding: '12px 16px', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <span style={{ fontSize: '1.5rem' }}>🎉</span>
+            <p style={{ margin: 0, fontSize: '0.85rem', color: '#6ee7b7', fontWeight: 'bold' }}>App installata! Ora puoi aprirla direttamente dalla schermata Home.</p>
           </div>
         )}
 
