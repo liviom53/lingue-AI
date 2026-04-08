@@ -290,6 +290,8 @@ export default function App() {
   const [speechRate, setSpeechRate] = useState(0.6);
   const [loopCount, setLoopCount] = useState(1);
   const loopActiveRef = useRef(false);
+  const practiceRecognitionRef = useRef<any>(null);
+  const shadowRecognitionRef = useRef<any>(null);
   const [ipaText, setIpaText] = useState<string | null>(null);
   const [phonetic, setPhonetic] = useState<string | null>(null);
   const [ipaData, setIpaData] = useState<{ ipa: string; syllables: string } | null>(null);
@@ -328,6 +330,9 @@ export default function App() {
       // Se l'utente clicca dentro un input/textarea già focalizzato, non interrompere la scrittura
       if ((tag === 'input' || tag === 'textarea') && document.activeElement === el) return;
       const node = el.closest('[aria-label]') || el.closest('button') || el.closest('a') || el.closest('[role]') || el;
+      // I bottoni con data-speak-action avviano la sintesi vocale — non annunciare il label
+      // per evitare sovrapposizione audio (la traduzione inizierà a breve da sola)
+      if ((node as HTMLElement).closest('[data-speak-action]') || (node as HTMLElement).hasAttribute?.('data-speak-action')) return;
       const label =
         node.getAttribute('aria-label') ||
         node.getAttribute('placeholder') ||
@@ -773,11 +778,21 @@ export default function App() {
 
   const startPracticeSession = () => {
     if (!translatedText) return;
+    // Toggle: se già in ascolto, ferma
+    if (isPracticing && practiceRecognitionRef.current) {
+      practiceRecognitionRef.current.stop();
+      practiceRecognitionRef.current = null;
+      setIsPracticing(false);
+      return;
+    }
     const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     if (!SR) { alert('⚠️ Riconoscimento vocale non supportato — usa Chrome o Safari'); return; }
+    // Ferma la sintesi vocale prima di ascoltare (evita conflitto audio)
+    window.speechSynthesis.cancel();
     setIsPracticing(true);
     setPracticeResult(null);
     const recognition = new SR();
+    practiceRecognitionRef.current = recognition;
     const langInfo = ALL_LANGUAGES.find(l => l.code === selectedLang) ?? ALL_LANGUAGES[0];
     recognition.lang = langInfo.locale;
     recognition.interimResults = false;
@@ -785,6 +800,7 @@ export default function App() {
     let gotResult = false;
     recognition.onresult = (e: any) => {
       gotResult = true;
+      practiceRecognitionRef.current = null;
       const spoken = (e.results[0][0].transcript as string).trim();
       const expectedWords = normalizeText(translatedText).split(' ');
       const spokenWords = normalizeText(spoken).split(' ');
@@ -803,9 +819,9 @@ export default function App() {
         return updated;
       });
     };
-    recognition.onerror = (e: any) => { gotResult = true; setIsPracticing(false); alert(micErrorMsg(e.error)); };
-    recognition.onend = () => { if (!gotResult) setIsPracticing(false); };
-    try { recognition.start(); } catch (e: any) { setIsPracticing(false); alert(micErrorMsg(e.name ?? 'unknown')); }
+    recognition.onerror = (e: any) => { gotResult = true; practiceRecognitionRef.current = null; setIsPracticing(false); alert(micErrorMsg(e.error)); };
+    recognition.onend = () => { if (!gotResult) { practiceRecognitionRef.current = null; setIsPracticing(false); } };
+    try { recognition.start(); } catch (e: any) { practiceRecognitionRef.current = null; setIsPracticing(false); alert(micErrorMsg(e.name ?? 'unknown')); }
   };
 
   const handleChatSend = async (overrideScenario?: string) => {
@@ -918,16 +934,26 @@ export default function App() {
 
   const startShadowListen = () => {
     if (!shadowPhrase) return;
+    // Toggle: se già in ascolto, ferma
+    if (shadowStep === 'listening' && shadowRecognitionRef.current) {
+      shadowRecognitionRef.current.stop();
+      shadowRecognitionRef.current = null;
+      setShadowStep('idle');
+      return;
+    }
     const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     if (!SR) {
       setShadowError('⚠️ Riconoscimento vocale non supportato — usa Chrome o Safari');
       return;
     }
+    // Ferma la sintesi vocale prima di ascoltare (evita conflitto audio)
+    window.speechSynthesis.cancel();
     setShadowStep('listening');
     setShadowError(null);
     setShadowUserAmps([]);
 
     const recognition = new SR();
+    shadowRecognitionRef.current = recognition;
     const langInfo = ALL_LANGUAGES.find(l => l.code === selectedLang) ?? ALL_LANGUAGES[0];
     recognition.lang = langInfo.locale;
     recognition.interimResults = false;
@@ -936,6 +962,7 @@ export default function App() {
 
     recognition.onresult = (e: any) => {
       gotResult = true;
+      shadowRecognitionRef.current = null;
       const spoken = (e.results[0][0].transcript as string).trim();
       setShadowSpoken(spoken);
       const expectedWords = normalizeText(shadowPhrase!.phrase).split(' ');
@@ -953,11 +980,13 @@ export default function App() {
     };
     recognition.onerror = (e: any) => {
       gotResult = true;
+      shadowRecognitionRef.current = null;
       setShadowError(micErrorMsg(e.error));
       setShadowStep('idle');
     };
     recognition.onend = () => {
       if (!gotResult) {
+        shadowRecognitionRef.current = null;
         setShadowError('🎙️ Nessuna voce sentita — riprova parlando più vicino al microfono');
         setShadowStep('idle');
       }
@@ -1971,6 +2000,7 @@ export default function App() {
                 </button>
                 <button
                   aria-label={`Ascolta la traduzione in ${ALL_LANGUAGES.find(l => l.code === selectedLang)?.name ?? selectedLang}`}
+                  data-speak-action="true"
                   onClick={() => speak(translatedText)}
                   style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '2px', display: 'flex', alignItems: 'center' }}
                 >
@@ -2106,14 +2136,13 @@ export default function App() {
               </div>
             )}
             <button
-              aria-label={isPracticing ? 'Microfono attivo, in ascolto della tua pronuncia' : practiceResult ? 'Riprova la pratica pronuncia' : 'Avvia pratica pronuncia'}
+              aria-label={isPracticing ? 'Ferma registrazione pronuncia' : practiceResult ? 'Riprova la pratica pronuncia' : 'Avvia pratica pronuncia'}
               aria-pressed={isPracticing}
               style={{ ...styles.btn, backgroundColor: isPracticing ? '#f59e0b' : '#10b981' }}
               onClick={startPracticeSession}
-              disabled={isPracticing}
             >
               <Mic size={18} />
-              {isPracticing ? 'In ascolto…' : practiceResult ? 'RIPROVA' : 'PRATICA PRONUNCIA'}
+              {isPracticing ? '⏹ Ferma' : practiceResult ? 'RIPROVA' : 'PRATICA PRONUNCIA'}
             </button>
             {!('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) && (
               <p style={{ margin: '6px 0 0', fontSize: '0.72rem', color: '#94a3b8' }}>
@@ -2129,6 +2158,7 @@ export default function App() {
             data-demo="shadow-toggle"
             onClick={() => setShowShadow(v => !v)}
             aria-expanded={showShadow}
+            aria-label={showShadow ? 'Chiudi sezione Shadowing' : 'Apri sezione Shadowing — ripeti e impara'}
             style={{ width: '100%', background: 'none', border: 'none', color: '#c084fc', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: 0, fontSize: '0.9rem', fontWeight: 'bold' }}
           >
             <span>🔁 Shadowing — ripeti e impara</span>
@@ -2152,14 +2182,13 @@ export default function App() {
                       <Volume2 size={16} /> Riascolta
                     </button>
                     <button
-                      aria-label={shadowStep === 'listening' ? 'Microfono attivo, sto ascoltando' : 'Avvia registrazione, ripeti la frase'}
+                      aria-label={shadowStep === 'listening' ? 'Ferma registrazione shadowing' : 'Avvia registrazione, ripeti la frase'}
                       aria-pressed={shadowStep === 'listening'}
                       onClick={startShadowListen}
-                      disabled={shadowStep === 'listening'}
                       style={{ ...styles.btn, backgroundColor: shadowStep === 'listening' ? '#f59e0b' : '#10b981', flex: 1 }}
                     >
                       <Mic size={16} />
-                      {shadowStep === 'listening' ? 'In ascolto…' : 'Ripeti ora!'}
+                      {shadowStep === 'listening' ? '⏹ Ferma' : 'Ripeti ora!'}
                     </button>
                   </div>
                   {shadowError && (
