@@ -121,6 +121,18 @@ artifacts/
 - Step 4 → tab-profilo (pannello aperto)
 - Step 5 → completamento
 
+### Scenari roleplay — traduzioni
+- `SCENARIO_LABELS`: mappa `Record<scenarioId, Record<langCode, string>>` con 7 chiavi:
+  `ristorante · aeroporto · medico · hotel · colloquio · supermercato · libera`
+- Copertura: tutte e 29 lingue supportate
+- `getScenarioLabel(scenarioId, langCode)` → fallback su `SCENARIOS[].label` (italiano) se manca
+- Il bottone "💬 Libera" usa `getScenarioLabel('libera', selectedLang)` — si traduce automaticamente
+
+### Chat "Conversa con DeepSeek"
+- Titolo sezione: `Conversa con DeepSeek` + badge arancione `{langFlag} {langName}`
+- `langObj` e `langFlag` derivati da `ALL_LANGUAGES.find(l => l.code === selectedLang)`
+- Badge aggiornato in tempo reale al cambio di lingua
+
 ### Note note
 - Warning benigno pre-esistente: attributo `title` duplicato sul bottone condivisione (~riga 1314)
 - Colori sezioni accordion: Blu=Impostazioni voce, Viola=Shadowing, Arancione=Chat AI, Verde=Quiz+Risultato
