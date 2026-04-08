@@ -449,28 +449,26 @@ export default function App() {
   const [showTabPanel, setShowTabPanel] = useState(false);
   const [showDonazioni, setShowDonazioni] = useState(false);
   const [balloonPos, setBalloonPos] = useState({ x: window.innerWidth - 180, y: window.innerHeight - 80 });
-  const [balloonVisible, setBalloonVisible] = useState(false);
+  // fase: 'waiting' → prima comparsa dopo 20s | 'visible' → mostrato 12s | 'hidden' → nascosto 35s
+  const [balloonPhase, setBalloonPhase] = useState<'waiting' | 'visible' | 'hidden'>('waiting');
   const [balloonStopped, setBalloonStopped] = useState(false);
   const balloonRafRef = useRef<number | null>(null);
-  const balloonTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const donazioniRef = useRef<HTMLElement>(null);
 
-  // Ciclo di visibilità: prima comparsa dopo 20s, poi visibile 12s, nascosto 35s
+  // State machine: ogni fase pianifica la transizione alla prossima
   useEffect(() => {
     if (balloonStopped) return;
-    const schedule = (delay: number, visible: boolean) => {
-      balloonTimerRef.current = setTimeout(() => {
-        setBalloonVisible(visible);
-        schedule(visible ? 12000 : 35000, !visible);
-      }, delay);
-    };
-    schedule(20000, true);
-    return () => { if (balloonTimerRef.current) clearTimeout(balloonTimerRef.current); };
-  }, [balloonStopped]);
+    const delay = balloonPhase === 'waiting' ? 20000 : balloonPhase === 'visible' ? 12000 : 35000;
+    const next = balloonPhase === 'visible' ? 'hidden' : 'visible';
+    const t = setTimeout(() => setBalloonPhase(next), delay);
+    return () => clearTimeout(t);
+  }, [balloonPhase, balloonStopped]);
+
+  const balloonVisible = balloonPhase === 'visible';
 
   // Animazione sinusoidale (gira solo quando visibile)
   useEffect(() => {
-    if (balloonStopped || !balloonVisible) return;
+    if (!balloonVisible) return;
     const W = window.innerWidth, H = window.innerHeight;
     const cx = W * 0.5, cy = H * 0.5;
     const ax = W * 0.38, ay = H * 0.35;
@@ -484,7 +482,7 @@ export default function App() {
     };
     balloonRafRef.current = requestAnimationFrame(tick);
     return () => { if (balloonRafRef.current) cancelAnimationFrame(balloonRafRef.current); };
-  }, [balloonStopped, balloonVisible]);
+  }, [balloonVisible]);
   const [showAccessibilita, setShowAccessibilita] = useState(false);
   const [modalitaAccessibile, setModalitaAccessibile] = useState(() => localStorage.getItem('modalita_accessibile') === '1');
   const [talkbackInApp, setTalkbackInApp] = useState(() => localStorage.getItem('talkback_inapp') === '1');
@@ -4074,22 +4072,20 @@ export default function App() {
           <div
             role="button"
             tabIndex={0}
-            onClick={() => { setBalloonStopped(true); if (balloonRafRef.current) cancelAnimationFrame(balloonRafRef.current); if (balloonTimerRef.current) clearTimeout(balloonTimerRef.current); setShowDonazioni(true); donazioniRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }}
-            onKeyDown={e => { if (e.key === 'Enter') { setBalloonStopped(true); if (balloonRafRef.current) cancelAnimationFrame(balloonRafRef.current); if (balloonTimerRef.current) clearTimeout(balloonTimerRef.current); setShowDonazioni(true); donazioniRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }); } }}
+            onClick={() => { setBalloonStopped(true); setBalloonPhase('hidden'); if (balloonRafRef.current) cancelAnimationFrame(balloonRafRef.current); setShowDonazioni(true); donazioniRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }}
+            onKeyDown={e => { if (e.key === 'Enter') { setBalloonStopped(true); setBalloonPhase('hidden'); if (balloonRafRef.current) cancelAnimationFrame(balloonRafRef.current); setShowDonazioni(true); donazioniRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }); } }}
             aria-label="Sostieni il progetto con una donazione"
             style={{
               position: 'fixed',
               left: balloonPos.x,
               top: balloonPos.y,
               zIndex: 9990,
-              opacity: balloonVisible ? 0.75 : 0,
+              opacity: balloonVisible ? 0.78 : 0,
               pointerEvents: balloonVisible ? 'auto' : 'none',
               cursor: 'pointer',
               userSelect: 'none',
-              transition: 'left 0.08s linear, top 0.08s linear, opacity 0.8s ease',
+              transition: 'left 0.08s linear, top 0.08s linear, opacity 0.9s ease',
             }}
-            onMouseEnter={e => (e.currentTarget.style.opacity = '1')}
-            onMouseLeave={e => (e.currentTarget.style.opacity = '0.75')}
           >
             {/* Corpo del palloncino */}
             <div style={{
