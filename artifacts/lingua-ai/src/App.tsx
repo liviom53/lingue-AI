@@ -297,6 +297,29 @@ export default function App() {
   const [showDonazioni, setShowDonazioni] = useState(false);
   const [showAccessibilita, setShowAccessibilita] = useState(false);
   const [modalitaAccessibile, setModalitaAccessibile] = useState(() => localStorage.getItem('modalita_accessibile') === '1');
+  const [talkbackInApp, setTalkbackInApp] = useState(() => localStorage.getItem('talkback_inapp') === '1');
+
+  useEffect(() => {
+    if (!talkbackInApp) return;
+    const speak = (text: string) => {
+      window.speechSynthesis.cancel();
+      const utt = new SpeechSynthesisUtterance(text);
+      utt.lang = 'it-IT';
+      utt.rate = 1.0;
+      window.speechSynthesis.speak(utt);
+    };
+    const handleClick = (e: MouseEvent) => {
+      const el = e.target as HTMLElement;
+      const node = el.closest('[aria-label]') || el.closest('button') || el.closest('a') || el.closest('[role]') || el;
+      const label =
+        node.getAttribute('aria-label') ||
+        node.getAttribute('placeholder') ||
+        (node as HTMLElement).innerText?.replace(/\s+/g, ' ').trim().slice(0, 120);
+      if (label) speak(label);
+    };
+    document.addEventListener('click', handleClick, true);
+    return () => document.removeEventListener('click', handleClick, true);
+  }, [talkbackInApp]);
   const [showDemoMenu, setShowDemoMenu] = useState(false);
   const [showFunzionalitaApp, setShowFunzionalitaApp] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
@@ -2997,6 +3020,42 @@ export default function App() {
           </button>
           {showAccessibilita && (
             <div id="accessibilita-panel" style={{ marginTop: '14px' }}>
+
+              {/* Toggle TalkBack in-app */}
+              <div style={{ marginBottom: '12px', background: '#0f172a', borderRadius: '12px', padding: '14px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                  <div>
+                    <p style={{ margin: 0, fontSize: '0.88rem', fontWeight: 700, color: '#f8fafc' }}>🔊 Leggi elementi (TalkBack in-app)</p>
+                    <p style={{ margin: '2px 0 0', fontSize: '0.75rem', color: '#94a3b8' }}>Ogni elemento toccato viene letto ad alta voce</p>
+                  </div>
+                  <button
+                    role="switch"
+                    aria-checked={talkbackInApp}
+                    aria-label={talkbackInApp ? 'TalkBack in-app attivo, tocca per disattivare' : 'TalkBack in-app disattivo, tocca per attivare'}
+                    onClick={() => {
+                      const next = !talkbackInApp;
+                      setTalkbackInApp(next);
+                      localStorage.setItem('talkback_inapp', next ? '1' : '0');
+                      if (!next) window.speechSynthesis.cancel();
+                    }}
+                    style={{
+                      width: '56px', height: '30px', borderRadius: '15px', border: 'none', cursor: 'pointer',
+                      background: talkbackInApp ? '#10b981' : '#334155',
+                      position: 'relative', flexShrink: 0, transition: 'background 0.2s',
+                    }}
+                  >
+                    <span style={{
+                      position: 'absolute', top: '3px',
+                      left: talkbackInApp ? '29px' : '3px',
+                      width: '24px', height: '24px', borderRadius: '50%',
+                      background: '#fff', transition: 'left 0.2s', display: 'block',
+                    }} />
+                  </button>
+                </div>
+                <p style={{ margin: 0, fontSize: '0.75rem', color: talkbackInApp ? '#10b981' : '#475569', fontWeight: 600 }}>
+                  {talkbackInApp ? '✅ Lettura attiva — tocca qualsiasi elemento' : '⭕ Lettura disattiva'}
+                </p>
+              </div>
 
               {/* Toggle Modalità Accessibile */}
               <div style={{ marginBottom: '16px', background: '#0f172a', borderRadius: '12px', padding: '14px' }}>
