@@ -281,30 +281,49 @@ export default function App() {
   });
 
   // ── Controllo versione server (indipendente dal SW) ──────────────────────
-  // Funziona anche quando il SW serve contenuto cachato vecchio
+  // "Versione in uso" = quella caricata all'avvio di questa sessione (sessionStorage)
+  // "Versione più recente" = quella restituita dal server (fetched dalla rete)
+  // Il confronto è: in_uso !== più_recente → mostra banner
   const [serverNeedRefresh, setServerNeedRefresh] = useState(false);
+  const latestServerVersionRef = useRef<string | null>(null);
+
   useEffect(() => {
+    const SESSION_KEY = 'app_running_v'; // versione caricata all'avvio di questa sessione
+
     const checkVersion = async () => {
       try {
         const res = await fetch('/api/version', { cache: 'no-store' });
         if (!res.ok) return;
         const { v } = await res.json();
-        const stored = localStorage.getItem('app_server_version');
-        if (stored && stored !== String(v)) {
-          setServerNeedRefresh(true);
-        } else {
-          localStorage.setItem('app_server_version', String(v));
+        const latestV = String(v);
+        latestServerVersionRef.current = latestV;
+
+        const runningV = sessionStorage.getItem(SESSION_KEY);
+        if (!runningV) {
+          // Prima chiamata di questa sessione: questa È la versione in uso
+          sessionStorage.setItem(SESSION_KEY, latestV);
+          return;
         }
-      } catch { /* offline o errore rete — ignora */ }
+        // Se il server ha una versione diversa da quella con cui l'app è partita → aggiorna
+        if (runningV !== latestV) {
+          setServerNeedRefresh(true);
+        }
+      } catch { /* offline o errore rete — ignora silenziosamente */ }
     };
+
     checkVersion();
+    // Ricontrolla ogni volta che l'utente riporta l'app in primo piano
     const onVisible = () => { if (document.visibilityState === 'visible') checkVersion(); };
     document.addEventListener('visibilitychange', onVisible);
     return () => document.removeEventListener('visibilitychange', onVisible);
   }, []);
 
   const forceUpdate = async () => {
-    // Rimuove tutti i SW e svuota le cache, poi ricarica
+    // Prima di ricaricare, aggiorna la "versione in uso" alla nuova →
+    // così dopo il reload il banner NON riappare
+    if (latestServerVersionRef.current) {
+      sessionStorage.setItem('app_running_v', latestServerVersionRef.current);
+    }
     try {
       const regs = await navigator.serviceWorker?.getRegistrations() ?? [];
       await Promise.all(regs.map(r => r.unregister()));
