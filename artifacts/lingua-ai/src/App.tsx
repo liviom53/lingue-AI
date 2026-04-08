@@ -506,7 +506,7 @@ export default function App() {
   const [helpAiResult, setHelpAiResult] = useState<string | null>(null);
   const [helpAiLoading, setHelpAiLoading] = useState(false);
   const [helpListening, setHelpListening] = useState(false);
-  const [activeDemoNum, setActiveDemoNum] = useState<1|2|3|4>(1);
+  const [activeDemoNum, setActiveDemoNum] = useState<1|2|3|4|5>(1);
   const [progress, setProgress] = useState<ProgressStats>(loadProgress);
   const [profile, setProfile] = useState<UserProfile>(loadProfile);
   const [profileSaved, setProfileSaved] = useState(false);
@@ -633,16 +633,15 @@ export default function App() {
   // Aggiorna la posizione del cursore demo DOPO ogni render di demoStep
   useEffect(() => {
     if (!demoActive) return;
-    // Step 3: demo 2 punta allo shadow-toggle, tutte le altre al testo tradotto
-    const STEP_TARGETS: Record<number, string> = {
-      0: 'textarea',
-      1: 'lang-grid',
-      2: 'translate-btn',
-      3: activeDemoNum === 2 ? 'shadow-toggle' : 'translated-text',
-      4: 'tab-profilo',
-      5: '',
+    // Cursori specifici per ogni demo × step
+    const CURSOR_TARGETS: Record<number, string[]> = {
+      1: ['textarea', 'lang-grid', 'translate-btn', 'translated-text', 'translated-text', ''],
+      2: ['textarea', 'lang-grid', 'translate-btn', 'speak-btn',       'ipa-btn',          ''],
+      3: ['textarea', 'lang-grid', 'translate-btn', 'shadow-toggle',   'shadow-toggle',    ''],
+      4: ['textarea', 'lang-grid', 'translate-btn', 'chat-section',    'chat-section',     ''],
+      5: ['textarea', 'lang-grid', 'translate-btn', 'star-btn',        'tab-vocabolario',  ''],
     };
-    const target = STEP_TARGETS[demoStep];
+    const target = (CURSOR_TARGETS[activeDemoNum] ?? CURSOR_TARGETS[1])[demoStep] ?? '';
     if (!target) { setDemoCursorPos(null); return; }
 
     let rafId: number;
@@ -1141,44 +1140,54 @@ export default function App() {
   // Step 4: tab panel aperto → descrivo il pannello visibile
   // Step 5: fine demo
 
-  // ── Demo 1: Traduzione & X-Ray ──────────────────────────────────────────
+  // ── Demo 1: Traduzione & X-Ray grammaticale ─────────────────────────────
   const DEMO_STEPS = [
-    { icon: '✍️', label: '1/5 — Scrittura',   desc: 'Scrivo una frase in italiano...',                       narration: 'Scrivo una frase in italiano.' },
-    { icon: '🌍', label: '2/5 — Lingua',       desc: 'Scelgo la lingua di destinazione...',                  narration: 'Scelgo inglese come lingua.' },
-    { icon: '🔄', label: '3/5 — Traduzione',   desc: 'Premo TRADUCI — risultato istantaneo con IPA e audio', narration: 'Premo Traduci.' },
-    { icon: '🔬', label: '4/5 — X-Ray',        desc: 'Analisi grammaticale X-Ray parola per parola',          narration: 'Ecco la traduzione. Analizzo la grammatica.' },
-    { icon: '⭐', label: '5/5 — Profilo',       desc: 'Profilo, Progressi, Segnalibri, Quiz e altro...',       narration: 'Apro profilo e progressi.' },
-    { icon: '🎉', label: 'Demo completata',    desc: 'Esplora tutte le funzionalità!',                        narration: 'Demo completata!' },
+    { icon: '✍️', label: '1/5 — Scrittura',   desc: 'Scrivo una frase in italiano da tradurre...',               narration: 'Scrivo una frase in italiano.' },
+    { icon: '🌍', label: '2/5 — Lingua',       desc: 'Seleziono l\'inglese come lingua di destinazione',          narration: 'Seleziono l\'inglese.' },
+    { icon: '🔄', label: '3/5 — Traduzione',   desc: 'Premo TRADUCI — traduzione istantanea!',                    narration: 'Premo Traduci. Il risultato arriva in pochi secondi.' },
+    { icon: '🔬', label: '4/5 — X-Ray',        desc: 'Tocco una parola della traduzione per analizzarla',         narration: 'Tocco una parola per aprire l\'analisi X-Ray.' },
+    { icon: '📖', label: '5/5 — Analisi',      desc: 'Vedo categoria grammaticale, genere, tempo e curiosità',    narration: 'Leggo la categoria grammaticale e le curiosità sulla parola.' },
+    { icon: '🎉', label: 'Demo completata',    desc: 'Ogni parola è una finestra sulla lingua — prova tu!',       narration: 'Demo completata. Prova tu adesso!' },
   ];
 
-  // ── Demo 2: Shadowing & Pronuncia ───────────────────────────────────────
+  // ── Demo 2: Pronuncia, Ascolto & IPA ────────────────────────────────────
   const DEMO2_STEPS = [
-    { icon: '🎙️', label: '1/5 — Scrittura',   desc: 'Scrivo una frase da imparare in francese...',           narration: 'Imparo la pronuncia con lo Shadowing.' },
-    { icon: '🌍', label: '2/5 — Lingua',       desc: 'Scelgo il francese come lingua target...',              narration: 'Scelgo il francese.' },
-    { icon: '🔄', label: '3/5 — Traduzione',   desc: 'Traduco e ascolto la pronuncia nativa...',              narration: 'Premo Traduci.' },
-    { icon: '🎙️', label: '4/5 — Shadowing',   desc: 'Apro Shadowing: ascolto la frase, poi la ripeto',       narration: 'Apro lo Shadowing.' },
-    { icon: '📊', label: '5/5 — Progressi',    desc: 'Ogni esercizio migliora il punteggio!',                 narration: 'Vedo i progressi salvati.' },
-    { icon: '🎉', label: 'Demo completata',    desc: 'Attiva lo Shadowing e inizia a praticare!',             narration: 'Esercita ogni giorno!' },
+    { icon: '🔊', label: '1/5 — Frase',        desc: 'Scrivo una frase da imparare in tedesco...',                narration: 'Imparo la pronuncia tedesca con IPA e audio nativo.' },
+    { icon: '🌍', label: '2/5 — Lingua',        desc: 'Seleziono il tedesco come lingua target',                  narration: 'Seleziono il tedesco.' },
+    { icon: '🔄', label: '3/5 — Traduzione',    desc: 'Premo TRADUCI — la frase è pronta!',                       narration: 'Premo Traduci.' },
+    { icon: '🔊', label: '4/5 — Ascolto',       desc: 'Premo 🔊 — il browser riproduce la pronuncia nativa',      narration: 'Premo il tasto audio per ascoltare la voce nativa del browser.' },
+    { icon: '🔤', label: '5/5 — IPA',           desc: 'Premo "IPA + sillabazione" — guida fonetica internazionale', narration: 'Apro I P A e sillabazione per capire ogni suono della parola.' },
+    { icon: '🎉', label: 'Demo completata',     desc: 'Ascolta, leggi l\'IPA e ripeti — la pronuncia migliora!',  narration: 'Con IPA e audio nativo la pronuncia migliora rapidamente!' },
   ];
 
-  // ── Demo 3: Chat AI & Roleplay ───────────────────────────────────────────
+  // ── Demo 3: Shadowing ────────────────────────────────────────────────────
   const DEMO3_STEPS = [
-    { icon: '🤖', label: '1/5 — Scrittura',   desc: 'Scrivo una frase da chiedere al Tutor AI...',            narration: 'Uso il Tutor AI DeepSeek.' },
-    { icon: '🌍', label: '2/5 — Lingua',       desc: 'Scelgo il giapponese come lingua target...',             narration: 'Scelgo il giapponese.' },
-    { icon: '🔄', label: '3/5 — Traduzione',   desc: 'Traduco la frase con il supporto AI...',                 narration: 'Premo Traduci.' },
-    { icon: '💬', label: '4/5 — Chat AI',      desc: 'Apro la chat — l\'AI spiega grammatica ed esempi...',    narration: 'Apro il Tutor AI.' },
-    { icon: '📊', label: '5/5 — Progressi',    desc: 'Profilo e progressi sempre aggiornati...',               narration: 'Vedo i miei progressi.' },
-    { icon: '🎉', label: 'Demo completata',    desc: 'Inizia a chattare con il Tutor AI!',                     narration: 'L\'AI risponde in italiano!' },
+    { icon: '🎙️', label: '1/5 — Frase',        desc: 'Scrivo una frase da imparare in francese...',               narration: 'Con lo Shadowing imparo esattamente come i poliglotti.' },
+    { icon: '🌍', label: '2/5 — Lingua',        desc: 'Seleziono il francese come lingua target',                  narration: 'Seleziono il francese.' },
+    { icon: '🔄', label: '3/5 — Traduzione',    desc: 'Premo TRADUCI — pronti per lo Shadowing!',                  narration: 'Premo Traduci.' },
+    { icon: '🔁', label: '4/5 — Shadowing',     desc: 'Apro Shadowing — l\'AI genera una frase da ascoltare e ripetere', narration: 'Apro lo Shadowing. L\'intelligenza artificiale genera una frase in francese.' },
+    { icon: '📊', label: '5/5 — Score',         desc: 'Ripeto ad alta voce — ricevo uno score parola per parola!', narration: 'Poi ripeto ad alta voce e ricevo uno score di pronuncia parola per parola.' },
+    { icon: '🎉', label: 'Demo completata',     desc: 'Ascolta e ripeti ogni giorno — i progressi arrivano!',      narration: 'Esercita ogni giorno per assorbire ritmo e intonazione naturale.' },
   ];
 
-  // ── Demo 4: Segnalibri & Vocabolario ─────────────────────────────────────
+  // ── Demo 4: Chat AI & Roleplay ───────────────────────────────────────────
   const DEMO4_STEPS = [
-    { icon: '⭐', label: '1/5 — Scrittura',    desc: 'Scrivo una frase per costruire il vocabolario...',       narration: 'Costruisco il vocabolario personale.' },
-    { icon: '🌍', label: '2/5 — Lingua',       desc: 'Scelgo lo spagnolo come lingua target...',               narration: 'Scelgo lo spagnolo.' },
-    { icon: '🔄', label: '3/5 — Traduzione',   desc: 'Traduco la frase che voglio ricordare...',               narration: 'Premo Traduci.' },
-    { icon: '📚', label: '4/5 — Segnalibri',   desc: 'Vedo la traduzione — posso salvarla nei Segnalibri',     narration: 'Ecco la frase in spagnolo.' },
-    { icon: '📅', label: '5/5 — Calendario',   desc: 'Il Calendario mostra la costanza quotidiana!',           narration: 'Apro il calendario progressi.' },
-    { icon: '🎉', label: 'Demo completata',    desc: 'Studia ogni giorno e diventerai fluente!',               narration: 'Studia ogni giorno!' },
+    { icon: '🤖', label: '1/5 — Domanda',       desc: 'Scrivo una domanda per il Tutor AI in giapponese...',       narration: 'Il tutor DeepSeek mi aiuta a conversare come un madrelingua.' },
+    { icon: '🌍', label: '2/5 — Lingua',         desc: 'Seleziono il giapponese — lingua ricca di sfumature',      narration: 'Seleziono il giapponese.' },
+    { icon: '🔄', label: '3/5 — Traduzione',     desc: 'Premo TRADUCI — vedo la frase in giapponese',              narration: 'Premo Traduci.' },
+    { icon: '💬', label: '4/5 — Chat AI',        desc: 'Apro il Tutor AI — scelgo uno scenario roleplay',          narration: 'Apro la Chat con il Tutor AI. Posso scegliere uno scenario roleplay.' },
+    { icon: '💡', label: '5/5 — Correzioni',     desc: 'Il tutor risponde e corregge gli errori con 💡',           narration: 'Il tutor risponde in italiano e corregge eventuali errori grammaticali.' },
+    { icon: '🎉', label: 'Demo completata',      desc: 'Scegli: bar, hotel, medico, stazione, conversazione libera', narration: 'Scegli uno scenario e inizia a conversare davvero!' },
+  ];
+
+  // ── Demo 5: Segnalibri & Vocabolario ─────────────────────────────────────
+  const DEMO5_STEPS = [
+    { icon: '⭐', label: '1/5 — Frase',          desc: 'Scrivo una frase da aggiungere al vocabolario...',          narration: 'Costruisco il vocabolario personale con i segnalibri.' },
+    { icon: '🌍', label: '2/5 — Lingua',          desc: 'Seleziono lo spagnolo come lingua target',                 narration: 'Seleziono lo spagnolo.' },
+    { icon: '🔄', label: '3/5 — Traduzione',      desc: 'Premo TRADUCI — la frase è pronta da salvare!',            narration: 'Premo Traduci.' },
+    { icon: '⭐', label: '4/5 — Segnalibro',      desc: 'Premo ⭐ — la traduzione va nel vocabolario personale!',   narration: 'Premo la stella per salvare la traduzione nel vocabolario.' },
+    { icon: '📚', label: '5/5 — Vocabolario',     desc: 'Apro il Vocabolario — rivedo tutto e faccio il Quiz!',     narration: 'Apro il Vocabolario. Posso ripassare le parole e fare il quiz.' },
+    { icon: '🎉', label: 'Demo completata',       desc: 'Studia ogni giorno — diventerai fluente!',                 narration: 'Studia ogni giorno e diventerai fluente!' },
   ];
 
   const narrateDemo = (text: string) => {
@@ -1246,7 +1255,7 @@ export default function App() {
     setDemoCursorClicking(false);
   };
 
-  const startDemo = (demoNum: 1|2|3|4 = 1) => {
+  const startDemo = (demoNum: 1|2|3|4|5 = 1) => {
     stopDemo();
     setShowDemoMenu(false);
     setActiveDemoNum(demoNum);
@@ -1290,73 +1299,97 @@ export default function App() {
       }, delay);
     };
 
-    // Struttura uniforme per tutte le demo:
-    // t=0: lingua, t=3000: traduci, t=3600: click, t=8000: feature, t=8600: click,
-    // t=13000: profilo/tab, t=13600: click, t=17000: fine, t=20000: stop
     const runSequence = () => {
       if (demoNum === 1) {
+        // Demo 1 — Traduzione & X-Ray (en)
         t(() => { setSelectedLang('en'); setDemoStep(1); narrateDemo(DEMO_STEPS[1].narration); }, 0);
         t(() => { setDemoStep(2); narrateDemo(DEMO_STEPS[2].narration); handleTranslate('en'); }, 3000);
-        t(() => animateDemoCursorClick(), 3600);
+        t(() => animateDemoCursorClick(), 3500);
         t(() => {
           setDemoStep(3); narrateDemo(DEMO_STEPS[3].narration);
-          const words = translatedTextRef.current.split(' ').filter(w => w.replace(/[^a-zA-Z]/g, '').length > 2);
+          const words = translatedTextRef.current.split(' ').filter(w => w.replace(/[^a-zA-ZÀ-ÿ]/g, '').length > 2);
           if (words.length > 0) fetchGrammar(words[0]);
         }, 8000);
-        // scroll→ricalcolo cursore (350ms) + click 100ms dopo ricalcolo (350+650+100=1100ms)
-        scrollDemo('[data-demo="translated-text"]', '[data-demo="translated-text"]', 8350);
-        t(() => animateDemoCursorClick(), 9100);
-        t(() => { setDemoStep(4); narrateDemo(DEMO_STEPS[4].narration); setShowTabPanel(true); setActiveTab('profilo'); }, 13000);
-        scrollDemo('[data-demo="tab-panel-toggle"]', '[data-demo="tab-profilo"]', 13400);
-        t(() => animateDemoCursorClick(), 14150);
-        t(() => { setDemoStep(5); narrateDemo(DEMO_STEPS[5].narration); }, 17500);
-        t(() => stopDemo(), 20500);
+        scrollDemo('[data-demo="translated-text"]', '[data-demo="translated-text"]', 8200);
+        t(() => animateDemoCursorClick(), 8900);
+        t(() => { setDemoStep(4); narrateDemo(DEMO_STEPS[4].narration); }, 12500);
+        t(() => { setDemoStep(5); narrateDemo(DEMO_STEPS[5].narration); }, 17000);
+        t(() => stopDemo(), 20000);
       } else if (demoNum === 2) {
-        t(() => { setSelectedLang('fr'); setDemoStep(1); narrateDemo(DEMO2_STEPS[1].narration); }, 0);
-        t(() => { setDemoStep(2); narrateDemo(DEMO2_STEPS[2].narration); handleTranslate('fr'); }, 3000);
-        t(() => animateDemoCursorClick(), 3600);
-        t(() => { setDemoStep(3); narrateDemo(DEMO2_STEPS[3].narration); setShowShadow(true); fetchShadowPhrase(); }, 8000);
-        scrollDemo('[data-demo="shadow-toggle"]', '[data-demo="shadow-toggle"]', 8400);
-        t(() => animateDemoCursorClick(), 9150);
-        t(() => { setDemoStep(4); narrateDemo(DEMO2_STEPS[4].narration); setShowTabPanel(true); setActiveTab('progressi'); }, 13000);
-        scrollDemo('[data-demo="tab-panel-toggle"]', '[data-demo="tab-profilo"]', 13400);
-        t(() => animateDemoCursorClick(), 14150);
+        // Demo 2 — Pronuncia, Ascolto & IPA (de)
+        t(() => { setSelectedLang('de'); setDemoStep(1); narrateDemo(DEMO2_STEPS[1].narration); }, 0);
+        t(() => { setDemoStep(2); narrateDemo(DEMO2_STEPS[2].narration); handleTranslate('de'); }, 3000);
+        t(() => animateDemoCursorClick(), 3500);
+        t(() => { setDemoStep(3); narrateDemo(DEMO2_STEPS[3].narration); }, 8000);
+        scrollDemo('[data-demo="speak-btn"]', '[data-demo="speak-btn"]', 8200);
+        t(() => animateDemoCursorClick(), 8900);
+        t(() => { setDemoStep(4); narrateDemo(DEMO2_STEPS[4].narration); fetchIpa(); }, 12500);
+        scrollDemo('[data-demo="ipa-btn"]', '[data-demo="ipa-btn"]', 12700);
+        t(() => animateDemoCursorClick(), 13400);
         t(() => { setDemoStep(5); narrateDemo(DEMO2_STEPS[5].narration); }, 17500);
         t(() => stopDemo(), 20500);
       } else if (demoNum === 3) {
-        t(() => { setSelectedLang('ja'); setDemoStep(1); narrateDemo(DEMO3_STEPS[1].narration); }, 0);
-        t(() => { setDemoStep(2); narrateDemo(DEMO3_STEPS[2].narration); handleTranslate('ja'); }, 3000);
-        t(() => animateDemoCursorClick(), 3600);
-        t(() => { setDemoStep(3); narrateDemo(DEMO3_STEPS[3].narration); setShowChat(true); }, 8000);
-        scrollDemo('[data-demo="chat-section"]', '[data-demo="chat-section"]', 8400);
-        t(() => animateDemoCursorClick(), 9150);
-        t(() => { setDemoStep(4); narrateDemo(DEMO3_STEPS[4].narration); setShowTabPanel(true); setActiveTab('progressi'); }, 13000);
-        scrollDemo('[data-demo="tab-panel-toggle"]', '[data-demo="tab-profilo"]', 13400);
-        t(() => animateDemoCursorClick(), 14150);
+        // Demo 3 — Shadowing (fr)
+        t(() => { setSelectedLang('fr'); setDemoStep(1); narrateDemo(DEMO3_STEPS[1].narration); }, 0);
+        t(() => { setDemoStep(2); narrateDemo(DEMO3_STEPS[2].narration); handleTranslate('fr'); }, 3000);
+        t(() => animateDemoCursorClick(), 3500);
+        t(() => { setDemoStep(3); narrateDemo(DEMO3_STEPS[3].narration); setShowShadow(true); fetchShadowPhrase(); }, 8000);
+        scrollDemo('[data-demo="shadow-toggle"]', '[data-demo="shadow-toggle"]', 8200);
+        t(() => animateDemoCursorClick(), 8900);
+        t(() => { setDemoStep(4); narrateDemo(DEMO3_STEPS[4].narration); }, 13000);
         t(() => { setDemoStep(5); narrateDemo(DEMO3_STEPS[5].narration); }, 17500);
         t(() => stopDemo(), 20500);
-      } else {
-        t(() => { setSelectedLang('es'); setDemoStep(1); narrateDemo(DEMO4_STEPS[1].narration); }, 0);
-        t(() => { setDemoStep(2); narrateDemo(DEMO4_STEPS[2].narration); handleTranslate('es'); }, 3000);
-        t(() => animateDemoCursorClick(), 3600);
-        t(() => { setDemoStep(3); narrateDemo(DEMO4_STEPS[3].narration); }, 8000);
-        scrollDemo('[data-demo="translated-text"]', '[data-demo="translated-text"]', 8350);
-        t(() => animateDemoCursorClick(), 9100);
-        t(() => { setDemoStep(4); narrateDemo(DEMO4_STEPS[4].narration); setShowTabPanel(true); setActiveTab('calendario'); }, 13000);
-        scrollDemo('[data-demo="tab-panel-toggle"]', '[data-demo="tab-profilo"]', 13400);
-        t(() => animateDemoCursorClick(), 14150);
+      } else if (demoNum === 4) {
+        // Demo 4 — Chat AI & Roleplay (ja)
+        t(() => { setSelectedLang('ja'); setDemoStep(1); narrateDemo(DEMO4_STEPS[1].narration); }, 0);
+        t(() => { setDemoStep(2); narrateDemo(DEMO4_STEPS[2].narration); handleTranslate('ja'); }, 3000);
+        t(() => animateDemoCursorClick(), 3500);
+        t(() => { setDemoStep(3); narrateDemo(DEMO4_STEPS[3].narration); setShowChat(true); }, 8000);
+        scrollDemo('[data-demo="chat-section"]', '[data-demo="chat-section"]', 8200);
+        t(() => animateDemoCursorClick(), 8900);
+        t(() => { setDemoStep(4); narrateDemo(DEMO4_STEPS[4].narration); }, 13000);
         t(() => { setDemoStep(5); narrateDemo(DEMO4_STEPS[5].narration); }, 17500);
+        t(() => stopDemo(), 20500);
+      } else {
+        // Demo 5 — Segnalibri & Vocabolario (es)
+        t(() => { setSelectedLang('es'); setDemoStep(1); narrateDemo(DEMO5_STEPS[1].narration); }, 0);
+        t(() => { setDemoStep(2); narrateDemo(DEMO5_STEPS[2].narration); handleTranslate('es'); }, 3000);
+        t(() => animateDemoCursorClick(), 3500);
+        t(() => { setDemoStep(3); narrateDemo(DEMO5_STEPS[3].narration); }, 8000);
+        scrollDemo('[data-demo="star-btn"]', '[data-demo="star-btn"]', 8200);
+        t(() => {
+          animateDemoCursorClick();
+          // Salva segnalibro programmaticamente
+          const bm = {
+            it: phrases[5],
+            tr: translatedTextRef.current || '—',
+            lang: 'es',
+            langName: 'Spagnolo',
+            date: new Date().toISOString().split('T')[0],
+          };
+          setBookmarks(prev => {
+            const updated = [bm, ...prev.filter(b => !(b.it === bm.it && b.lang === bm.lang))];
+            saveBookmarks(updated);
+            return updated;
+          });
+          setBookmarked(true);
+        }, 8900);
+        t(() => { setDemoStep(4); narrateDemo(DEMO5_STEPS[4].narration); setShowTabPanel(true); setActiveTab('vocabolario'); }, 13000);
+        scrollDemo('[data-demo="tab-panel-toggle"]', '[data-demo="tab-vocabolario"]', 13200);
+        t(() => animateDemoCursorClick(), 13900);
+        t(() => { setDemoStep(5); narrateDemo(DEMO5_STEPS[5].narration); }, 17500);
         t(() => stopDemo(), 20500);
       }
     };
 
-    const phrases: Record<1|2|3|4, string> = {
-      1: 'Ho perso il treno, ci vediamo dopo?',
-      2: 'Il sole tramonta lentamente.',
-      3: 'Come si dice grazie in questa lingua?',
-      4: 'Ogni giorno imparo qualcosa di nuovo.',
+    const phrases: Record<1|2|3|4|5, string> = {
+      1: 'Ho fame, cerco un ristorante vicino.',
+      2: 'Il sole tramonta lentamente sul lago.',
+      3: 'Vorrei prenotare un tavolo per due.',
+      4: 'Come si dice grazie in questa lingua?',
+      5: 'La conoscenza è la chiave del successo.',
     };
-    const allSteps = [DEMO_STEPS, DEMO2_STEPS, DEMO3_STEPS, DEMO4_STEPS];
+    const allSteps = [DEMO_STEPS, DEMO2_STEPS, DEMO3_STEPS, DEMO4_STEPS, DEMO5_STEPS];
     const PHRASE = phrases[demoNum];
 
     let i = 0;
@@ -1597,10 +1630,11 @@ export default function App() {
           {showDemoMenu && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
               {([
-                { key: 'demo1', icon: '🌍', label: 'Demo Traduzione',  sub: 'X-Ray grammaticale',    active: false, onClick: () => startDemo(1) },
-                { key: 'demo2', icon: '🎙️', label: 'Demo Shadowing',  sub: 'Ripeti e impara',       active: false, onClick: () => startDemo(2) },
-                { key: 'demo3', icon: '🤖', label: 'Demo Chat AI',    sub: 'Conversa con DeepSeek', active: false, onClick: () => startDemo(3) },
-                { key: 'demo4', icon: '⭐', label: 'Demo Vocabolario', sub: 'Salva e ripassa',       active: false, onClick: () => startDemo(4) },
+                { key: 'demo1', icon: '🌍', label: 'Demo Traduzione',   sub: 'X-Ray grammaticale',      active: false, onClick: () => startDemo(1) },
+                { key: 'demo2', icon: '🔊', label: 'Demo Pronuncia',   sub: 'IPA + audio nativo',      active: false, onClick: () => startDemo(2) },
+                { key: 'demo3', icon: '🔁', label: 'Demo Shadowing',   sub: 'Ripeti come i poliglotti', active: false, onClick: () => startDemo(3) },
+                { key: 'demo4', icon: '🤖', label: 'Demo Chat AI',     sub: 'Roleplay con DeepSeek',   active: false, onClick: () => startDemo(4) },
+                { key: 'demo5', icon: '⭐', label: 'Demo Vocabolario', sub: 'Segnalibri & Quiz',       active: false, onClick: () => startDemo(5) },
                 { key: 'help',  icon: '❓', label: 'Aiuto',            sub: showHelp ? 'Chiudi ▲' : 'Come usare l\'app ▼',             active: showHelp,             onClick: () => setShowHelp(v => !v) },
                 { key: 'video', icon: '🎬', label: 'Funzionalità App', sub: showFunzionalitaApp ? 'Chiudi ▲' : 'Scopri il video demo ▼', active: showFunzionalitaApp, onClick: () => setShowFunzionalitaApp(v => !v) },
               ]).map(({ key, icon, label, sub, active, onClick }) => (
@@ -2262,6 +2296,7 @@ export default function App() {
                   {copied ? <Check aria-hidden="true" size={20} /> : <Copy aria-hidden="true" size={20} />}
                 </button>
                 <button
+                  data-demo="star-btn"
                   title={bookmarked ? 'Già nei preferiti' : 'Salva nei preferiti'}
                   aria-label={bookmarked ? 'Già salvato nei segnalibri' : 'Salva nei segnalibri'}
                   aria-pressed={bookmarked}
@@ -2300,6 +2335,7 @@ export default function App() {
                 <button
                   aria-label={`Ascolta la traduzione in ${ALL_LANGUAGES.find(l => l.code === selectedLang)?.name ?? selectedLang}`}
                   data-speak-action="true"
+                  data-demo="speak-btn"
                   onClick={() => speak(translatedText)}
                   style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '2px', display: 'flex', alignItems: 'center' }}
                 >
@@ -2368,6 +2404,7 @@ export default function App() {
             {/* IPA + Sillabazione per tutte le lingue */}
             {!ipaData && (
               <button
+                data-demo="ipa-btn"
                 aria-label={ipaLoading ? 'Caricamento IPA e sillabazione in corso' : 'Mostra trascrizione IPA e sillabazione'}
                 onClick={fetchIpa}
                 disabled={ipaLoading}
@@ -2435,6 +2472,7 @@ export default function App() {
               </div>
             )}
             <button
+              data-demo="practice-btn"
               aria-label={isPracticing ? 'Ferma registrazione pronuncia' : practiceResult ? 'Riprova la pratica pronuncia' : 'Avvia pratica pronuncia'}
               aria-pressed={isPracticing}
               style={{ ...styles.btn, backgroundColor: isPracticing ? '#f59e0b' : '#10b981' }}
@@ -2875,7 +2913,9 @@ export default function App() {
             { id: 'calendario', label: '📅 Calendario' },
             { id: 'vocabolario',label: '📚 Vocabolario' },
           ] as const).map(({ id, label }) => (
-            <button key={id} onClick={() => setActiveTab(id)}
+            <button key={id}
+              data-demo={id === 'vocabolario' ? 'tab-vocabolario' : undefined}
+              onClick={() => setActiveTab(id)}
               role="tab"
               aria-selected={activeTab === id}
               aria-label={label.replace(/[👤📊📅📚]/g, '').trim()}
@@ -3695,7 +3735,7 @@ export default function App() {
           }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               {(() => {
-              const allSteps = [DEMO_STEPS, DEMO2_STEPS, DEMO3_STEPS, DEMO4_STEPS];
+              const allSteps = [DEMO_STEPS, DEMO2_STEPS, DEMO3_STEPS, DEMO4_STEPS, DEMO5_STEPS];
               const activeSteps = allSteps[activeDemoNum - 1];
               const step = activeSteps[demoStep];
               return <>
@@ -3720,7 +3760,7 @@ export default function App() {
             })()}
             </div>
             <div style={{ display: 'flex', gap: '5px' }}>
-              {[DEMO_STEPS, DEMO2_STEPS, DEMO3_STEPS, DEMO4_STEPS][activeDemoNum - 1].map((_, idx) => (
+              {[DEMO_STEPS, DEMO2_STEPS, DEMO3_STEPS, DEMO4_STEPS, DEMO5_STEPS][activeDemoNum - 1].map((_, idx) => (
                 <div key={idx} style={{
                   flex: 1, height: '3px', borderRadius: '2px',
                   backgroundColor: idx <= demoStep ? '#10b981' : 'rgba(255,255,255,0.15)',
