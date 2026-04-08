@@ -115,6 +115,18 @@ const SCENARIOS = [
   { id: 'supermercato', icon: '🛒', label: 'Supermercato', prompt: 'You are a shop assistant in a supermarket. A customer (user) approaches you looking for help.' },
 ];
 
+const SCENARIO_LABELS: Record<string, Record<string, string>> = {
+  ristorante: { en:'Restaurant', es:'Restaurante', fr:'Restaurant', de:'Restaurant', pt:'Restaurante', ru:'Ресторан', zh:'餐厅', ja:'レストラン', ko:'레스토랑', ar:'مطعم', hi:'रेस्तरां', tr:'Restoran', nl:'Restaurant', pl:'Restauracja', uk:'Ресторан', ro:'Restaurant', el:'Εστιατόριο', sv:'Restaurang', da:'Restaurant', fi:'Ravintola', cs:'Restaurace', hu:'Étterem', he:'מסעדה', th:'ร้านอาหาร', vi:'Nhà hàng', id:'Restoran', fa:'رستوران', ca:'Restaurant', no:'Restaurant' },
+  aeroporto:   { en:'Airport', es:'Aeropuerto', fr:'Aéroport', de:'Flughafen', pt:'Aeroporto', ru:'Аэропорт', zh:'机场', ja:'空港', ko:'공항', ar:'مطار', hi:'हवाई अड्डा', tr:'Havalimanı', nl:'Luchthaven', pl:'Lotnisko', uk:'Аеропорт', ro:'Aeroport', el:'Αεροδρόμιο', sv:'Flygplats', da:'Lufthavn', fi:'Lentokenttä', cs:'Letiště', hu:'Repülőtér', he:'שדה תעופה', th:'สนามบิน', vi:'Sân bay', id:'Bandara', fa:'فرودگاه', ca:'Aeroport', no:'Flyplass' },
+  medico:      { en:'Doctor', es:'Médico', fr:'Médecin', de:'Arzt', pt:'Médico', ru:'Врач', zh:'医生', ja:'医者', ko:'의사', ar:'طبيب', hi:'डॉक्टर', tr:'Doktor', nl:'Dokter', pl:'Lekarz', uk:'Лікар', ro:'Doctor', el:'Γιατρός', sv:'Läkare', da:'Læge', fi:'Lääkäri', cs:'Doktor', hu:'Orvos', he:'רופא', th:'แพทย์', vi:'Bác sĩ', id:'Dokter', fa:'دکتر', ca:'Metge', no:'Lege' },
+  hotel:       { en:'Hotel', es:'Hotel', fr:'Hôtel', de:'Hotel', pt:'Hotel', ru:'Отель', zh:'酒店', ja:'ホテル', ko:'호텔', ar:'فندق', hi:'होटल', tr:'Otel', nl:'Hotel', pl:'Hotel', uk:'Готель', ro:'Hotel', el:'Ξενοδοχείο', sv:'Hotell', da:'Hotel', fi:'Hotelli', cs:'Hotel', hu:'Szálloda', he:'מלון', th:'โรงแรม', vi:'Khách sạn', id:'Hotel', fa:'هتل', ca:'Hotel', no:'Hotell' },
+  colloquio:   { en:'Interview', es:'Entrevista', fr:'Entretien', de:'Vorstellungsgespräch', pt:'Entrevista', ru:'Собеседование', zh:'面试', ja:'面接', ko:'면접', ar:'مقابلة', hi:'साक्षात्कार', tr:'Mülakat', nl:'Sollicitatie', pl:'Rozmowa kwalifikacyjna', uk:'Співбесіда', ro:'Interviu', el:'Συνέντευξη', sv:'Intervju', da:'Jobsamtale', fi:'Haastattelu', cs:'Pohovor', hu:'Állásinterjú', he:'ראיון עבודה', th:'สัมภาษณ์', vi:'Phỏng vấn', id:'Wawancara', fa:'مصاحبه', ca:'Entrevista', no:'Jobbintervju' },
+  supermercato:{ en:'Supermarket', es:'Supermercado', fr:'Supermarché', de:'Supermarkt', pt:'Supermercado', ru:'Супермаркет', zh:'超市', ja:'スーパー', ko:'슈퍼마켓', ar:'سوبرماركت', hi:'सुपरमार्केट', tr:'Süpermarket', nl:'Supermarkt', pl:'Supermarket', uk:'Супермаркет', ro:'Supermarket', el:'Σούπερ μάρκετ', sv:'Snabbköp', da:'Supermarked', fi:'Supermarket', cs:'Supermarket', hu:'Szupermarket', he:'סופרמרקט', th:'ซูเปอร์มาร์เก็ต', vi:'Siêu thị', id:'Supermarket', fa:'سوپرمارکت', ca:'Supermercat', no:'Supermarked' },
+};
+
+const getScenarioLabel = (scenarioId: string, langCode: string): string =>
+  SCENARIO_LABELS[scenarioId]?.[langCode] ?? SCENARIOS.find(s => s.id === scenarioId)?.label ?? scenarioId;
+
 const normalizeText = (text: string) => {
   if (!text) return "";
   return text
@@ -2272,13 +2284,13 @@ export default function App() {
                       onClick={() => handleRoleplayStart(s.id)}
                       style={{ padding: '4px 10px', borderRadius: '20px', border: '1px solid', borderColor: roleplayScenario === s.id ? '#fb923c' : '#334155', backgroundColor: roleplayScenario === s.id ? '#fb923c22' : 'transparent', color: roleplayScenario === s.id ? '#fb923c' : '#64748b', fontSize: '0.78rem', cursor: 'pointer', fontWeight: roleplayScenario === s.id ? 'bold' : 'normal' }}
                     >
-                      {s.icon} {s.label}
+                      {s.icon} {getScenarioLabel(s.id, selectedLang)}
                     </button>
                   ))}
                 </div>
                 {roleplayScenario && (
                   <p style={{ margin: '6px 0 0', fontSize: '0.72rem', color: '#fb923c' }}>
-                    🎭 Roleplay: <strong>{SCENARIOS.find(s => s.id === roleplayScenario)?.label}</strong> — l'AI è il personaggio, tu sei il cliente/paziente/candidato.
+                    🎭 Roleplay: <strong>{getScenarioLabel(roleplayScenario!, selectedLang)}</strong> — l'AI è il personaggio, tu sei il cliente/paziente/candidato.
                   </p>
                 )}
               </div>
