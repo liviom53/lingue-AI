@@ -294,7 +294,12 @@ export default function App() {
     if (sessionStorage.getItem('app_just_updated') === '1') {
       sessionStorage.removeItem('app_just_updated');
       setJustUpdated(true);
-      setTimeout(() => setJustUpdated(false), 4000);
+      setTimeout(() => setJustUpdated(false), 5000);
+    }
+    // Rimuovi ?_v=… dall'URL dopo il reload forzato
+    if (window.location.search.includes('_v=')) {
+      const clean = window.location.pathname;
+      window.history.replaceState(null, '', clean);
     }
   }, []);
 
@@ -331,11 +336,13 @@ export default function App() {
 
   const forceUpdate = async () => {
     setIsUpdating(true);
-    // Prima di ricaricare: aggiorna la versione in uso (no banner al reload)
+    // Pausa: l'utente vede il messaggio "Aggiornamento in corso…" per 1.5 sec
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    // Aggiorna la versione in uso (no banner al reload)
     if (latestServerVersionRef.current) {
       sessionStorage.setItem('app_running_v', latestServerVersionRef.current);
     }
-    // Segnala che la prossima apertura è post-aggiornamento → mostra conferma
+    // Segnala che la prossima apertura è post-aggiornamento → mostra banner verde
     sessionStorage.setItem('app_just_updated', '1');
     try {
       const regs = await navigator.serviceWorker?.getRegistrations() ?? [];
@@ -343,7 +350,9 @@ export default function App() {
       const keys = await caches.keys();
       await Promise.all(keys.map(k => caches.delete(k)));
     } catch { /* ignora errori */ }
-    window.location.reload();
+    // Forza reload con URL diverso per aggirare cache residua
+    const base = window.location.origin + window.location.pathname;
+    window.location.replace(base + '?_v=' + Date.now());
   };
 
   // ── Installazione PWA (A2HS) ─────────────────────────────────────────────
