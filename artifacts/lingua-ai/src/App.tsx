@@ -449,32 +449,13 @@ export default function App() {
   const [showTabPanel, setShowTabPanel] = useState(false);
   const [showDonazioni, setShowDonazioni] = useState(false);
   const [balloonPos, setBalloonPos] = useState({ x: window.innerWidth - 180, y: window.innerHeight - 80 });
-  const [balloonVisible, setBalloonVisible] = useState(false);
   const [balloonStopped, setBalloonStopped] = useState(false);
   const balloonRafRef = useRef<number | null>(null);
   const donazioniRef = useRef<HTMLElement>(null);
 
-  // Ciclo basato su tempo assoluto: appare dopo 20s, visibile 12s, nascosto 35s, ripete
-  // Ciclo totale dopo la prima comparsa: 47s (12 visible + 35 hidden)
+  // Animazione sinusoidale continua — visibilità gestita interamente da CSS (@keyframes balloonShow)
   useEffect(() => {
     if (balloonStopped) return;
-    const startTs = Date.now();
-    const INITIAL_WAIT = 20000;
-    const VISIBLE_DUR = 12000;
-    const HIDDEN_DUR = 35000;
-    const CYCLE = VISIBLE_DUR + HIDDEN_DUR;
-    const interval = setInterval(() => {
-      const elapsed = Date.now() - startTs;
-      if (elapsed < INITIAL_WAIT) { setBalloonVisible(false); return; }
-      const inCycle = (elapsed - INITIAL_WAIT) % CYCLE;
-      setBalloonVisible(inCycle < VISIBLE_DUR);
-    }, 500);
-    return () => clearInterval(interval);
-  }, [balloonStopped]);
-
-  // Animazione sinusoidale (gira solo quando visibile)
-  useEffect(() => {
-    if (!balloonVisible) return;
     const W = window.innerWidth, H = window.innerHeight;
     const cx = W * 0.5, cy = H * 0.5;
     const ax = W * 0.38, ay = H * 0.35;
@@ -488,7 +469,7 @@ export default function App() {
     };
     balloonRafRef.current = requestAnimationFrame(tick);
     return () => { if (balloonRafRef.current) cancelAnimationFrame(balloonRafRef.current); };
-  }, [balloonVisible]);
+  }, [balloonStopped]);
   const [showAccessibilita, setShowAccessibilita] = useState(false);
   const [modalitaAccessibile, setModalitaAccessibile] = useState(() => localStorage.getItem('modalita_accessibile') === '1');
   const [talkbackInApp, setTalkbackInApp] = useState(() => localStorage.getItem('talkback_inapp') === '1');
@@ -4078,19 +4059,20 @@ export default function App() {
           <div
             role="button"
             tabIndex={0}
-            onClick={() => { setBalloonStopped(true); setBalloonVisible(false); if (balloonRafRef.current) cancelAnimationFrame(balloonRafRef.current); setShowDonazioni(true); donazioniRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }}
-            onKeyDown={e => { if (e.key === 'Enter') { setBalloonStopped(true); setBalloonVisible(false); if (balloonRafRef.current) cancelAnimationFrame(balloonRafRef.current); setShowDonazioni(true); donazioniRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }); } }}
+            onClick={() => { setBalloonStopped(true); if (balloonRafRef.current) cancelAnimationFrame(balloonRafRef.current); setShowDonazioni(true); donazioniRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }}
+            onKeyDown={e => { if (e.key === 'Enter') { setBalloonStopped(true); if (balloonRafRef.current) cancelAnimationFrame(balloonRafRef.current); setShowDonazioni(true); donazioniRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }); } }}
             aria-label="Sostieni il progetto con una donazione"
             style={{
               position: 'fixed',
               left: balloonPos.x,
               top: balloonPos.y,
               zIndex: 9990,
-              opacity: balloonVisible ? 0.78 : 0,
-              pointerEvents: balloonVisible ? 'auto' : 'none',
               cursor: 'pointer',
               userSelect: 'none',
-              transition: 'left 0.08s linear, top 0.08s linear, opacity 0.9s ease',
+              transition: 'left 0.08s linear, top 0.08s linear',
+              animation: balloonStopped ? 'none' : 'balloonShow 67s linear infinite',
+              opacity: balloonStopped ? 0 : undefined,
+              pointerEvents: balloonStopped ? 'none' : undefined,
             }}
           >
             {/* Corpo del palloncino */}

@@ -185,6 +185,12 @@ button:active:not([disabled]) {
   0%,100% { transform: translateY(0px); }
   50%     { transform: translateY(-6px); }
 }
+/* Ciclo palloncino: 20s nascosto, 12s visibile, 35s nascosto = 67s totale */
+@keyframes balloonShow {
+  0%,       29.84%  { opacity: 0; pointer-events: none; }
+  29.85%,   47.75%  { opacity: 0.78; pointer-events: auto; }
+  47.76%,   100%    { opacity: 0; pointer-events: none; }
+}
 
 /* ── Forma d'onda microfono — 5 barre con timing irregolare ─ */
 /* Ogni barra ha una curva diversa per sembrare reattiva all'audio */
