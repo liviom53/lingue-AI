@@ -1212,8 +1212,13 @@ export default function App() {
           >
             <div
               onClick={e => e.stopPropagation()}
-              style={{ background: 'linear-gradient(140deg, #1e3a5f 0%, #1e293b 60%, #0f1c2d 100%)', border: '1px solid #60a5fa', borderRadius: '18px', padding: '28px 24px 22px', maxWidth: '380px', width: '100%', boxShadow: '0 24px 60px rgba(0,0,0,0.7)' }}
+              style={{ position: 'relative', background: 'linear-gradient(140deg, #1e3a5f 0%, #1e293b 60%, #0f1c2d 100%)', border: '1px solid #60a5fa', borderRadius: '18px', padding: '28px 24px 22px', maxWidth: '380px', width: '100%', boxShadow: '0 24px 60px rgba(0,0,0,0.7)' }}
             >
+              <button
+                aria-label="Chiudi"
+                onClick={() => setShowProfilePopup(false)}
+                style={{ position: 'absolute', top: '12px', right: '12px', width: '40px', height: '40px', borderRadius: '50%', border: 'none', background: '#334155', color: '#94a3b8', fontSize: '1.2rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1 }}
+              >✕</button>
               <div style={{ fontSize: '2.2rem', textAlign: 'center', marginBottom: '8px' }}>👤</div>
               <h2 style={{ margin: '0 0 10px', fontSize: '1.15rem', fontWeight: 700, textAlign: 'center', color: '#f8fafc' }}>
                 Compila il tuo profilo
@@ -1234,16 +1239,16 @@ export default function App() {
               >
                 Vai al profilo →
               </button>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px' }}>
                 <button
                   onClick={() => setShowProfilePopup(false)}
-                  style={{ background: 'none', border: 'none', color: '#64748b', fontSize: '0.82rem', cursor: 'pointer', padding: '4px 0' }}
+                  style={{ flex: 1, background: '#1e293b', border: '1px solid #334155', color: '#94a3b8', fontSize: '0.9rem', cursor: 'pointer', padding: '12px 0', borderRadius: '10px', fontWeight: 500 }}
                 >
                   Più tardi
                 </button>
                 <button
                   onClick={() => { setShowProfilePopup(false); localStorage.setItem('profile_popup_dismissed', '1'); }}
-                  style={{ background: 'none', border: 'none', color: '#475569', fontSize: '0.78rem', cursor: 'pointer', padding: '4px 0' }}
+                  style={{ flex: 1, background: '#1e293b', border: '1px solid #334155', color: '#64748b', fontSize: '0.85rem', cursor: 'pointer', padding: '12px 0', borderRadius: '10px' }}
                 >
                   Non mostrare più
                 </button>
