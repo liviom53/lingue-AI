@@ -2698,7 +2698,7 @@ export default function App() {
                 />
                 <button
                   aria-label="Invia messaggio"
-                  onClick={handleChatSend}
+                  onClick={() => handleChatSend()}
                   disabled={chatLoading || !chatInput.trim()}
                   style={{
                     padding: '8px 12px',
