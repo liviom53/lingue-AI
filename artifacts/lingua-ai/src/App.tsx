@@ -336,8 +336,8 @@ export default function App() {
 
   const forceUpdate = async () => {
     setIsUpdating(true);
-    // Pausa: l'utente vede il messaggio "Aggiornamento in corso…" per 1.5 sec
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    // Pausa: l'utente vede il messaggio "Aggiornamento in corso…" per 3 sec
+    await new Promise(resolve => setTimeout(resolve, 3000));
     // Aggiorna la versione in uso (no banner al reload)
     if (latestServerVersionRef.current) {
       sessionStorage.setItem('app_running_v', latestServerVersionRef.current);
