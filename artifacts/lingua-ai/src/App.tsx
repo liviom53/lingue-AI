@@ -285,7 +285,9 @@ export default function App() {
   // "Versione più recente" = quella restituita dal server (fetched dalla rete)
   // Il confronto è: in_uso !== più_recente → mostra banner
   const [serverNeedRefresh, setServerNeedRefresh] = useState(false);
-  const [isUpdating, setIsUpdating] = useState(false);
+  // null = nessun aggiornamento in corso; stringa = testo del passo corrente
+  const [updateStep, setUpdateStep] = useState<string | null>(null);
+  const [updateProgress, setUpdateProgress] = useState(0); // 0–100
   const [justUpdated, setJustUpdated] = useState(false);
   const latestServerVersionRef = useRef<string | null>(null);
 
@@ -335,22 +337,37 @@ export default function App() {
   }, []);
 
   const forceUpdate = async () => {
-    setIsUpdating(true);
-    // Pausa: l'utente vede il messaggio "Aggiornamento in corso…" per 8 sec
-    await new Promise(resolve => setTimeout(resolve, 8000));
-    // Aggiorna la versione in uso (no banner al reload)
-    if (latestServerVersionRef.current) {
-      sessionStorage.setItem('app_running_v', latestServerVersionRef.current);
-    }
-    // Segnala che la prossima apertura è post-aggiornamento → mostra banner verde
-    sessionStorage.setItem('app_just_updated', '1');
+    setUpdateStep('Preparazione…');
+    setUpdateProgress(5);
+
+    // Passo 1: rimozione service worker
+    setUpdateStep('Rimozione cache di servizio…');
+    setUpdateProgress(20);
     try {
       const regs = await navigator.serviceWorker?.getRegistrations() ?? [];
       await Promise.all(regs.map(r => r.unregister()));
+    } catch { /* ignora */ }
+
+    // Passo 2: svuotamento cache
+    setUpdateStep('Pulizia cache locale…');
+    setUpdateProgress(55);
+    try {
       const keys = await caches.keys();
       await Promise.all(keys.map(k => caches.delete(k)));
-    } catch { /* ignora errori */ }
-    // Forza reload con URL diverso per aggirare cache residua
+    } catch { /* ignora */ }
+
+    // Passo 3: salvataggio nuova versione
+    setUpdateStep('Salvataggio nuova versione…');
+    setUpdateProgress(80);
+    if (latestServerVersionRef.current) {
+      sessionStorage.setItem('app_running_v', latestServerVersionRef.current);
+    }
+    sessionStorage.setItem('app_just_updated', '1');
+
+    // Passo 4: ricarica
+    setUpdateStep('Ricaricamento app…');
+    setUpdateProgress(100);
+    await new Promise(resolve => setTimeout(resolve, 600)); // breve pausa visiva
     const base = window.location.origin + window.location.pathname;
     window.location.replace(base + '?_v=' + Date.now());
   };
@@ -1381,7 +1398,7 @@ export default function App() {
         )}
 
         {/* Banner aggiornamento PWA */}
-        {(needRefresh || serverNeedRefresh) && !isUpdating && (
+        {(needRefresh || serverNeedRefresh) && !updateStep && (
           <div role="alert" aria-live="assertive" style={{ background: 'linear-gradient(135deg,#1e1b4b,#2e1065)', border: '1.5px solid #a855f7', borderRadius: '12px', padding: '12px 16px', marginBottom: '10px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', boxShadow: '0 4px 16px rgba(168,85,247,0.3)' }}>
             <div>
               <p style={{ margin: 0, fontSize: '0.88rem', fontWeight: 'bold', color: '#d8b4fe' }}>🔄 Nuova versione disponibile</p>
@@ -1389,28 +1406,27 @@ export default function App() {
             </div>
             <button
               aria-label="Aggiorna l'app alla nuova versione"
-              disabled={isUpdating}
               onClick={forceUpdate}
-              style={{ display: 'flex', alignItems: 'center', gap: '5px', background: '#7c3aed', color: '#fff', border: 'none', borderRadius: '8px', padding: '8px 14px', cursor: 'pointer', fontWeight: 'bold', fontSize: '0.85rem', whiteSpace: 'nowrap', boxShadow: '0 2px 8px rgba(124,58,237,0.5)', opacity: isUpdating ? 0.7 : 1 }}
+              style={{ display: 'flex', alignItems: 'center', gap: '5px', background: '#7c3aed', color: '#fff', border: 'none', borderRadius: '8px', padding: '8px 14px', cursor: 'pointer', fontWeight: 'bold', fontSize: '0.85rem', whiteSpace: 'nowrap', boxShadow: '0 2px 8px rgba(124,58,237,0.5)' }}
             >
-              <RefreshCw size={14} style={{ animation: isUpdating ? 'spin 1s linear infinite' : 'none' }} /> {isUpdating ? 'Aggiornamento…' : 'Aggiorna'}
+              <RefreshCw size={14} /> Aggiorna
             </button>
           </div>
         )}
 
-        {/* Spinner durante aggiornamento */}
-        {isUpdating && (
+        {/* Progresso aggiornamento reale — avanza passo dopo passo */}
+        {updateStep && (
           <div role="status" aria-live="polite" style={{ background: 'linear-gradient(135deg,#1e1b4b,#2e1065)', border: '1.5px solid #a855f7', borderRadius: '12px', padding: '14px 16px', marginBottom: '10px', boxShadow: '0 4px 16px rgba(168,85,247,0.3)' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
               <RefreshCw size={18} style={{ color: '#a78bfa', animation: 'spin 1s linear infinite', flexShrink: 0 }} />
               <div>
-                <p style={{ margin: 0, fontSize: '0.88rem', color: '#d8b4fe', fontWeight: 'bold' }}>Installazione aggiornamento…</p>
-                <p style={{ margin: '2px 0 0', fontSize: '0.72rem', color: '#a78bfa' }}>Non chiudere l&apos;app, attendere il completamento</p>
+                <p style={{ margin: 0, fontSize: '0.88rem', color: '#d8b4fe', fontWeight: 'bold' }}>Aggiornamento in corso</p>
+                <p style={{ margin: '2px 0 0', fontSize: '0.72rem', color: '#a78bfa' }}>{updateStep}</p>
               </div>
             </div>
-            {/* Barra di progresso animata — 8 secondi */}
+            {/* Barra che avanza in base al progresso reale */}
             <div style={{ background: 'rgba(168,85,247,0.2)', borderRadius: '999px', height: '6px', overflow: 'hidden' }}>
-              <div style={{ height: '100%', borderRadius: '999px', background: 'linear-gradient(90deg,#7c3aed,#a855f7,#c084fc)', animation: 'progress8s 8s linear forwards' }} />
+              <div style={{ height: '100%', width: `${updateProgress}%`, borderRadius: '999px', background: 'linear-gradient(90deg,#7c3aed,#a855f7,#c084fc)', transition: 'width 0.4s ease' }} />
             </div>
           </div>
         )}

@@ -177,10 +177,6 @@ button:active:not([disabled]) {
   from { transform: rotate(0deg); }
   to   { transform: rotate(360deg); }
 }
-@keyframes progress8s {
-  from { width: 0%; }
-  to   { width: 100%; }
-}
 
 /* ── Cursore demo ────────────────────────────────────── */
 #demo-cursor {
