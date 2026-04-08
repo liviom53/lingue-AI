@@ -448,9 +448,9 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<'profilo' | 'progressi' | 'calendario' | 'vocabolario' | 'demo'>('profilo');
   const [showTabPanel, setShowTabPanel] = useState(false);
   const [showDonazioni, setShowDonazioni] = useState(false);
-  const [showFloatingDonation, setShowFloatingDonation] = useState(false);
   const [balloonPos, setBalloonPos] = useState({ x: window.innerWidth - 180, y: window.innerHeight - 80 });
   const balloonRafRef = useRef<number | null>(null);
+  const donazioniRef = useRef<HTMLElement>(null);
   useEffect(() => {
     const W = window.innerWidth, H = window.innerHeight;
     const cx = W * 0.5, cy = H * 0.5;
@@ -3811,7 +3811,7 @@ export default function App() {
         </section>
 
         {/* Donazioni */}
-        <section style={{ ...styles.card, border: '1px solid #f59e0b', marginTop: '12px' }}>
+        <section ref={donazioniRef} style={{ ...styles.card, border: '1px solid #f59e0b', marginTop: '12px' }}>
           <button
             onClick={() => setShowDonazioni(v => !v)}
             style={{ width: '100%', background: 'none', border: 'none', color: '#f59e0b', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: 0, fontSize: '0.9rem', fontWeight: 'bold' }}
@@ -4055,8 +4055,8 @@ export default function App() {
           <div
             role="button"
             tabIndex={0}
-            onClick={() => setShowFloatingDonation(v => !v)}
-            onKeyDown={e => e.key === 'Enter' && setShowFloatingDonation(v => !v)}
+            onClick={() => { setShowDonazioni(true); donazioniRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }}
+            onKeyDown={e => { if (e.key === 'Enter') { setShowDonazioni(true); donazioniRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }); } }}
             aria-label="Sostieni il progetto con una donazione"
             style={{
               position: 'fixed',
@@ -4111,93 +4111,6 @@ export default function App() {
             }} />
           </div>
 
-          {showFloatingDonation && (
-            <div
-              onClick={() => setShowFloatingDonation(false)}
-              style={{
-                position: 'fixed', inset: 0, zIndex: 9991,
-                background: 'rgba(0,0,0,0.5)',
-                display: 'flex', alignItems: 'flex-end', justifyContent: 'flex-end',
-                padding: '0 16px 80px 16px',
-              }}
-            >
-              <div
-                onClick={e => e.stopPropagation()}
-                style={{
-                  background: '#1e293b',
-                  border: '1px solid #334155',
-                  borderRadius: '16px',
-                  padding: '20px',
-                  width: '100%',
-                  maxWidth: '320px',
-                  boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
-                  animation: 'fadeInUp 0.25s ease',
-                }}
-              >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '10px' }}>
-                  <div>
-                    <p style={{ margin: 0, fontSize: '1rem', fontWeight: 700, color: '#f8fafc' }}>☕ Un piccolo gesto</p>
-                    <p style={{ margin: '4px 0 0', fontSize: '0.78rem', color: '#94a3b8', lineHeight: '1.4' }}>
-                      Se l'app ti torna utile, un caffè mi aiuta a tenerla viva.
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => setShowFloatingDonation(false)}
-                    style={{ background: 'none', border: 'none', color: '#64748b', cursor: 'pointer', fontSize: '1.1rem', padding: '0 0 0 8px', lineHeight: 1 }}
-                  >✕</button>
-                </div>
-
-                <div style={{ display: 'flex', gap: '8px', marginBottom: '14px' }}>
-                  <a
-                    href="https://www.paypal.com/donate?business=livio.mazzocchi%40gmail.com&currency_code=EUR"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{
-                      flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
-                      padding: '10px', borderRadius: '10px',
-                      background: '#0070ba', color: '#fff',
-                      fontWeight: 700, fontSize: '0.85rem', textDecoration: 'none',
-                    }}
-                  >
-                    💳 PayPal
-                  </a>
-                  <a
-                    href="https://ko-fi.com/liviomazzocchi"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{
-                      flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
-                      padding: '10px', borderRadius: '10px',
-                      background: '#ff5e5b', color: '#fff',
-                      fontWeight: 700, fontSize: '0.85rem', textDecoration: 'none',
-                    }}
-                  >
-                    ☕ Ko-fi
-                  </a>
-                </div>
-
-                <div style={{ background: '#0f172a', borderRadius: '10px', padding: '12px' }}>
-                  <p style={{ margin: '0 0 6px', fontSize: '0.75rem', color: '#64748b' }}>oppure bonifico a</p>
-                  <p style={{ margin: '0 0 4px', fontSize: '0.82rem', fontWeight: 600, color: '#e2e8f0' }}>Mazzocchi Livio</p>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <code style={{ fontSize: '0.72rem', fontFamily: 'monospace', color: '#f59e0b', flex: 1, wordBreak: 'break-all' }}>
-                      IT62 U360 8105 1382 2029 5220 310
-                    </code>
-                    <button
-                      onClick={() => navigator.clipboard.writeText('IT62U3608105138220295220310')}
-                      style={{
-                        background: '#f59e0b22', border: '1px solid #f59e0b55',
-                        borderRadius: '6px', color: '#f59e0b', cursor: 'pointer',
-                        padding: '4px 8px', fontSize: '0.72rem', fontWeight: 700, flexShrink: 0,
-                      }}
-                    >
-                      📋
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
         </>
       )}
 
