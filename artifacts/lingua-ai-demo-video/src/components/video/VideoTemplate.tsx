@@ -56,7 +56,7 @@ export default function VideoTemplate() {
   return (
     <div className="relative w-full h-screen overflow-hidden bg-[#0f172a] text-white">
       
-      <audio ref={audioRef} src={`${import.meta.env.BASE_URL}audio/hard-rock-intro.mp3`} loop muted />
+      <audio ref={audioRef} src="https://cdn.pixabay.com/download/audio/2022/10/14/audio_9939f792cb.mp3?filename=rock-it-121431.mp3" loop muted />
 
       {/* Pulsante Avvia Audio */}
       <AnimatePresence>
