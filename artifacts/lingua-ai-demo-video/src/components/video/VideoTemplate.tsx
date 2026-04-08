@@ -35,7 +35,9 @@ const bgPositions = [
 export default function VideoTemplate() {
   const { currentScene } = useVideoPlayer({ durations: SCENE_DURATIONS });
   const audioRef = useRef<HTMLAudioElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const [audioPlaying, setAudioPlaying] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   const startAudio = () => {
     const audio = audioRef.current;
@@ -43,6 +45,14 @@ export default function VideoTemplate() {
     audio.muted = false;
     audio.volume = 0.7;
     audio.play().then(() => setAudioPlaying(true)).catch(() => {});
+  };
+
+  const toggleFullscreen = () => {
+    if (!document.fullscreenElement) {
+      containerRef.current?.requestFullscreen();
+    } else {
+      document.exitFullscreen();
+    }
   };
 
   useEffect(() => {
@@ -53,8 +63,14 @@ export default function VideoTemplate() {
     return () => audio.removeEventListener('pause', onEnded);
   }, []);
 
+  useEffect(() => {
+    const onFsChange = () => setIsFullscreen(!!document.fullscreenElement);
+    document.addEventListener('fullscreenchange', onFsChange);
+    return () => document.removeEventListener('fullscreenchange', onFsChange);
+  }, []);
+
   return (
-    <div className="relative w-full h-screen overflow-hidden bg-[#0f172a] text-white">
+    <div ref={containerRef} className="relative w-full h-screen overflow-hidden bg-[#0f172a] text-white">
       
       <audio ref={audioRef} src={`${import.meta.env.BASE_URL}audio/paulyudin-rock-490391.mp3`} loop muted />
 
@@ -140,6 +156,22 @@ export default function VideoTemplate() {
           backgroundSize: '4vw 4vw'
         }}
       />
+
+      {/* Pulsante Tutto Schermo / Esci */}
+      <motion.button
+        onClick={toggleFullscreen}
+        className="absolute bottom-4 right-4 z-50 flex items-center gap-2 bg-white/10 hover:bg-white/20 backdrop-blur border border-white/20 text-white text-sm font-bold px-4 py-2 rounded-full cursor-pointer"
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+        title={isFullscreen ? 'Esci da tutto schermo' : 'Tutto schermo'}
+      >
+        {isFullscreen ? (
+          <><span className="text-base">⛶</span> Esci</>
+        ) : (
+          <><span className="text-base">⛶</span> Tutto schermo</>
+        )}
+      </motion.button>
 
       <AnimatePresence mode="popLayout">
         {currentScene === 0 && <Scene1 key="hook" />}
