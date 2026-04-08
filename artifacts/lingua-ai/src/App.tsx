@@ -448,6 +448,7 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<'profilo' | 'progressi' | 'calendario' | 'vocabolario' | 'demo'>('profilo');
   const [showTabPanel, setShowTabPanel] = useState(false);
   const [showDonazioni, setShowDonazioni] = useState(false);
+  const [showFloatingDonation, setShowFloatingDonation] = useState(false);
   const [showAccessibilita, setShowAccessibilita] = useState(false);
   const [modalitaAccessibile, setModalitaAccessibile] = useState(() => localStorage.getItem('modalita_accessibile') === '1');
   const [talkbackInApp, setTalkbackInApp] = useState(() => localStorage.getItem('talkback_inapp') === '1');
@@ -4029,6 +4030,128 @@ export default function App() {
             style={{ background: 'none', border: 'none', color: '#34d399', cursor: 'pointer', fontSize: '1.2rem', lineHeight: 1, padding: '4px 6px', flexShrink: 0 }}
           >✕</button>
         </div>
+      )}
+
+      {/* Floating ☕ donation button */}
+      {!demoActive && (
+        <>
+          <button
+            onClick={() => setShowFloatingDonation(v => !v)}
+            aria-label="Sostieni il progetto"
+            style={{
+              position: 'fixed',
+              bottom: '22px',
+              right: '16px',
+              zIndex: 9990,
+              opacity: 0.7,
+              background: '#1e293b',
+              border: '1px solid #334155',
+              borderRadius: '50px',
+              padding: '8px 14px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              cursor: 'pointer',
+              fontSize: '0.82rem',
+              color: '#cbd5e1',
+              boxShadow: '0 2px 12px rgba(0,0,0,0.4)',
+              transition: 'opacity 0.2s',
+            }}
+            onMouseEnter={e => (e.currentTarget.style.opacity = '1')}
+            onMouseLeave={e => (e.currentTarget.style.opacity = '0.7')}
+          >
+            <span style={{ fontSize: '1rem' }}>☕</span>
+            <span>Offrimi un caffè</span>
+          </button>
+
+          {showFloatingDonation && (
+            <div
+              onClick={() => setShowFloatingDonation(false)}
+              style={{
+                position: 'fixed', inset: 0, zIndex: 9991,
+                background: 'rgba(0,0,0,0.5)',
+                display: 'flex', alignItems: 'flex-end', justifyContent: 'flex-end',
+                padding: '0 16px 80px 16px',
+              }}
+            >
+              <div
+                onClick={e => e.stopPropagation()}
+                style={{
+                  background: '#1e293b',
+                  border: '1px solid #334155',
+                  borderRadius: '16px',
+                  padding: '20px',
+                  width: '100%',
+                  maxWidth: '320px',
+                  boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
+                  animation: 'fadeInUp 0.25s ease',
+                }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '10px' }}>
+                  <div>
+                    <p style={{ margin: 0, fontSize: '1rem', fontWeight: 700, color: '#f8fafc' }}>☕ Un piccolo gesto</p>
+                    <p style={{ margin: '4px 0 0', fontSize: '0.78rem', color: '#94a3b8', lineHeight: '1.4' }}>
+                      Se l'app ti torna utile, un caffè mi aiuta a tenerla viva.
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setShowFloatingDonation(false)}
+                    style={{ background: 'none', border: 'none', color: '#64748b', cursor: 'pointer', fontSize: '1.1rem', padding: '0 0 0 8px', lineHeight: 1 }}
+                  >✕</button>
+                </div>
+
+                <div style={{ display: 'flex', gap: '8px', marginBottom: '14px' }}>
+                  <a
+                    href="https://www.paypal.com/donate?business=livio.mazzocchi%40gmail.com&currency_code=EUR"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
+                      padding: '10px', borderRadius: '10px',
+                      background: '#0070ba', color: '#fff',
+                      fontWeight: 700, fontSize: '0.85rem', textDecoration: 'none',
+                    }}
+                  >
+                    💳 PayPal
+                  </a>
+                  <a
+                    href="https://ko-fi.com/liviomazzocchi"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
+                      padding: '10px', borderRadius: '10px',
+                      background: '#ff5e5b', color: '#fff',
+                      fontWeight: 700, fontSize: '0.85rem', textDecoration: 'none',
+                    }}
+                  >
+                    ☕ Ko-fi
+                  </a>
+                </div>
+
+                <div style={{ background: '#0f172a', borderRadius: '10px', padding: '12px' }}>
+                  <p style={{ margin: '0 0 6px', fontSize: '0.75rem', color: '#64748b' }}>oppure bonifico a</p>
+                  <p style={{ margin: '0 0 4px', fontSize: '0.82rem', fontWeight: 600, color: '#e2e8f0' }}>Mazzocchi Livio</p>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <code style={{ fontSize: '0.72rem', fontFamily: 'monospace', color: '#f59e0b', flex: 1, wordBreak: 'break-all' }}>
+                      IT62 U360 8105 1382 2029 5220 310
+                    </code>
+                    <button
+                      onClick={() => navigator.clipboard.writeText('IT62U3608105138220295220310')}
+                      style={{
+                        background: '#f59e0b22', border: '1px solid #f59e0b55',
+                        borderRadius: '6px', color: '#f59e0b', cursor: 'pointer',
+                        padding: '4px 8px', fontSize: '0.72rem', fontWeight: 700, flexShrink: 0,
+                      }}
+                    >
+                      📋
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </>
       )}
 
       {/* Cursore animato demo — segue i punti di interesse */}
