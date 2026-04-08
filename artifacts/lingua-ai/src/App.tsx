@@ -330,8 +330,17 @@ export default function App() {
   useEffect(() => { ipovedentiRef.current = ipovedenti; }, [ipovedenti]);
   useEffect(() => {
     if (!ipovedenti || !translatedText) return;
-    // Piccolo ritardo per assicurarsi che speak() non venga bloccato dal demo
-    const t = setTimeout(() => speak(translatedText), 300);
+    // Legge sempre UNA sola volta (ignora loopCount) per evitare "musica continua"
+    const t = setTimeout(() => {
+      if (demoActiveRef.current || blockSpeakRef.current) return;
+      window.speechSynthesis.cancel();
+      const ut = new SpeechSynthesisUtterance(translatedText.trimEnd() + '\u00A0\u00A0\u00A0');
+      ut.lang = currentLocale;
+      ut.rate = speechRate;
+      const voice = availableVoices.find(v => v.voiceURI === selectedVoiceURI);
+      if (voice) ut.voice = voice;
+      window.speechSynthesis.speak(ut);
+    }, 400);
     return () => clearTimeout(t);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [translatedText, ipovedenti]);
