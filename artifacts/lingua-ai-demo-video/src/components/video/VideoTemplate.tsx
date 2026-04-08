@@ -36,7 +36,7 @@ export default function VideoTemplate() {
     <div className="relative w-full h-screen overflow-hidden bg-[#0f172a] text-white">
       
       {/* Background Audio — muted by default; un-mute manually before screen recording */}
-      <audio src="https://cdn.pixabay.com/download/audio/2022/10/14/audio_9939f792cb.mp3?filename=rock-it-121431.mp3" autoPlay loop muted />
+      <audio src={`${import.meta.env.BASE_URL}audio/hard-rock-intro.mp3`} autoPlay loop muted />
 
       {/* Background Video Loop */}
       <div className="absolute inset-0 opacity-40 mix-blend-screen">
