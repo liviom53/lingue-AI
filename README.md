@@ -124,7 +124,7 @@ pnpm --filter @workspace/lingua-ai run dev
 ```
 
 Variabili d'ambiente necessarie (nel file `.env` dell'api-server):
-```
+```bash
 AI_INTEGRATIONS_OPENROUTER_BASE_URL=...
 AI_INTEGRATIONS_OPENROUTER_API_KEY=...
 ```
