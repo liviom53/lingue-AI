@@ -295,6 +295,7 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<'profilo' | 'progressi' | 'calendario' | 'vocabolario' | 'demo'>('profilo');
   const [showTabPanel, setShowTabPanel] = useState(false);
   const [showDonazioni, setShowDonazioni] = useState(false);
+  const [showAccessibilita, setShowAccessibilita] = useState(false);
   const [showDemoMenu, setShowDemoMenu] = useState(false);
   const [showFunzionalitaApp, setShowFunzionalitaApp] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
@@ -2980,6 +2981,90 @@ export default function App() {
         })()}
         </div>
         )}
+        </section>
+
+        {/* Accessibilità & TalkBack */}
+        <section style={{ ...styles.card, border: '1px solid #10b981', marginTop: '12px' }}>
+          <button
+            onClick={() => setShowAccessibilita(v => !v)}
+            aria-expanded={showAccessibilita}
+            aria-controls="accessibilita-panel"
+            style={{ width: '100%', background: 'none', border: 'none', color: '#10b981', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: 0, fontSize: '0.9rem', fontWeight: 'bold' }}
+          >
+            <span>♿ Accessibilità & TalkBack</span>
+            {showAccessibilita ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+          </button>
+          {showAccessibilita && (
+            <div id="accessibilita-panel" style={{ marginTop: '14px' }}>
+
+              {/* Pulsante attiva TalkBack */}
+              <div style={{ marginBottom: '16px', textAlign: 'center' }}>
+                <p style={{ margin: '0 0 10px', fontSize: '0.82rem', color: '#94a3b8', lineHeight: 1.5 }}>
+                  Attiva o disattiva TalkBack direttamente dalle impostazioni di accessibilità di Android.
+                </p>
+                <button
+                  onClick={() => {
+                    const tried = window.location.href;
+                    window.location.href = 'intent:#Intent;action=android.settings.ACCESSIBILITY_SETTINGS;end';
+                    setTimeout(() => { window.location.href = tried; }, 500);
+                  }}
+                  style={{ padding: '12px 24px', borderRadius: '10px', border: 'none', background: '#10b981', color: '#fff', fontWeight: 700, fontSize: '0.95rem', cursor: 'pointer', width: '100%', marginBottom: '8px' }}
+                >
+                  🔊 Apri Impostazioni Accessibilità Android
+                </button>
+                <p style={{ margin: 0, fontSize: '0.72rem', color: '#64748b' }}>
+                  Funziona su Android. Su iPhone usa Impostazioni → Accessibilità → VoiceOver.
+                </p>
+              </div>
+
+              {/* Come attivare TalkBack */}
+              <div style={{ background: '#0f172a', borderRadius: '10px', padding: '12px', marginBottom: '14px' }}>
+                <p style={{ margin: '0 0 8px', fontSize: '0.8rem', fontWeight: 700, color: '#10b981' }}>📱 Come attivare TalkBack su Android</p>
+                {[
+                  '1. Impostazioni → Impostazioni aggiuntive',
+                  '2. Accessibilità → TalkBack',
+                  '3. Attiva l\'interruttore',
+                  '4. Conferma con OK',
+                  '5. Per disattivare: tieni premuti Volume Su + Volume Giù per 3 secondi',
+                ].map((step, i) => (
+                  <p key={i} style={{ margin: '0 0 4px', fontSize: '0.8rem', color: '#cbd5e1', lineHeight: 1.4 }}>{step}</p>
+                ))}
+                <p style={{ margin: '10px 0 4px', fontSize: '0.8rem', fontWeight: 700, color: '#10b981' }}>🕹️ Gesti base TalkBack</p>
+                {[
+                  'Scorri destra/sinistra → elemento successivo/precedente',
+                  'Doppio tap → attiva l\'elemento selezionato',
+                  'Scorri giù poi sinistra → tasto Indietro',
+                  'Scorri su poi sinistra → tasto Home',
+                  'Scorri su poi destra → apri menu TalkBack',
+                ].map((g, i) => (
+                  <p key={i} style={{ margin: '0 0 4px', fontSize: '0.78rem', color: '#94a3b8', lineHeight: 1.4 }}>• {g}</p>
+                ))}
+              </div>
+
+              {/* Funzionalità accessibili nell'app */}
+              <div style={{ background: '#0f172a', borderRadius: '10px', padding: '12px' }}>
+                <p style={{ margin: '0 0 10px', fontSize: '0.8rem', fontWeight: 700, color: '#10b981' }}>✅ Funzionalità accessibili in questa app</p>
+                {[
+                  { icon: '🎙️', label: 'Dettatura vocale', desc: 'TalkBack legge: "Avvia dettatura vocale" / "Dettatura attiva, clicca per fermare"' },
+                  { icon: '📝', label: 'Campo testo', desc: 'Etichettato "Testo da tradurre, scrivi in italiano" — doppio tap per scrivere' },
+                  { icon: '🌍', label: 'Selezione lingua', desc: 'Ogni pulsante lingua annuncia "Lingua selezionata: X" o "Seleziona lingua: Y"' },
+                  { icon: '📢', label: 'Traduzione', desc: 'Il risultato viene letto automaticamente all\'arrivo (aria-live)' },
+                  { icon: '⚠️', label: 'Errori', desc: 'Annunciati immediatamente con role="alert"' },
+                  { icon: '🔊', label: 'Audio traduzione', desc: 'Pulsante etichettato "Ascolta traduzione in [lingua]"' },
+                  { icon: '📋', label: 'Copia/Condividi/Segnalibro', desc: 'Tutti i pulsanti hanno etichette descrittive' },
+                  { icon: '🎭', label: 'Chat AI & Roleplay', desc: 'Scenari con aria-pressed, chat con aria-live' },
+                  { icon: '🔁', label: 'Shadowing', desc: 'Microfono, velocità e loop tutti accessibili con aria-label e aria-pressed' },
+                  { icon: '👤', label: 'Profilo & Tab', desc: 'Tab con role="tab" e aria-selected, chip con aria-pressed' },
+                ].map((item, i) => (
+                  <div key={i} style={{ marginBottom: '10px' }}>
+                    <p style={{ margin: '0 0 2px', fontSize: '0.8rem', fontWeight: 600, color: '#e2e8f0' }}>{item.icon} {item.label}</p>
+                    <p style={{ margin: 0, fontSize: '0.75rem', color: '#94a3b8', lineHeight: 1.4 }}>{item.desc}</p>
+                  </div>
+                ))}
+              </div>
+
+            </div>
+          )}
         </section>
 
         {/* Donazioni */}
