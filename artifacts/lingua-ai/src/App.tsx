@@ -326,7 +326,7 @@ export default function App() {
   }, [talkbackInApp]);
 
   // Modalità ipovedenti: legge automaticamente la traduzione quando arriva
-  const ipovedentiRef = React.useRef(ipovedenti);
+  const ipovedentiRef = useRef(ipovedenti);
   useEffect(() => { ipovedentiRef.current = ipovedenti; }, [ipovedenti]);
   useEffect(() => {
     if (!ipovedenti || !translatedText) return;
