@@ -4066,7 +4066,7 @@ export default function App() {
               setShowDonazioni(true);
               donazioniRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
               if (balloonRestartRef.current) clearTimeout(balloonRestartRef.current);
-              balloonRestartRef.current = setTimeout(() => setBalloonStopped(false), 2 * 60 * 1000);
+              balloonRestartRef.current = setTimeout(() => setBalloonStopped(false), 15 * 60 * 1000);
             }}
             onKeyDown={e => { if (e.key === 'Enter') {
               setBalloonStopped(true);
@@ -4074,7 +4074,7 @@ export default function App() {
               setShowDonazioni(true);
               donazioniRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
               if (balloonRestartRef.current) clearTimeout(balloonRestartRef.current);
-              balloonRestartRef.current = setTimeout(() => setBalloonStopped(false), 2 * 60 * 1000);
+              balloonRestartRef.current = setTimeout(() => setBalloonStopped(false), 15 * 60 * 1000);
             } }}
             aria-label="Sostieni il progetto con una donazione"
             style={{
