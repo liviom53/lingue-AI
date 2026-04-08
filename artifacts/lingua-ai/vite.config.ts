@@ -14,8 +14,9 @@ export default defineConfig({
     react(),
     tailwindcss(),
     VitePWA({
-      registerType: "autoUpdate",      // Aggiornamento automatico (coerente con skipWaiting: true)
+      registerType: "autoUpdate",
       injectRegister: "auto",
+      devOptions: { enabled: false },  // SW disabilitato in dev → modifiche sempre visibili
       base: basePath,
       scope: basePath,
       workbox: {
