@@ -310,6 +310,9 @@ export default function App() {
     };
     const handleClick = (e: MouseEvent) => {
       const el = e.target as HTMLElement;
+      const tag = el.tagName.toLowerCase();
+      // Se l'utente clicca dentro un input/textarea già focalizzato, non interrompere la scrittura
+      if ((tag === 'input' || tag === 'textarea') && document.activeElement === el) return;
       const node = el.closest('[aria-label]') || el.closest('button') || el.closest('a') || el.closest('[role]') || el;
       const label =
         node.getAttribute('aria-label') ||
