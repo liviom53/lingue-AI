@@ -298,7 +298,7 @@ export default function App() {
     if (sessionStorage.getItem('app_just_updated') === '1') {
       sessionStorage.removeItem('app_just_updated');
       setJustUpdated(true);
-      setTimeout(() => setJustUpdated(false), 5000);
+      setTimeout(() => setJustUpdated(false), 10000);
     }
     // Rimuovi ?_v=… dall'URL dopo il reload forzato
     if (window.location.search.includes('_v=')) {
@@ -1400,18 +1400,7 @@ export default function App() {
           )}
         </header>
 
-        {/* Banner conferma aggiornamento completato */}
-        {justUpdated && (
-          <div role="status" aria-live="polite" style={{ background: 'linear-gradient(135deg,#052e16,#064e3b)', border: '1.5px solid #10b981', borderRadius: '12px', padding: '12px 16px', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '10px', boxShadow: '0 4px 16px rgba(16,185,129,0.3)' }}>
-            <span style={{ fontSize: '1.4rem' }}>✅</span>
-            <div>
-              <p style={{ margin: 0, fontSize: '0.88rem', fontWeight: 'bold', color: '#6ee7b7' }}>
-                App aggiornata con successo!{runningVersionStr ? ` (v${runningVersionStr})` : ''}
-              </p>
-              <p style={{ margin: '2px 0 0', fontSize: '0.72rem', color: '#34d399' }}>Stai usando l&apos;ultima versione disponibile</p>
-            </div>
-          </div>
-        )}
+        {/* Banner conferma aggiornamento completato — toast fisso sopra tutto */}
 
         {/* Banner aggiornamento PWA */}
         {(needRefresh || serverNeedRefresh) && !updateStep && (
@@ -3702,6 +3691,47 @@ export default function App() {
         )}
 
       </div>
+
+      {/* Toast fisso — conferma aggiornamento completato (sopra ogni modale) */}
+      {justUpdated && (
+        <div
+          role="status"
+          aria-live="polite"
+          aria-label="App aggiornata con successo"
+          style={{
+            position: 'fixed',
+            bottom: '80px',
+            left: '12px',
+            right: '12px',
+            zIndex: 99998,
+            background: 'linear-gradient(135deg,#052e16,#064e3b)',
+            border: '1.5px solid #10b981',
+            borderRadius: '14px',
+            padding: '14px 16px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '10px',
+            boxShadow: '0 8px 32px rgba(16,185,129,0.45)',
+            animation: 'fadeInUp 0.35s ease',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <span style={{ fontSize: '1.4rem' }}>✅</span>
+            <div>
+              <p style={{ margin: 0, fontSize: '0.88rem', fontWeight: 'bold', color: '#6ee7b7' }}>
+                App aggiornata con successo!{runningVersionStr ? ` (v${runningVersionStr})` : ''}
+              </p>
+              <p style={{ margin: '2px 0 0', fontSize: '0.72rem', color: '#34d399' }}>Stai usando l&apos;ultima versione disponibile</p>
+            </div>
+          </div>
+          <button
+            aria-label="Chiudi notifica aggiornamento"
+            onClick={() => setJustUpdated(false)}
+            style={{ background: 'none', border: 'none', color: '#34d399', cursor: 'pointer', fontSize: '1.2rem', lineHeight: 1, padding: '4px 6px', flexShrink: 0 }}
+          >✕</button>
+        </div>
+      )}
 
       {/* Cursore animato demo — segue i punti di interesse */}
       {demoActive && demoCursorPos && (
