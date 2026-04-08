@@ -289,6 +289,8 @@ export default function App() {
   const [updateStep, setUpdateStep] = useState<string | null>(null);
   const [updateProgress, setUpdateProgress] = useState(0); // 0–100
   const [justUpdated, setJustUpdated] = useState(false);
+  const [latestVersionStr, setLatestVersionStr] = useState<string | null>(null);
+  const [runningVersionStr, setRunningVersionStr] = useState<string | null>(null);
   const latestServerVersionRef = useRef<string | null>(null);
 
   // Mostra banner "aggiornato" se la pagina è appena stata ricaricata dopo un update
@@ -306,20 +308,30 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    const SESSION_KEY = 'app_running_v'; // versione caricata all'avvio di questa sessione
+    const SESSION_KEY = 'app_running_v';
+    const SESSION_VER = 'app_running_ver'; // versione leggibile (es. "1.0.0")
+
+    // Carica la versione in uso salvata in sessione
+    const savedVer = sessionStorage.getItem(SESSION_VER);
+    if (savedVer) setRunningVersionStr(savedVer);
 
     const checkVersion = async () => {
       try {
         const res = await fetch('/api/version', { cache: 'no-store' });
         if (!res.ok) return;
-        const { v } = await res.json();
+        const { v, version } = await res.json();
         const latestV = String(v);
         latestServerVersionRef.current = latestV;
+        if (version) setLatestVersionStr(version);
 
         const runningV = sessionStorage.getItem(SESSION_KEY);
         if (!runningV) {
           // Prima chiamata di questa sessione: questa È la versione in uso
           sessionStorage.setItem(SESSION_KEY, latestV);
+          if (version) {
+            sessionStorage.setItem(SESSION_VER, version);
+            setRunningVersionStr(version);
+          }
           return;
         }
         // Se il server ha una versione diversa da quella con cui l'app è partita → aggiorna
@@ -330,7 +342,6 @@ export default function App() {
     };
 
     checkVersion();
-    // Ricontrolla ogni volta che l'utente riporta l'app in primo piano
     const onVisible = () => { if (document.visibilityState === 'visible') checkVersion(); };
     document.addEventListener('visibilitychange', onVisible);
     return () => document.removeEventListener('visibilitychange', onVisible);
@@ -361,6 +372,9 @@ export default function App() {
     setUpdateProgress(80);
     if (latestServerVersionRef.current) {
       sessionStorage.setItem('app_running_v', latestServerVersionRef.current);
+    }
+    if (latestVersionStr) {
+      sessionStorage.setItem('app_running_ver', latestVersionStr);
     }
     sessionStorage.setItem('app_just_updated', '1');
 
@@ -1391,7 +1405,9 @@ export default function App() {
           <div role="status" aria-live="polite" style={{ background: 'linear-gradient(135deg,#052e16,#064e3b)', border: '1.5px solid #10b981', borderRadius: '12px', padding: '12px 16px', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '10px', boxShadow: '0 4px 16px rgba(16,185,129,0.3)' }}>
             <span style={{ fontSize: '1.4rem' }}>✅</span>
             <div>
-              <p style={{ margin: 0, fontSize: '0.88rem', fontWeight: 'bold', color: '#6ee7b7' }}>App aggiornata con successo!</p>
+              <p style={{ margin: 0, fontSize: '0.88rem', fontWeight: 'bold', color: '#6ee7b7' }}>
+                App aggiornata con successo!{runningVersionStr ? ` (v${runningVersionStr})` : ''}
+              </p>
               <p style={{ margin: '2px 0 0', fontSize: '0.72rem', color: '#34d399' }}>Stai usando l&apos;ultima versione disponibile</p>
             </div>
           </div>
@@ -1401,8 +1417,14 @@ export default function App() {
         {(needRefresh || serverNeedRefresh) && !updateStep && (
           <div role="alert" aria-live="assertive" style={{ background: 'linear-gradient(135deg,#1e1b4b,#2e1065)', border: '1.5px solid #a855f7', borderRadius: '12px', padding: '12px 16px', marginBottom: '10px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', boxShadow: '0 4px 16px rgba(168,85,247,0.3)' }}>
             <div>
-              <p style={{ margin: 0, fontSize: '0.88rem', fontWeight: 'bold', color: '#d8b4fe' }}>🔄 Nuova versione disponibile</p>
-              <p style={{ margin: '2px 0 0', fontSize: '0.72rem', color: '#a78bfa' }}>Aggiorna per avere le ultime funzionalità</p>
+              <p style={{ margin: 0, fontSize: '0.88rem', fontWeight: 'bold', color: '#d8b4fe' }}>
+                🔄 Nuova versione disponibile{latestVersionStr ? ` — v${latestVersionStr}` : ''}
+              </p>
+              <p style={{ margin: '2px 0 0', fontSize: '0.72rem', color: '#a78bfa' }}>
+                {runningVersionStr && latestVersionStr && runningVersionStr !== latestVersionStr
+                  ? `v${runningVersionStr} → v${latestVersionStr}`
+                  : 'Aggiorna per avere le ultime funzionalità'}
+              </p>
             </div>
             <button
               aria-label="Aggiorna l'app alla nuova versione"
@@ -1420,11 +1442,12 @@ export default function App() {
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
               <RefreshCw size={18} style={{ color: '#a78bfa', animation: 'spin 1s linear infinite', flexShrink: 0 }} />
               <div>
-                <p style={{ margin: 0, fontSize: '0.88rem', color: '#d8b4fe', fontWeight: 'bold' }}>Aggiornamento in corso</p>
+                <p style={{ margin: 0, fontSize: '0.88rem', color: '#d8b4fe', fontWeight: 'bold' }}>
+                  Installazione{latestVersionStr ? ` v${latestVersionStr}` : ' aggiornamento'}…
+                </p>
                 <p style={{ margin: '2px 0 0', fontSize: '0.72rem', color: '#a78bfa' }}>{updateStep}</p>
               </div>
             </div>
-            {/* Barra che avanza in base al progresso reale */}
             <div style={{ background: 'rgba(168,85,247,0.2)', borderRadius: '999px', height: '6px', overflow: 'hidden' }}>
               <div style={{ height: '100%', width: `${updateProgress}%`, borderRadius: '999px', background: 'linear-gradient(90deg,#7c3aed,#a855f7,#c084fc)', transition: 'width 0.4s ease' }} />
             </div>
@@ -3565,7 +3588,7 @@ export default function App() {
             {[
               { label: '👤 Autore', value: 'Livio Mazzocchi', color: '#3b82f6' },
               { label: '📄 Licenza', value: 'MIT', color: '#10b981' },
-              { label: '🔖 Versione', value: 'v1.3.0', color: '#a855f7' },
+              { label: '🔖 Versione', value: `v${runningVersionStr ?? '1.3.0'}`, color: '#a855f7' },
             ].map(b => (
               <span key={b.label} style={{
                 fontSize: '0.7rem', padding: '2px 8px', borderRadius: '999px',
