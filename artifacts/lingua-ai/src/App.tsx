@@ -1253,6 +1253,7 @@ export default function App() {
     setDemoStep(0);
     setDemoCursorPos(null);
     setDemoCursorClicking(false);
+    setShowDemoMenu(false);
   };
 
   const startDemo = (demoNum: 1|2|3|4|5 = 1) => {
