@@ -1420,7 +1420,7 @@ export default function App() {
               onClick={forceUpdate}
               style={{ display: 'flex', alignItems: 'center', gap: '5px', background: '#7c3aed', color: '#fff', border: 'none', borderRadius: '8px', padding: '8px 14px', cursor: 'pointer', fontWeight: 'bold', fontSize: '0.85rem', whiteSpace: 'nowrap', boxShadow: '0 2px 8px rgba(124,58,237,0.5)' }}
             >
-              <RefreshCw size={14} /> Aggiorna
+              <RefreshCw aria-hidden="true" size={14} /> Aggiorna
             </button>
           </div>
         )}
@@ -1429,7 +1429,7 @@ export default function App() {
         {updateStep && (
           <div role="status" aria-live="polite" style={{ background: 'linear-gradient(135deg,#1e1b4b,#2e1065)', border: '1.5px solid #a855f7', borderRadius: '12px', padding: '14px 16px', marginBottom: '10px', boxShadow: '0 4px 16px rgba(168,85,247,0.3)' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
-              <RefreshCw size={18} style={{ color: '#a78bfa', animation: 'spin 1s linear infinite', flexShrink: 0 }} />
+              <RefreshCw aria-hidden="true" size={18} style={{ color: '#a78bfa', animation: 'spin 1s linear infinite', flexShrink: 0 }} />
               <div>
                 <p style={{ margin: 0, fontSize: '0.88rem', color: '#d8b4fe', fontWeight: 'bold' }}>
                   Installazione{latestVersionStr ? ` v${latestVersionStr}` : ' aggiornamento'}…
@@ -1576,7 +1576,7 @@ export default function App() {
               <FlagImg fc="it" name="Italiano" />
               <span>▶ Demo - Help</span>
             </span>
-            {showDemoMenu ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+            {showDemoMenu ? <ChevronUp aria-hidden="true" size={16} /> : <ChevronDown aria-hidden="true" size={16} />}
           </button>
           {showDemoMenu && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
@@ -1670,7 +1670,7 @@ export default function App() {
                           opacity: helpAiLoading ? 0.6 : 1,
                         }}
                       >
-                        {helpAiLoading ? <Loader2 size={13} style={{ animation: 'spin 1s linear infinite' }} /> : '🤖'} Chiedi AI
+                        {helpAiLoading ? <Loader2 aria-hidden="true" size={13} style={{ animation: 'spin 1s linear infinite' }} /> : '🤖'} Chiedi AI
                       </button>
                     </div>
 
@@ -1870,7 +1870,7 @@ export default function App() {
                       }}
                     >
                       {(() => { const ml = MORE_LANGUAGES.find(l => l.code === selectedLang); return ml ? <><FlagImg fc={ml.fc} name={ml.name} /> {ml.name}</> : <>🌍 Altre lingue</>; })()}
-                      <ChevronDown size={14} style={{ marginLeft: '2px', transform: showMoreLangs ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
+                      <ChevronDown aria-hidden="true" size={14} style={{ marginLeft: '2px', transform: showMoreLangs ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
                     </button>
                   );
                 })()}
@@ -1955,7 +1955,7 @@ export default function App() {
               aria-label={isListening ? 'Dettatura attiva, clicca per fermare' : 'Avvia dettatura vocale'}
               aria-pressed={isListening}
             >
-              <Mic size={18} /> DETTA
+              <Mic aria-hidden="true" size={18} /> DETTA
             </button>
             {dictError && (
               <p role="alert" style={{ margin: '-10px 0 0', fontSize: '0.78rem', color: '#fbbf24', background: '#1e293b', borderRadius: '6px', padding: '6px 10px' }}>
@@ -1971,7 +1971,7 @@ export default function App() {
                 onClick={() => handleTranslate()}
                 disabled={loading || aiLoading}
               >
-                {loading ? <Loader2 className="animate-spin" size={18} /> : <Send size={18} />} TRADUCI
+                {loading ? <Loader2 aria-hidden="true" className="animate-spin" size={18} /> : <Send aria-hidden="true" size={18} />} TRADUCI
               </button>
               <button
                 className="action-btn"
@@ -1992,13 +1992,13 @@ export default function App() {
                 disabled={loading || aiLoading}
                 title="Traduzione AI con spiegazione grammaticale"
               >
-                {aiLoading ? <Loader2 className="animate-spin" size={18} /> : <Bot size={18} />} TUTOR AI
+                {aiLoading ? <Loader2 aria-hidden="true" className="animate-spin" size={18} /> : <Bot aria-hidden="true" size={18} />} TUTOR AI
               </button>
             </div>
           </div>
           {error && (
             <p style={{ color: '#ef4444', fontSize: '0.8rem', marginTop: '10px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <AlertCircle size={14} /> {error}
+              <AlertCircle aria-hidden="true" size={14} /> {error}
             </p>
           )}
         </section>
@@ -2024,7 +2024,7 @@ export default function App() {
             }}
           >
             <span>⚙️ Impostazioni voce</span>
-            {showVoiceSettings ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+            {showVoiceSettings ? <ChevronUp aria-hidden="true" size={18} /> : <ChevronDown aria-hidden="true" size={18} />}
           </button>
 
           {showVoiceSettings && (
@@ -2175,7 +2175,7 @@ export default function App() {
                   }}
                   style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '2px', color: copied ? '#10b981' : '#64748b' }}
                 >
-                  {copied ? <Check size={20} /> : <Copy size={20} />}
+                  {copied ? <Check aria-hidden="true" size={20} /> : <Copy aria-hidden="true" size={20} />}
                 </button>
                 <button
                   title={bookmarked ? 'Già nei preferiti' : 'Salva nei preferiti'}
@@ -2192,7 +2192,7 @@ export default function App() {
                   }}
                   style={{ background: 'none', border: 'none', cursor: bookmarked ? 'default' : 'pointer', padding: '2px', color: bookmarked ? '#fbbf24' : '#64748b' }}
                 >
-                  {bookmarked ? <BookmarkCheck size={20} /> : <BookmarkPlus size={20} />}
+                  {bookmarked ? <BookmarkCheck aria-hidden="true" size={20} /> : <BookmarkPlus aria-hidden="true" size={20} />}
                 </button>
                 <button
                   title={shared ? 'Copiato!' : 'Condividi traduzione'}
@@ -2211,7 +2211,7 @@ export default function App() {
                   }}
                   style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '2px', color: shared ? '#10b981' : '#64748b' }}
                 >
-                  {shared ? <Check size={20} /> : <Share2 size={20} />}
+                  {shared ? <Check aria-hidden="true" size={20} /> : <Share2 aria-hidden="true" size={20} />}
                 </button>
                 <button
                   aria-label={`Ascolta la traduzione in ${ALL_LANGUAGES.find(l => l.code === selectedLang)?.name ?? selectedLang}`}
@@ -2219,17 +2219,17 @@ export default function App() {
                   onClick={() => speak(translatedText)}
                   style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '2px', display: 'flex', alignItems: 'center' }}
                 >
-                  <Volume2 size={24} color="#10b981" />
+                  <Volume2 aria-hidden="true" size={24} color="#10b981" />
                 </button>
               </div>
             </div>
             <p style={{ margin: '4px 0 0', fontSize: '0.7rem', color: '#475569' }}>🔬 Tocca una parola per analisi grammaticale</p>
             {(xrayWord || xrayLoading) && (
               <div style={{ marginTop: '8px', padding: '10px', backgroundColor: '#0f172a', borderRadius: '8px', border: '1px solid #3b82f6', position: 'relative' }}>
-                <button aria-label="Chiudi analisi grammaticale" onClick={() => { setXrayWord(null); setXrayData(null); }} style={{ position: 'absolute', top: '6px', right: '6px', background: 'none', border: 'none', cursor: 'pointer', color: '#64748b' }}><X size={14} /></button>
+                <button aria-label="Chiudi analisi grammaticale" onClick={() => { setXrayWord(null); setXrayData(null); }} style={{ position: 'absolute', top: '6px', right: '6px', background: 'none', border: 'none', cursor: 'pointer', color: '#64748b' }}><X aria-hidden="true" size={14} /></button>
                 <p style={{ margin: '0 0 6px', fontSize: '0.7rem', color: '#3b82f6', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em' }}>🔬 X-Ray: <em style={{ fontStyle: 'normal', color: '#93c5fd' }}>{xrayWord}</em></p>
                 {xrayLoading ? (
-                  <p style={{ margin: 0, color: '#64748b', fontSize: '0.85rem' }}><Loader2 className="animate-spin" size={14} style={{ display: 'inline', marginRight: '6px' }} />Analisi in corso...</p>
+                  <p style={{ margin: 0, color: '#64748b', fontSize: '0.85rem' }}><Loader2 aria-hidden="true" className="animate-spin" size={14} style={{ display: 'inline', marginRight: '6px' }} />Analisi in corso...</p>
                 ) : xrayData && (
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '6px', marginBottom: '6px' }}>
                     <div style={{ textAlign: 'center' }}>
@@ -2295,7 +2295,7 @@ export default function App() {
                   marginTop: '6px', opacity: ipaLoading ? 0.6 : 1,
                 }}
               >
-                {ipaLoading ? <Loader2 size={11} style={{ animation: 'spin 1s linear infinite' }} /> : '🔤'} IPA + sillabazione
+                {ipaLoading ? <Loader2 aria-hidden="true" size={11} style={{ animation: 'spin 1s linear infinite' }} /> : '🔤'} IPA + sillabazione
               </button>
             )}
             {ipaData && (
@@ -2356,7 +2356,7 @@ export default function App() {
               style={{ ...styles.btn, backgroundColor: isPracticing ? '#f59e0b' : '#10b981' }}
               onClick={startPracticeSession}
             >
-              <Mic size={18} />
+              <Mic aria-hidden="true" size={18} />
               {isPracticing ? '⏹ Ferma' : practiceResult ? 'RIPROVA' : 'PRATICA PRONUNCIA'}
             </button>
             {!('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) && (
@@ -2377,7 +2377,7 @@ export default function App() {
             style={{ width: '100%', background: 'none', border: 'none', color: '#c084fc', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: 0, fontSize: '0.9rem', fontWeight: 'bold' }}
           >
             <span>🔁 Shadowing — ripeti e impara</span>
-            {showShadow ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+            {showShadow ? <ChevronUp aria-hidden="true" size={18} /> : <ChevronDown aria-hidden="true" size={18} />}
           </button>
           {showShadow && (
             <div style={{ marginTop: '10px' }}>
@@ -2385,7 +2385,7 @@ export default function App() {
                 L'AI genera una frase e la parla. Ripeti subito — poi scopri il tuo punteggio.
               </p>
               <button aria-label={shadowLoading ? 'Generazione frase in corso' : 'Genera nuova frase per lo shadowing'} onClick={fetchShadowPhrase} disabled={shadowLoading} style={{ ...styles.btn, backgroundColor: '#7c3aed', marginBottom: '10px' }}>
-                {shadowLoading ? <Loader2 className="animate-spin" size={18} /> : '✨'} Genera nuova frase
+                {shadowLoading ? <Loader2 aria-hidden="true" className="animate-spin" size={18} /> : '✨'} Genera nuova frase
               </button>
               {shadowPhrase && (
                 <div style={{ backgroundColor: '#0f172a', borderRadius: '8px', padding: '12px', border: '1px solid #6d28d9' }}>
@@ -2394,7 +2394,7 @@ export default function App() {
                   <p style={{ margin: '0 0 12px', fontSize: '0.8rem', color: '#64748b' }}>🇮🇹 {shadowPhrase.translation}</p>
                   <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                     <button aria-label="Riascolta la frase di shadowing" onClick={() => speak(shadowPhrase.phrase)} style={{ ...styles.btn, backgroundColor: '#4f46e5', flex: 1 }}>
-                      <Volume2 size={16} /> Riascolta
+                      <Volume2 aria-hidden="true" size={16} /> Riascolta
                     </button>
                     <button
                       aria-label={shadowStep === 'listening' ? 'Ferma registrazione shadowing' : 'Avvia registrazione, ripeti la frase'}
@@ -2402,7 +2402,7 @@ export default function App() {
                       onClick={startShadowListen}
                       style={{ ...styles.btn, backgroundColor: shadowStep === 'listening' ? '#f59e0b' : '#10b981', flex: 1 }}
                     >
-                      <Mic size={16} />
+                      <Mic aria-hidden="true" size={16} />
                       {shadowStep === 'listening' ? '⏹ Ferma' : 'Ripeti ora!'}
                     </button>
                   </div>
@@ -2483,7 +2483,7 @@ export default function App() {
             }}
           >
             <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <Bot size={18} /> Conversa con DeepSeek
+              <Bot aria-hidden="true" size={18} /> Conversa con DeepSeek
               <span style={{
                 display: 'inline-flex', alignItems: 'center', gap: '4px',
                 background: '#fb923c22', border: '1px solid #fb923c66',
@@ -2500,10 +2500,10 @@ export default function App() {
                   onClick={e => { e.stopPropagation(); setChatExpanded(v => !v); }}
                   style={{ cursor: 'pointer', color: '#fbbf24', padding: '2px', display: 'flex' }}
                 >
-                  {chatExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                  {chatExpanded ? <ChevronUp aria-hidden="true" size={16} /> : <ChevronDown aria-hidden="true" size={16} />}
                 </span>
               )}
-              {showChat ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+              {showChat ? <ChevronUp aria-hidden="true" size={18} /> : <ChevronDown aria-hidden="true" size={18} />}
             </div>
           </button>
 
@@ -2577,7 +2577,7 @@ export default function App() {
                           onClick={() => speak(msg.content)}
                           style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'inline', verticalAlign: 'middle', marginLeft: '6px' }}
                         >
-                          <Volume2 size={12} style={{ opacity: 0.6 }} />
+                          <Volume2 aria-hidden="true" size={12} style={{ opacity: 0.6 }} />
                         </button>
                       )}
                     </div>
@@ -2586,7 +2586,7 @@ export default function App() {
                 {chatLoading && (
                   <div style={{ display: 'flex', justifyContent: 'flex-start', marginBottom: '8px' }}>
                     <div style={{ padding: '6px 10px', backgroundColor: '#1e293b', borderRadius: '12px', border: '1px solid #f59e0b' }}>
-                      <Loader2 size={14} className="animate-spin" style={{ color: '#fbbf24' }} />
+                      <Loader2 aria-hidden="true" size={14} className="animate-spin" style={{ color: '#fbbf24' }} />
                     </div>
                   </div>
                 )}
@@ -2623,7 +2623,7 @@ export default function App() {
                     cursor: 'pointer',
                   }}
                 >
-                  <Send size={16} />
+                  <Send aria-hidden="true" size={16} />
                 </button>
                 {chatMessages.length > 0 && (
                   <button
@@ -2639,7 +2639,7 @@ export default function App() {
                     }}
                     title="Nuova conversazione"
                   >
-                    <X size={16} />
+                    <X aria-hidden="true" size={16} />
                   </button>
                 )}
               </div>
@@ -2659,13 +2659,13 @@ export default function App() {
             style={{ width: '100%', background: 'none', border: 'none', color: '#818cf8', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: 0, fontSize: '0.9rem', fontWeight: 'bold' }}
           >
             <span>📚 Quiz Tatoeba — frasi reali da madrelingua</span>
-            {showTatoeba ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+            {showTatoeba ? <ChevronUp aria-hidden="true" size={18} /> : <ChevronDown aria-hidden="true" size={18} />}
           </button>
           {showTatoeba && (
             <div style={{ marginTop: '14px' }}>
               {tatLoading ? (
                 <div style={{ textAlign: 'center', padding: '20px 0', color: '#64748b' }}>
-                  <Loader2 size={24} style={{ animation: 'spin 1s linear infinite', display: 'inline-block' }} />
+                  <Loader2 aria-hidden="true" size={24} style={{ animation: 'spin 1s linear infinite', display: 'inline-block' }} />
                   <p style={{ margin: '8px 0 0', fontSize: '0.85rem' }}>Carico frasi da Tatoeba…</p>
                 </div>
               ) : tatError ? (
@@ -2776,7 +2776,7 @@ export default function App() {
             style={{ width: '100%', background: 'none', border: 'none', color: '#60a5fa', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: 0, fontSize: '0.9rem', fontWeight: 'bold' }}
           >
             <span>⭐ Profilo & Progressi</span>
-            {showTabPanel ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+            {showTabPanel ? <ChevronUp aria-hidden="true" size={18} /> : <ChevronDown aria-hidden="true" size={18} />}
           </button>
 
         {showTabPanel && (
@@ -3198,7 +3198,7 @@ export default function App() {
                                 setBookmarks(updated);
                                 saveBookmarks(updated);
                               }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#475569', flexShrink: 0, padding: '2px' }} title="Rimuovi preferito">
-                                <X size={14} />
+                                <X aria-hidden="true" size={14} />
                               </button>
                             </div>
                             <p style={{ margin: '6px 0 0', fontSize: '0.65rem', color: '#334155' }}>📅 {bm.date}</p>
@@ -3313,7 +3313,7 @@ export default function App() {
             style={{ width: '100%', background: 'none', border: 'none', color: '#10b981', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: 0, fontSize: '0.9rem', fontWeight: 'bold' }}
           >
             <span>♿ Accessibilità per ipovedenti con TalkBack</span>
-            {showAccessibilita ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+            {showAccessibilita ? <ChevronUp aria-hidden="true" size={18} /> : <ChevronDown aria-hidden="true" size={18} />}
           </button>
           {showAccessibilita && (
             <div id="accessibilita-panel" style={{ marginTop: '14px' }}>
@@ -3503,7 +3503,7 @@ export default function App() {
             style={{ width: '100%', background: 'none', border: 'none', color: '#f59e0b', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: 0, fontSize: '0.9rem', fontWeight: 'bold' }}
           >
             <span>☕ Supporta il progetto</span>
-            {showDonazioni ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+            {showDonazioni ? <ChevronUp aria-hidden="true" size={18} /> : <ChevronDown aria-hidden="true" size={18} />}
           </button>
           {showDonazioni && (
             <div style={{ marginTop: '14px', textAlign: 'center' }}>
