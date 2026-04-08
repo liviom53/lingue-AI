@@ -122,6 +122,7 @@ const SCENARIO_LABELS: Record<string, Record<string, string>> = {
   hotel:       { en:'Hotel', es:'Hotel', fr:'Hôtel', de:'Hotel', pt:'Hotel', ru:'Отель', zh:'酒店', ja:'ホテル', ko:'호텔', ar:'فندق', hi:'होटल', tr:'Otel', nl:'Hotel', pl:'Hotel', uk:'Готель', ro:'Hotel', el:'Ξενοδοχείο', sv:'Hotell', da:'Hotel', fi:'Hotelli', cs:'Hotel', hu:'Szálloda', he:'מלון', th:'โรงแรม', vi:'Khách sạn', id:'Hotel', fa:'هتل', ca:'Hotel', no:'Hotell' },
   colloquio:   { en:'Interview', es:'Entrevista', fr:'Entretien', de:'Vorstellungsgespräch', pt:'Entrevista', ru:'Собеседование', zh:'面试', ja:'面接', ko:'면접', ar:'مقابلة', hi:'साक्षात्कार', tr:'Mülakat', nl:'Sollicitatie', pl:'Rozmowa kwalifikacyjna', uk:'Співбесіда', ro:'Interviu', el:'Συνέντευξη', sv:'Intervju', da:'Jobsamtale', fi:'Haastattelu', cs:'Pohovor', hu:'Állásinterjú', he:'ראיון עבודה', th:'สัมภาษณ์', vi:'Phỏng vấn', id:'Wawancara', fa:'مصاحبه', ca:'Entrevista', no:'Jobbintervju' },
   supermercato:{ en:'Supermarket', es:'Supermercado', fr:'Supermarché', de:'Supermarkt', pt:'Supermercado', ru:'Супермаркет', zh:'超市', ja:'スーパー', ko:'슈퍼마켓', ar:'سوبرماركت', hi:'सुपरमार्केट', tr:'Süpermarket', nl:'Supermarkt', pl:'Supermarket', uk:'Супермаркет', ro:'Supermarket', el:'Σούπερ μάρκετ', sv:'Snabbköp', da:'Supermarked', fi:'Supermarket', cs:'Supermarket', hu:'Szupermarket', he:'סופרמרקט', th:'ซูเปอร์มาร์เก็ต', vi:'Siêu thị', id:'Supermarket', fa:'سوپرمارکت', ca:'Supermercat', no:'Supermarked' },
+  libera:      { en:'Free', es:'Libre', fr:'Libre', de:'Frei', pt:'Livre', ru:'Свободно', zh:'自由', ja:'自由', ko:'자유', ar:'حر', hi:'स्वतंत्र', tr:'Serbest', nl:'Vrij', pl:'Swobodna', uk:'Вільно', ro:'Liber', el:'Ελεύθερο', sv:'Fri', da:'Fri', fi:'Vapaa', cs:'Volně', hu:'Szabad', he:'חופשי', th:'อิสระ', vi:'Tự do', id:'Bebas', fa:'آزاد', ca:'Lliure', no:'Fri' },
 };
 
 const getScenarioLabel = (scenarioId: string, langCode: string): string =>
@@ -2274,7 +2275,7 @@ export default function App() {
                     onClick={() => { setRoleplayScenario(null); setChatMessages([]); }}
                     style={{ padding: '4px 10px', borderRadius: '20px', border: '1px solid', borderColor: roleplayScenario === null ? '#fb923c' : '#334155', backgroundColor: roleplayScenario === null ? '#fb923c22' : 'transparent', color: roleplayScenario === null ? '#fb923c' : '#64748b', fontSize: '0.78rem', cursor: 'pointer', fontWeight: roleplayScenario === null ? 'bold' : 'normal' }}
                   >
-                    💬 Libera
+                    💬 {getScenarioLabel('libera', selectedLang)}
                   </button>
                   {SCENARIOS.map(s => (
                     <button
