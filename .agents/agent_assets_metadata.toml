@@ -1,0 +1,8 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "JZzNyj8SvTTfcfNm3hKFD"
+uri = "file://artifacts/lingua-ai/README.md"
+type = "text"
+title = "README.md — Lingue & AI"
