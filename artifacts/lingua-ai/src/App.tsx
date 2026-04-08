@@ -1999,7 +1999,7 @@ export default function App() {
                     <iframe
                       src="https://7f2e7385-dc18-4dec-b4cb-b49d934165fd-00-1p6eowh30kvti.spock.replit.dev/lingua-ai-demo-video/"
                       style={{ width: '100%', aspectRatio: '16/9', border: 'none', display: 'block' }}
-                      allow="autoplay"
+                      allow="autoplay; fullscreen"
                       title="Lingua AI Demo Video"
                     />
                   </div>
@@ -3208,7 +3208,7 @@ export default function App() {
                 <iframe
                   src="https://7f2e7385-dc18-4dec-b4cb-b49d934165fd-00-1p6eowh30kvti.spock.replit.dev/lingua-ai-demo-video/"
                   style={{ width: '100%', aspectRatio: '16/9', border: 'none', display: 'block' }}
-                  allow="autoplay"
+                  allow="autoplay; fullscreen"
                   title="Lingua AI Demo Video"
                 />
               </div>
