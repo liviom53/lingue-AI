@@ -449,22 +449,28 @@ export default function App() {
   const [showTabPanel, setShowTabPanel] = useState(false);
   const [showDonazioni, setShowDonazioni] = useState(false);
   const [balloonPos, setBalloonPos] = useState({ x: window.innerWidth - 180, y: window.innerHeight - 80 });
-  // fase: 'waiting' → prima comparsa dopo 20s | 'visible' → mostrato 12s | 'hidden' → nascosto 35s
-  const [balloonPhase, setBalloonPhase] = useState<'waiting' | 'visible' | 'hidden'>('waiting');
+  const [balloonVisible, setBalloonVisible] = useState(false);
   const [balloonStopped, setBalloonStopped] = useState(false);
   const balloonRafRef = useRef<number | null>(null);
   const donazioniRef = useRef<HTMLElement>(null);
 
-  // State machine: ogni fase pianifica la transizione alla prossima
+  // Ciclo basato su tempo assoluto: appare dopo 20s, visibile 12s, nascosto 35s, ripete
+  // Ciclo totale dopo la prima comparsa: 47s (12 visible + 35 hidden)
   useEffect(() => {
     if (balloonStopped) return;
-    const delay = balloonPhase === 'waiting' ? 20000 : balloonPhase === 'visible' ? 12000 : 35000;
-    const next = balloonPhase === 'visible' ? 'hidden' : 'visible';
-    const t = setTimeout(() => setBalloonPhase(next), delay);
-    return () => clearTimeout(t);
-  }, [balloonPhase, balloonStopped]);
-
-  const balloonVisible = balloonPhase === 'visible';
+    const startTs = Date.now();
+    const INITIAL_WAIT = 20000;
+    const VISIBLE_DUR = 12000;
+    const HIDDEN_DUR = 35000;
+    const CYCLE = VISIBLE_DUR + HIDDEN_DUR;
+    const interval = setInterval(() => {
+      const elapsed = Date.now() - startTs;
+      if (elapsed < INITIAL_WAIT) { setBalloonVisible(false); return; }
+      const inCycle = (elapsed - INITIAL_WAIT) % CYCLE;
+      setBalloonVisible(inCycle < VISIBLE_DUR);
+    }, 500);
+    return () => clearInterval(interval);
+  }, [balloonStopped]);
 
   // Animazione sinusoidale (gira solo quando visibile)
   useEffect(() => {
@@ -4072,8 +4078,8 @@ export default function App() {
           <div
             role="button"
             tabIndex={0}
-            onClick={() => { setBalloonStopped(true); setBalloonPhase('hidden'); if (balloonRafRef.current) cancelAnimationFrame(balloonRafRef.current); setShowDonazioni(true); donazioniRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }}
-            onKeyDown={e => { if (e.key === 'Enter') { setBalloonStopped(true); setBalloonPhase('hidden'); if (balloonRafRef.current) cancelAnimationFrame(balloonRafRef.current); setShowDonazioni(true); donazioniRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }); } }}
+            onClick={() => { setBalloonStopped(true); setBalloonVisible(false); if (balloonRafRef.current) cancelAnimationFrame(balloonRafRef.current); setShowDonazioni(true); donazioniRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }}
+            onKeyDown={e => { if (e.key === 'Enter') { setBalloonStopped(true); setBalloonVisible(false); if (balloonRafRef.current) cancelAnimationFrame(balloonRafRef.current); setShowDonazioni(true); donazioniRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }); } }}
             aria-label="Sostieni il progetto con una donazione"
             style={{
               position: 'fixed',
