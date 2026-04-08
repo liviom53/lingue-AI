@@ -4048,7 +4048,6 @@ export default function App() {
               zIndex: 9990,
               opacity: 0.75,
               cursor: 'pointer',
-              animation: 'floatBalloon 3s ease-in-out infinite',
               userSelect: 'none',
             }}
             onMouseEnter={e => (e.currentTarget.style.opacity = '1')}
