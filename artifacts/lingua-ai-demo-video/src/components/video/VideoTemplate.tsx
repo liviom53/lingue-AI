@@ -55,7 +55,14 @@ export default function VideoTemplate() {
     const doc = document as Document & {
       webkitFullscreenElement?: Element;
       webkitExitFullscreen?: () => Promise<void>;
+      webkitFullscreenEnabled?: boolean;
     };
+    const canFs = document.fullscreenEnabled || doc.webkitFullscreenEnabled;
+    if (!canFs) {
+      setFsUnsupported(true);
+      setTimeout(() => setFsUnsupported(false), 3500);
+      return;
+    }
     const inFs = !!(document.fullscreenElement || doc.webkitFullscreenElement);
     try {
       if (!inFs) {
@@ -63,9 +70,6 @@ export default function VideoTemplate() {
           await el.requestFullscreen();
         } else if (el.webkitRequestFullscreen) {
           await el.webkitRequestFullscreen();
-        } else {
-          setFsUnsupported(true);
-          setTimeout(() => setFsUnsupported(false), 3000);
         }
       } else {
         if (document.exitFullscreen) {
@@ -76,7 +80,7 @@ export default function VideoTemplate() {
       }
     } catch {
       setFsUnsupported(true);
-      setTimeout(() => setFsUnsupported(false), 3000);
+      setTimeout(() => setFsUnsupported(false), 3500);
     }
   };
 
@@ -204,6 +208,20 @@ export default function VideoTemplate() {
           <><span className="text-base">⛶</span> Tutto schermo</>
         )}
       </motion.button>
+
+      {/* Messaggio non supportato */}
+      <AnimatePresence>
+        {fsUnsupported && (
+          <motion.div
+            className="absolute bottom-16 right-4 z-50 bg-black/70 backdrop-blur border border-white/20 text-white text-xs px-4 py-2 rounded-xl max-w-[220px] text-center"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 10 }}
+          >
+            Il tutto schermo non è disponibile — apri il video direttamente nel browser
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <AnimatePresence mode="popLayout">
         {currentScene === 0 && <Scene1 key="hook" />}
