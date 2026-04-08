@@ -453,8 +453,8 @@ export default function App() {
   const balloonRafRef = useRef<number | null>(null);
   useEffect(() => {
     const W = window.innerWidth, H = window.innerHeight;
-    const cx = W * 0.72, cy = H * 0.72;
-    const ax = W * 0.18, ay = H * 0.16;
+    const cx = W * 0.5, cy = H * 0.5;
+    const ax = W * 0.38, ay = H * 0.35;
     const start = performance.now();
     const tick = (now: number) => {
       const t = (now - start) / 1000;
