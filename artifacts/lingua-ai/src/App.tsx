@@ -296,6 +296,7 @@ export default function App() {
   const [showTabPanel, setShowTabPanel] = useState(false);
   const [showDonazioni, setShowDonazioni] = useState(false);
   const [showAccessibilita, setShowAccessibilita] = useState(false);
+  const [modalitaAccessibile, setModalitaAccessibile] = useState(() => localStorage.getItem('modalita_accessibile') === '1');
   const [showDemoMenu, setShowDemoMenu] = useState(false);
   const [showFunzionalitaApp, setShowFunzionalitaApp] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
@@ -2997,23 +2998,55 @@ export default function App() {
           {showAccessibilita && (
             <div id="accessibilita-panel" style={{ marginTop: '14px' }}>
 
-              {/* Pulsante attiva TalkBack */}
-              <div style={{ marginBottom: '16px', textAlign: 'center' }}>
-                <p style={{ margin: '0 0 10px', fontSize: '0.82rem', color: '#94a3b8', lineHeight: 1.5 }}>
-                  Attiva o disattiva TalkBack direttamente dalle impostazioni di accessibilità di Android.
+              {/* Toggle Modalità Accessibile */}
+              <div style={{ marginBottom: '16px', background: '#0f172a', borderRadius: '12px', padding: '14px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                  <div>
+                    <p style={{ margin: 0, fontSize: '0.88rem', fontWeight: 700, color: '#f8fafc' }}>♿ Modalità Accessibile</p>
+                    <p style={{ margin: '2px 0 0', fontSize: '0.75rem', color: '#94a3b8' }}>Pulsanti più grandi, etichette visibili, contrasto alto</p>
+                  </div>
+                  <button
+                    role="switch"
+                    aria-checked={modalitaAccessibile}
+                    aria-label="Attiva o disattiva modalità accessibile"
+                    onClick={() => {
+                      const next = !modalitaAccessibile;
+                      setModalitaAccessibile(next);
+                      localStorage.setItem('modalita_accessibile', next ? '1' : '0');
+                      document.body.classList.toggle('modalita-accessibile', next);
+                    }}
+                    style={{
+                      width: '56px', height: '30px', borderRadius: '15px', border: 'none', cursor: 'pointer',
+                      background: modalitaAccessibile ? '#10b981' : '#334155',
+                      position: 'relative', flexShrink: 0, transition: 'background 0.2s',
+                    }}
+                  >
+                    <span style={{
+                      position: 'absolute', top: '3px',
+                      left: modalitaAccessibile ? '29px' : '3px',
+                      width: '24px', height: '24px', borderRadius: '50%',
+                      background: '#fff', transition: 'left 0.2s',
+                      display: 'block',
+                    }} />
+                  </button>
+                </div>
+                <p style={{ margin: 0, fontSize: '0.75rem', color: modalitaAccessibile ? '#10b981' : '#475569', fontWeight: 600 }}>
+                  {modalitaAccessibile ? '✅ Modalità accessibile attiva' : '⭕ Modalità accessibile disattiva'}
                 </p>
+              </div>
+
+              {/* Pulsante apri impostazioni Android */}
+              <div style={{ marginBottom: '16px', textAlign: 'center' }}>
                 <button
                   onClick={() => {
-                    const tried = window.location.href;
                     window.location.href = 'intent:#Intent;action=android.settings.ACCESSIBILITY_SETTINGS;end';
-                    setTimeout(() => { window.location.href = tried; }, 500);
                   }}
                   style={{ padding: '12px 24px', borderRadius: '10px', border: 'none', background: '#10b981', color: '#fff', fontWeight: 700, fontSize: '0.95rem', cursor: 'pointer', width: '100%', marginBottom: '8px' }}
                 >
                   🔊 Apri Impostazioni Accessibilità Android
                 </button>
                 <p style={{ margin: 0, fontSize: '0.72rem', color: '#64748b' }}>
-                  Funziona su Android. Su iPhone usa Impostazioni → Accessibilità → VoiceOver.
+                  Da qui puoi attivare TalkBack. Su iPhone: Impostazioni → Accessibilità → VoiceOver.
                 </p>
               </div>
 
