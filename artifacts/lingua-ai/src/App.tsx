@@ -438,6 +438,7 @@ export default function App() {
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [chatInput, setChatInput] = useState('');
   const [chatLoading, setChatLoading] = useState(false);
+  const [isChatListening, setIsChatListening] = useState(false);
   const [showMoreLangs, setShowMoreLangs] = useState(false);
   const [showVoiceSettings, setShowVoiceSettings] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -774,6 +775,27 @@ export default function App() {
       setIsListening(false);
       setDictError(micErrorMsg(e.name ?? 'unknown'));
     }
+  };
+
+  const startChatDictation = () => {
+    const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SR) return;
+    if (isChatListening) { setIsChatListening(false); return; }
+    const langInfo = [...LANGUAGES, ...MORE_LANGUAGES].find(l => l.code === selectedLang);
+    const recognition = new SR();
+    recognition.lang = langInfo?.locale ?? 'it-IT';
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+    let gotResult = false;
+    recognition.onstart = () => setIsChatListening(true);
+    recognition.onresult = (e: any) => {
+      gotResult = true;
+      setChatInput(e.results[0][0].transcript);
+      setIsChatListening(false);
+    };
+    recognition.onerror = () => { gotResult = true; setIsChatListening(false); };
+    recognition.onend = () => { setIsChatListening(false); if (!gotResult) {} };
+    try { recognition.start(); } catch { setIsChatListening(false); }
   };
 
   const buildTatOptions = (pairs: { it: string; tr: string }[], idx: number) => {
@@ -2779,6 +2801,32 @@ export default function App() {
                   placeholder={`Scrivi in ${langName}...`}
                   disabled={chatLoading}
                 />
+                {'SpeechRecognition' in window || 'webkitSpeechRecognition' in window ? (
+                  <button
+                    aria-label={isChatListening ? 'Dettatura attiva, clicca per fermare' : `Dettatura vocale in ${langName}`}
+                    aria-pressed={isChatListening}
+                    onClick={startChatDictation}
+                    disabled={chatLoading}
+                    style={{
+                      padding: '8px 10px',
+                      backgroundColor: isChatListening ? '#ef4444' : '#1e293b',
+                      border: `1px solid ${isChatListening ? '#ef4444' : '#334155'}`,
+                      borderRadius: '8px',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                      color: isChatListening ? '#fff' : '#94a3b8',
+                      fontSize: '0.72rem',
+                      fontWeight: 'bold',
+                      whiteSpace: 'nowrap',
+                      transition: 'all 0.2s',
+                    }}
+                  >
+                    {isChatListening ? micWaveform('rgba(255,255,255,0.9)') : <Mic aria-hidden="true" size={14} />}
+                    {isChatListening ? 'FERMA' : 'DETTA'}
+                  </button>
+                ) : null}
                 <button
                   aria-label="Invia messaggio"
                   onClick={() => handleChatSend()}
