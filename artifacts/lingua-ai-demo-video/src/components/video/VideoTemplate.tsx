@@ -1,3 +1,4 @@
+import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useVideoPlayer } from '@/lib/video';
 import { Scene1 } from './video_scenes/Scene1';
@@ -20,7 +21,6 @@ const SCENE_DURATIONS = {
   outro: 13000 
 };
 
-// Background gradient positions per scene for continuous motion
 const bgPositions = [
   { x: '-10%', y: '-10%', scale: 1, rotate: 0 },
   { x: '10%', y: '20%', scale: 1.2, rotate: 45 },
@@ -34,12 +34,62 @@ const bgPositions = [
 
 export default function VideoTemplate() {
   const { currentScene } = useVideoPlayer({ durations: SCENE_DURATIONS });
+  const audioRef = useRef<HTMLAudioElement>(null);
+  const [audioPlaying, setAudioPlaying] = useState(false);
+
+  const startAudio = () => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    audio.muted = false;
+    audio.volume = 0.7;
+    audio.play().then(() => setAudioPlaying(true)).catch(() => {});
+  };
+
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    const onEnded = () => setAudioPlaying(false);
+    audio.addEventListener('pause', onEnded);
+    return () => audio.removeEventListener('pause', onEnded);
+  }, []);
 
   return (
     <div className="relative w-full h-screen overflow-hidden bg-[#0f172a] text-white">
       
-      {/* Background Audio — muted by default; un-mute manually before screen recording */}
-      <audio src={`${import.meta.env.BASE_URL}audio/hard-rock-intro.mp3`} autoPlay loop muted />
+      <audio ref={audioRef} src={`${import.meta.env.BASE_URL}audio/hard-rock-intro.mp3`} loop muted />
+
+      {/* Pulsante Avvia Audio */}
+      <AnimatePresence>
+        {!audioPlaying && (
+          <motion.button
+            onClick={startAudio}
+            className="absolute top-4 right-4 z-50 flex items-center gap-2 bg-white/10 hover:bg-white/20 backdrop-blur border border-white/20 text-white text-sm font-bold px-4 py-2 rounded-full cursor-pointer"
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.4 }}
+          >
+            <span className="text-base">🎵</span> Avvia audio
+          </motion.button>
+        )}
+      </AnimatePresence>
+
+      {/* Indicatore audio attivo */}
+      <AnimatePresence>
+        {audioPlaying && (
+          <motion.div
+            className="absolute top-4 right-4 z-50 flex items-center gap-2 bg-[#10b981]/20 border border-[#10b981]/40 text-[#10b981] text-sm font-bold px-4 py-2 rounded-full"
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+          >
+            <motion.span
+              animate={{ opacity: [1, 0.3, 1] }}
+              transition={{ duration: 0.8, repeat: Infinity }}
+            >●</motion.span> Audio ON
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Background Video Loop */}
       <div className="absolute inset-0 opacity-40 mix-blend-screen">
