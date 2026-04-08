@@ -7,6 +7,7 @@ import { Scene4 } from './video_scenes/Scene4';
 import { Scene5 } from './video_scenes/Scene5';
 import { Scene6 } from './video_scenes/Scene6';
 import { Scene7 } from './video_scenes/Scene7';
+import { Scene8 } from './video_scenes/Scene8';
 
 const SCENE_DURATIONS = { 
   hook: 13000, 
@@ -15,6 +16,7 @@ const SCENE_DURATIONS = {
   grammar: 13000, 
   shadowing: 13000,
   quiz: 12000,
+  accessibility: 13000,
   outro: 13000 
 };
 
@@ -27,6 +29,7 @@ const bgPositions = [
   { x: '0%', y: '0%', scale: 1, rotate: 180 },
   { x: '15%', y: '15%', scale: 1.1, rotate: 225 },
   { x: '-5%', y: '-5%', scale: 1.4, rotate: 270 },
+  { x: '20%', y: '-20%', scale: 1.2, rotate: 315 },
 ];
 
 export default function VideoTemplate() {
@@ -95,7 +98,8 @@ export default function VideoTemplate() {
         {currentScene === 3 && <Scene4 key="grammar" />}
         {currentScene === 4 && <Scene5 key="shadowing" />}
         {currentScene === 5 && <Scene6 key="quiz" />}
-        {currentScene === 6 && <Scene7 key="outro" />}
+        {currentScene === 6 && <Scene8 key="accessibility" />}
+        {currentScene === 7 && <Scene7 key="outro" />}
       </AnimatePresence>
     </div>
   );
