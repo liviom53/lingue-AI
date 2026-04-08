@@ -439,4 +439,38 @@ router.get('/tatoeba-quiz', async (req: Request, res: Response) => {
   }
 });
 
+// ── /api/ai/variants ─────────────────────────────────────────────────────────
+router.post("/variants", async (req: Request, res: Response) => {
+  const { text, translation, targetLang } = req.body as {
+    text?: string; translation?: string; targetLang?: string;
+  };
+  if (!text || !translation || !targetLang) {
+    res.status(400).json({ error: "Parametri mancanti" });
+    return;
+  }
+  const lang = LANG_NAMES[targetLang] ?? targetLang;
+  try {
+    const completion = await openrouter.chat.completions.create({
+      model: MODEL,
+      max_tokens: 300,
+      messages: [
+        {
+          role: "system",
+          content: `Sei un esperto di linguistica. L'utente ha tradotto una frase dall'italiano in ${lang}. Fornisci 2-3 varianti alternative della traduzione (es. formale, informale, colloquiale) in formato JSON. Rispondi SOLO con JSON valido, nessun testo extra.`,
+        },
+        {
+          role: "user",
+          content: `Italiano: "${text}"\nTraduzione base in ${lang}: "${translation}"\n\nFornisci 2-3 varianti. Formato: { "variants": [{ "label": "Formale", "text": "..." }, { "label": "Informale", "text": "..." }] }`,
+        },
+      ],
+    });
+    const raw = completion.choices[0]?.message?.content ?? "{}";
+    const jsonMatch = raw.match(/\{[\s\S]*\}/);
+    const parsed = jsonMatch ? JSON.parse(jsonMatch[0]) : { variants: [] };
+    res.json(parsed);
+  } catch (err: any) {
+    res.status(502).json({ error: err.message ?? "Errore varianti" });
+  }
+});
+
 export default router;

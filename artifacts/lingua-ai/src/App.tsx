@@ -431,6 +431,8 @@ export default function App() {
   const [phonetic, setPhonetic] = useState<string | null>(null);
   const [ipaData, setIpaData] = useState<{ ipa: string; syllables: string } | null>(null);
   const [ipaLoading, setIpaLoading] = useState(false);
+  const [translationVariants, setTranslationVariants] = useState<{ label: string; text: string }[] | null>(null);
+  const [variantsLoading, setVariantsLoading] = useState(false);
   const [shadowUserAmps, setShadowUserAmps] = useState<number[]>([]);
   const [aiExplanation, setAiExplanation] = useState<{ explanation: string; example: string } | null>(null);
   const [showChat, setShowChat] = useState(false);
@@ -623,6 +625,7 @@ export default function App() {
     setPracticeResult(null);
     setAiExplanation(null);
     setChatMessages([]);
+    setTranslationVariants(null);
   }, [selectedLang]);
 
   useEffect(() => {
@@ -727,6 +730,25 @@ export default function App() {
       setIpaData(null);
     } finally {
       setIpaLoading(false);
+    }
+  };
+
+  const fetchVariants = async () => {
+    if (!translatedText || !inputText) return;
+    setVariantsLoading(true);
+    setTranslationVariants(null);
+    try {
+      const r = await fetch('/api/ai/variants', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: inputText, translation: translatedText, targetLang: selectedLang }),
+      });
+      const data = await r.json() as any;
+      setTranslationVariants(data.variants ?? null);
+    } catch {
+      setTranslationVariants(null);
+    } finally {
+      setVariantsLoading(false);
     }
   };
 
@@ -842,6 +864,7 @@ export default function App() {
     setAiExplanation(null);
     setPhonetic(null);
     setIpaData(null);
+    setTranslationVariants(null);
     setBookmarked(false);
     setFromCache(false);
 
@@ -2364,6 +2387,14 @@ export default function App() {
                 >
                   <Volume2 aria-hidden="true" size={24} color="#10b981" />
                 </button>
+                <button
+                  aria-label="Ascolta lentamente (modalità tartaruga)"
+                  title="Ascolta lentamente"
+                  onClick={() => speak(translatedText, 0.4)}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '2px', display: 'flex', alignItems: 'center', fontSize: '1.1rem', lineHeight: 1 }}
+                >
+                  🐢
+                </button>
               </div>
             </div>
             <p style={{ margin: '4px 0 0', fontSize: '0.7rem', color: '#475569' }}>🔬 Tocca una parola per analisi grammaticale</p>
@@ -2458,6 +2489,45 @@ export default function App() {
                   <p style={{ fontSize: '0.8rem', color: '#94a3b8', margin: 0, fontStyle: 'italic' }}>
                     Es: <em style={{ color: '#e2e8f0' }}>{aiExplanation.example}</em>
                   </p>
+                )}
+              </div>
+            )}
+            {translatedText && (
+              <div style={{ marginTop: '8px' }}>
+                <button
+                  aria-label="Mostra varianti formale e informale"
+                  onClick={fetchVariants}
+                  disabled={variantsLoading}
+                  style={{
+                    display: 'inline-flex', alignItems: 'center', gap: '5px',
+                    background: '#1e293b', border: '1px solid #334155',
+                    color: '#94a3b8', borderRadius: '6px', padding: '4px 10px',
+                    cursor: variantsLoading ? 'not-allowed' : 'pointer', fontSize: '0.74rem',
+                    opacity: variantsLoading ? 0.6 : 1,
+                  }}
+                >
+                  {variantsLoading
+                    ? <><Loader2 aria-hidden="true" size={11} style={{ animation: 'spin 1s linear infinite' }} /> Caricamento...</>
+                    : '🔀 Mostra varianti'}
+                </button>
+                {translationVariants && translationVariants.length > 0 && (
+                  <div aria-live="polite" style={{ marginTop: '8px', background: '#0f172a', borderRadius: '8px', padding: '10px 12px', border: '1px solid #334155' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                      <span style={{ fontSize: '0.68rem', color: '#475569', textTransform: 'uppercase', letterSpacing: '0.06em' }}>🔀 Varianti di traduzione</span>
+                      <button aria-label="Chiudi varianti" onClick={() => setTranslationVariants(null)} style={{ background: 'none', border: 'none', color: '#475569', cursor: 'pointer', fontSize: '0.7rem', padding: 0 }}>✕ chiudi</button>
+                    </div>
+                    {translationVariants.map((v, i) => (
+                      <div key={i} style={{ marginBottom: i < translationVariants.length - 1 ? '8px' : 0, display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
+                        <span style={{ flexShrink: 0, fontSize: '0.68rem', fontWeight: 'bold', color: '#f59e0b', background: '#f59e0b18', border: '1px solid #f59e0b44', borderRadius: '4px', padding: '2px 6px', marginTop: '2px' }}>{v.label}</span>
+                        <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <span style={{ fontSize: '0.88rem', color: '#e2e8f0', lineHeight: '1.4' }}>{v.text}</span>
+                          <button aria-label={`Ascolta variante ${v.label}`} onClick={() => speak(v.text)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '2px', color: '#475569', flexShrink: 0 }}>
+                            <Volume2 aria-hidden="true" size={13} />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 )}
               </div>
             )}
