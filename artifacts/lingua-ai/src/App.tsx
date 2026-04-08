@@ -298,6 +298,7 @@ export default function App() {
   const [showAccessibilita, setShowAccessibilita] = useState(false);
   const [modalitaAccessibile, setModalitaAccessibile] = useState(() => localStorage.getItem('modalita_accessibile') === '1');
   const [talkbackInApp, setTalkbackInApp] = useState(() => localStorage.getItem('talkback_inapp') === '1');
+  const [ipovedenti, setIpovedenti] = useState(() => localStorage.getItem('modalita_ipovedenti') === '1');
 
   useEffect(() => {
     if (!talkbackInApp) return;
@@ -323,6 +324,18 @@ export default function App() {
     document.addEventListener('click', handleClick, true);
     return () => document.removeEventListener('click', handleClick, true);
   }, [talkbackInApp]);
+
+  // Modalità ipovedenti: legge automaticamente la traduzione quando arriva
+  const ipovedentiRef = React.useRef(ipovedenti);
+  useEffect(() => { ipovedentiRef.current = ipovedenti; }, [ipovedenti]);
+  useEffect(() => {
+    if (!ipovedenti || !translatedText) return;
+    // Piccolo ritardo per assicurarsi che speak() non venga bloccato dal demo
+    const t = setTimeout(() => speak(translatedText), 300);
+    return () => clearTimeout(t);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [translatedText, ipovedenti]);
+
   const [showDemoMenu, setShowDemoMenu] = useState(false);
   const [showFunzionalitaApp, setShowFunzionalitaApp] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
@@ -578,8 +591,13 @@ export default function App() {
     recognition.onstart = () => setIsListening(true);
     recognition.onresult = (e: any) => {
       gotResult = true;
-      setInputText(e.results[0][0].transcript);
+      const transcript = e.results[0][0].transcript;
+      setInputText(transcript);
       setIsListening(false);
+      // Modalità ipovedenti: traduci automaticamente dopo la dettatura
+      if (ipovedentiRef.current) {
+        setTimeout(() => handleAiTranslate(transcript), 200);
+      }
     };
     recognition.onerror = (e: any) => {
       gotResult = true;
@@ -3023,6 +3041,46 @@ export default function App() {
           </button>
           {showAccessibilita && (
             <div id="accessibilita-panel" style={{ marginTop: '14px' }}>
+
+              {/* Toggle Modalità Ipovedenti */}
+              <div style={{ marginBottom: '12px', background: '#0f172a', borderRadius: '12px', padding: '14px', border: ipovedenti ? '1px solid #10b981' : '1px solid transparent' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                  <div>
+                    <p style={{ margin: 0, fontSize: '0.88rem', fontWeight: 700, color: '#f8fafc' }}>👁️ Modalità Ipovedenti</p>
+                    <p style={{ margin: '2px 0 0', fontSize: '0.75rem', color: '#94a3b8' }}>Detta → traduce in automatico → legge il risultato ad alta voce</p>
+                  </div>
+                  <button
+                    role="switch"
+                    aria-checked={ipovedenti}
+                    aria-label={ipovedenti ? 'Modalità ipovedenti attiva, tocca per disattivare' : 'Modalità ipovedenti disattiva, tocca per attivare'}
+                    onClick={() => {
+                      const next = !ipovedenti;
+                      setIpovedenti(next);
+                      localStorage.setItem('modalita_ipovedenti', next ? '1' : '0');
+                    }}
+                    style={{
+                      width: '56px', height: '30px', borderRadius: '15px', border: 'none', cursor: 'pointer',
+                      background: ipovedenti ? '#10b981' : '#334155',
+                      position: 'relative', flexShrink: 0, transition: 'background 0.2s',
+                    }}
+                  >
+                    <span style={{
+                      position: 'absolute', top: '3px',
+                      left: ipovedenti ? '29px' : '3px',
+                      width: '24px', height: '24px', borderRadius: '50%',
+                      background: '#fff', transition: 'left 0.2s', display: 'block',
+                    }} />
+                  </button>
+                </div>
+                <p style={{ margin: 0, fontSize: '0.75rem', color: ipovedenti ? '#10b981' : '#475569', fontWeight: 600 }}>
+                  {ipovedenti ? '✅ Attivo — detta e ascolta, senza toccare nient\'altro' : '⭕ Disattivo'}
+                </p>
+                {ipovedenti && (
+                  <p style={{ margin: '8px 0 0', fontSize: '0.72rem', color: '#64748b', lineHeight: 1.5 }}>
+                    1️⃣ Scorri fino alla sezione <strong style={{ color: '#f8fafc' }}>Traduzione</strong> &nbsp;·&nbsp; 2️⃣ Tocca <strong style={{ color: '#f8fafc' }}>🎙️ DETTA</strong> &nbsp;·&nbsp; 3️⃣ Parla in italiano &nbsp;·&nbsp; 4️⃣ Ascolta la traduzione
+                  </p>
+                )}
+              </div>
 
               {/* Toggle TalkBack in-app */}
               <div style={{ marginBottom: '12px', background: '#0f172a', borderRadius: '12px', padding: '14px' }}>
