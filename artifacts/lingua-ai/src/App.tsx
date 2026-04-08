@@ -139,7 +139,7 @@ const normalizeText = (text: string) => {
     .trim();
 };
 
-type ChatMessage = { role: 'user' | 'assistant'; content: string };
+type ChatMessage = { role: 'user' | 'assistant'; content: string; timestamp: number };
 
 interface ProgressStats {
   totalMinutes: number;
@@ -961,7 +961,7 @@ export default function App() {
 
   const handleChatSend = async (overrideScenario?: string) => {
     if (!chatInput.trim() || chatLoading) return;
-    const userMsg: ChatMessage = { role: 'user', content: chatInput.trim() };
+    const userMsg: ChatMessage = { role: 'user', content: chatInput.trim(), timestamp: Date.now() };
     const newMessages = [...chatMessages, userMsg];
     setChatMessages(newMessages);
     setChatInput('');
@@ -982,11 +982,11 @@ export default function App() {
       });
       if (!res.ok) throw new Error('Errore chat AI');
       const data = await res.json();
-      const assistantMsg: ChatMessage = { role: 'assistant', content: data.reply ?? '' };
+      const assistantMsg: ChatMessage = { role: 'assistant', content: data.reply ?? '', timestamp: Date.now() };
       setChatMessages(prev => [...prev, assistantMsg]);
       speak(data.reply ?? '');
     } catch (err: any) {
-      const errMsg: ChatMessage = { role: 'assistant', content: '⚠️ ' + (err.message ?? 'Errore') };
+      const errMsg: ChatMessage = { role: 'assistant', content: '⚠️ ' + (err.message ?? 'Errore'), timestamp: Date.now() };
       setChatMessages(prev => [...prev, errMsg]);
     } finally {
       setChatLoading(false);
@@ -1013,11 +1013,11 @@ export default function App() {
       });
       if (!res.ok) throw new Error('Errore');
       const data = await res.json();
-      const aiMsg: ChatMessage = { role: 'assistant', content: data.reply ?? '' };
+      const aiMsg: ChatMessage = { role: 'assistant', content: data.reply ?? '', timestamp: Date.now() };
       setChatMessages([aiMsg]);
       speak(data.reply ?? '');
     } catch {
-      setChatMessages([{ role: 'assistant', content: '⚠️ Errore avvio scenario' }]);
+      setChatMessages([{ role: 'assistant', content: '⚠️ Errore avvio scenario', timestamp: Date.now() }]);
     } finally {
       setChatLoading(false);
     }
@@ -2664,50 +2664,94 @@ export default function App() {
                   </p>
                 )}
               </div>
+              {chatMessages.length > 0 && (
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
+                  <span style={{ fontSize: '0.72rem', color: '#475569' }}>
+                    {chatMessages.length} {chatMessages.length === 1 ? 'messaggio' : 'messaggi'}
+                  </span>
+                  <span style={{ fontSize: '0.72rem', color: '#475569' }}>
+                    {langFlag} {langName}
+                  </span>
+                </div>
+              )}
               <div ref={chatContainerRef} style={{
                 height: chatExpanded ? '360px' : '220px',
                 overflowY: 'auto',
                 backgroundColor: '#0f172a',
                 borderRadius: '8px',
-                padding: '8px',
+                padding: '10px 8px',
                 marginBottom: '8px',
                 border: '1px solid #334155',
               }}>
                 {chatMessages.length === 0 && (
-                  <p style={{ color: '#64748b', fontSize: '0.8rem', textAlign: 'center', marginTop: '90px' }}>
+                  <p style={{ color: '#64748b', fontSize: '0.8rem', textAlign: 'center', marginTop: '80px' }}>
                     Scrivi qualcosa per iniziare a conversare in {langName}...
                   </p>
                 )}
-                {chatMessages.map((msg, i) => (
-                  <div key={i} style={{
-                    marginBottom: '8px',
-                    display: 'flex',
-                    justifyContent: msg.role === 'user' ? 'flex-end' : 'flex-start',
-                  }}>
-                    <div style={{
-                      maxWidth: '85%',
-                      padding: '6px 10px',
-                      borderRadius: msg.role === 'user' ? '12px 12px 2px 12px' : '12px 12px 12px 2px',
-                      backgroundColor: msg.role === 'user' ? '#f97316' : '#1e293b',
-                      border: msg.role === 'assistant' ? '1px solid #f59e0b' : 'none',
-                      fontSize: '0.85rem',
-                      lineHeight: '1.4',
-                      color: '#f8fafc',
-                      whiteSpace: 'pre-wrap',
+                {chatMessages.map((msg, i) => {
+                  const ts = new Date(msg.timestamp);
+                  const timeStr = ts.getHours().toString().padStart(2,'0') + ':' + ts.getMinutes().toString().padStart(2,'0');
+                  const isUser = msg.role === 'user';
+                  return (
+                    <div key={i} style={{
+                      marginBottom: '12px',
+                      display: 'flex',
+                      flexDirection: isUser ? 'row-reverse' : 'row',
+                      alignItems: 'flex-end',
+                      gap: '6px',
                     }}>
-                      {msg.content}
-                      {msg.role === 'assistant' && (
-                        <button
-                          aria-label="Ascolta risposta dell'AI"
-                          onClick={() => speak(msg.content)}
-                          style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'inline', verticalAlign: 'middle', marginLeft: '6px' }}
-                        >
-                          <Volume2 aria-hidden="true" size={12} style={{ opacity: 0.6 }} />
-                        </button>
-                      )}
+                      {/* Avatar */}
+                      <div style={{
+                        width: '28px', height: '28px', borderRadius: '50%', flexShrink: 0,
+                        backgroundColor: isUser ? '#f97316' : '#1e3a5f',
+                        border: isUser ? 'none' : '1px solid #f59e0b',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontSize: '0.65rem', fontWeight: 'bold', color: '#fff',
+                      }}>
+                        {isUser ? (profile?.nome?.[0]?.toUpperCase() ?? '👤') : <Bot aria-hidden="true" size={14} />}
+                      </div>
+                      {/* Bubble */}
+                      <div style={{ maxWidth: '80%', display: 'flex', flexDirection: 'column', alignItems: isUser ? 'flex-end' : 'flex-start', gap: '3px' }}>
+                        <div style={{
+                          padding: '8px 12px',
+                          borderRadius: isUser ? '14px 14px 2px 14px' : '14px 14px 14px 2px',
+                          backgroundColor: isUser ? '#f97316' : '#1e293b',
+                          border: isUser ? 'none' : '1px solid #f59e0b33',
+                          fontSize: '0.85rem',
+                          lineHeight: '1.5',
+                          color: '#f8fafc',
+                          whiteSpace: 'pre-wrap',
+                          wordBreak: 'break-word',
+                        }}>
+                          {msg.content}
+                        </div>
+                        {/* Azioni sotto la bolla */}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', paddingInline: '2px' }}>
+                          <span style={{ fontSize: '0.65rem', color: '#475569' }}>{timeStr}</span>
+                          {!isUser && (
+                            <>
+                              <button
+                                aria-label="Ascolta risposta dell'AI"
+                                onClick={() => speak(msg.content)}
+                                style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '2px', display: 'flex', color: '#64748b' }}
+                              >
+                                <Volume2 aria-hidden="true" size={12} />
+                              </button>
+                              <button
+                                aria-label="Copia messaggio"
+                                onClick={() => navigator.clipboard.writeText(msg.content)}
+                                style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '2px', display: 'flex', color: '#64748b' }}
+                                title="Copia"
+                              >
+                                <Copy aria-hidden="true" size={12} />
+                              </button>
+                            </>
+                          )}
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
                 {chatLoading && (
                   <div style={{ display: 'flex', justifyContent: 'flex-start', marginBottom: '8px' }}>
                     <div style={{ padding: '6px 10px', backgroundColor: '#1e293b', borderRadius: '12px', border: '1px solid #f59e0b' }}>
