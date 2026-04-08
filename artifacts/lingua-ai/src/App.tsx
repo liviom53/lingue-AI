@@ -273,7 +273,12 @@ export default function App() {
     needRefresh: [needRefresh],
     updateServiceWorker,
   } = useRegisterSW({
-    onRegistered(r) { console.log('SW registrato:', r); },
+    onRegistered(r) {
+      // Controllo aggiornamenti ogni 60 minuti (utile per app installata sul telefono)
+      if (r) {
+        setInterval(() => r.update(), 60 * 60 * 1000);
+      }
+    },
     onRegisterError(e) { console.warn('SW errore:', e); },
   });
 

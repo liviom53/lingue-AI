@@ -14,7 +14,7 @@ export default defineConfig({
     react(),
     tailwindcss(),
     VitePWA({
-      registerType: "autoUpdate",
+      registerType: "prompt",       // SW aspetta → needRefresh diventa true → banner compare
       injectRegister: "auto",
       devOptions: { enabled: false },  // SW disabilitato in dev → modifiche sempre visibili
       base: basePath,
@@ -53,8 +53,6 @@ export default defineConfig({
         ],
         // Pulisce automaticamente le vecchie cache quando il SW si aggiorna
         cleanupOutdatedCaches: true,
-        skipWaiting: true,
-        clientsClaim: true,
       },
       manifest: {
         name: "Lingue & AI",
