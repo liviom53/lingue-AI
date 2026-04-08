@@ -1215,9 +1215,9 @@ export default function App() {
               style={{ position: 'relative', background: 'linear-gradient(140deg, #1e3a5f 0%, #1e293b 60%, #0f1c2d 100%)', border: '1px solid #60a5fa', borderRadius: '18px', padding: '28px 24px 22px', maxWidth: '380px', width: '100%', boxShadow: '0 24px 60px rgba(0,0,0,0.7)' }}
             >
               <button
-                aria-label="Chiudi"
+                aria-label="Chiudi popup"
                 onClick={() => setShowProfilePopup(false)}
-                style={{ position: 'absolute', top: '12px', right: '12px', width: '40px', height: '40px', borderRadius: '50%', border: 'none', background: '#334155', color: '#94a3b8', fontSize: '1.2rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1 }}
+                style={{ position: 'absolute', top: '10px', right: '10px', width: '44px', height: '44px', borderRadius: '50%', border: '2px solid #60a5fa', background: '#1e3a5f', color: '#f8fafc', fontSize: '1.4rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10, fontWeight: 'bold' }}
               >✕</button>
               <div style={{ fontSize: '2.2rem', textAlign: 'center', marginBottom: '8px' }}>👤</div>
               <h2 style={{ margin: '0 0 10px', fontSize: '1.15rem', fontWeight: 700, textAlign: 'center', color: '#f8fafc' }}>
