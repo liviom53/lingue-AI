@@ -773,9 +773,10 @@ export default function App() {
     recognition.interimResults = false;
     recognition.maxAlternatives = 1;
     let gotResult = false;
-    recognition.onstart = () => setIsListening(true);
+    recognition.onstart = () => { setIsListening(true); navigator.vibrate?.(50); };
     recognition.onresult = (e: any) => {
       gotResult = true;
+      navigator.vibrate?.([30, 50, 30]);
       const transcript = e.results[0][0].transcript;
       setInputText(transcript);
       setIsListening(false);
@@ -786,6 +787,7 @@ export default function App() {
     };
     recognition.onerror = (e: any) => {
       gotResult = true;
+      navigator.vibrate?.([100]);
       setIsListening(false);
       setDictError(micErrorMsg(e.error));
     };
@@ -809,13 +811,14 @@ export default function App() {
     recognition.interimResults = false;
     recognition.maxAlternatives = 1;
     let gotResult = false;
-    recognition.onstart = () => setIsChatListening(true);
+    recognition.onstart = () => { setIsChatListening(true); navigator.vibrate?.(50); };
     recognition.onresult = (e: any) => {
       gotResult = true;
+      navigator.vibrate?.([30, 50, 30]);
       setChatInput(e.results[0][0].transcript);
       setIsChatListening(false);
     };
-    recognition.onerror = () => { gotResult = true; setIsChatListening(false); };
+    recognition.onerror = () => { gotResult = true; navigator.vibrate?.([100]); setIsChatListening(false); };
     recognition.onend = () => { setIsChatListening(false); if (!gotResult) {} };
     try { recognition.start(); } catch { setIsChatListening(false); }
   };
@@ -978,8 +981,10 @@ export default function App() {
     recognition.interimResults = false;
     recognition.maxAlternatives = 1;
     let gotResult = false;
+    recognition.onstart = () => { navigator.vibrate?.(50); };
     recognition.onresult = (e: any) => {
       gotResult = true;
+      navigator.vibrate?.([30, 50, 30]);
       practiceRecognitionRef.current = null;
       const spoken = (e.results[0][0].transcript as string).trim();
       const expectedWords = normalizeText(translatedText).split(' ');
@@ -1140,8 +1145,10 @@ export default function App() {
     recognition.maxAlternatives = 3;
     let gotResult = false;
 
+    recognition.onstart = () => { navigator.vibrate?.(50); };
     recognition.onresult = (e: any) => {
       gotResult = true;
+      navigator.vibrate?.([30, 50, 30]);
       shadowRecognitionRef.current = null;
       const spoken = (e.results[0][0].transcript as string).trim();
       setShadowSpoken(spoken);
