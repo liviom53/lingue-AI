@@ -9,53 +9,80 @@
 ## Funzionalità
 
 ### Traduzione
-- Italiano → **29+ lingue** tramite istanze pubbliche Lingva
-- Pronuncia fonetica semplificata (es. "el-LÒ") e IPA
+- Italiano → **29+ lingue** tramite istanze pubbliche Lingva (fallback MyMemory)
+- **Dettatura vocale** (pulsante DETTA): parla in italiano, il testo appare automaticamente — Chrome, Edge, Safari
+- Forma d'onda animata a 5 barre sul pulsante microfono durante la registrazione
 - Cache locale per tradurre offline le parole già cercate
 
-### TUTOR AI (DeepSeek via OpenRouter)
-- Traduzione arricchita: `traduzione · pronuncia · spiegazione grammaticale · frase d'esempio`
-- Personalizzata in base al profilo utente (nome, età, livello, interessi)
+### Pronuncia & IPA
+- Sintesi vocale nativa con pulsante 🔊, slider velocità e numero di ripetizioni
+- Selezione voce tra quelle disponibili sul dispositivo
+- **IPA + sillabazione**: trascrizione fonetica internazionale e suddivisione in sillabe generata da AI
+- Pronuncia fonetica semplificata (es. "el-LÒ") per le lingue con alfabeto latino
 
-### Conversa con DeepSeek
-- Chat nella lingua target con correzioni grammaticali inline
+### Grammatica X-Ray
+- Tocca qualsiasi parola della traduzione per analizzarla con DeepSeek
+- Mostra: parte del discorso, genere/numero, tempo verbale, radice etimologica, curiosità
+- Pannello inline direttamente sotto la parola selezionata
+
+### Tutor AI (DeepSeek via OpenRouter)
+- Traduzione arricchita: `traduzione · pronuncia · spiegazione grammaticale · frase d'esempio`
+- Personalizzata in base al profilo utente (nome, età, livello, occupazione, interessi)
+
+### Chat AI & Roleplay
+- Conversazione nella lingua target con correzioni grammaticali inline (💡)
 - **Scenari roleplay** (pillole selezionabili, etichette nella lingua scelta):
   - 🍽️ Ristorante · ✈️ Aeroporto · 🏥 Medico · 🏨 Hotel · 💼 Colloquio · 🛒 Supermercato
   - 💬 Conversazione libera
 - Modalità conversazione libera o guidata da scenario
 
-### Grammatica X-Ray
-- Analisi morfosintattica frase per frase con DeepSeek
-- Colori per categoria grammaticale (sostantivo, verbo, aggettivo…)
-
 ### Shadowing
-- Ascolto + ripetizione per allenare la pronuncia
-- Velocità regolabile, pausa automatica
+- L'AI genera una frase nella lingua scelta → ascolta → ripeti ad alta voce
+- Forma d'onda animata durante la registrazione
+- Score di pronuncia parola per parola
+- Tecnica usata dai poliglotti per assorbire ritmo e intonazione naturale
 
-### Riconoscimento vocale & Pratica
-- Pronuncia una parola, ricevi un punteggio di somiglianza
-- Solo Chrome/Edge (con avviso automatico su altri browser)
+### Pratica pronuncia
+- Dopo una traduzione premi PRATICA PRONUNCIA
+- Il riconoscimento vocale confronta la tua pronuncia con la traduzione corretta
+- Punteggio e feedback parola per parola
 
 ### Quiz Tatoeba
-- Frasi reali da Tatoeba nella lingua target
-- Modalità a risposta multipla
+- Frasi reali scritte da madrelingua, in cache per uso offline
+- Modalità a risposta multipla (4 opzioni)
 
-### Segnalibri
-- Salva parole e frasi preferite in `localStorage`
-- Visualizzazione e rimozione rapida
+### Segnalibri & Vocabolario
+- Salva traduzioni con ⭐ in `localStorage`
+- Sezione Vocabolario con filtro e ricerca
+- Quiz a 4 opzioni per ripassare le parole salvate
 
 ### Accessibilità
-- **Modalità accessibile** (testo grande, alto contrasto)
-- **TalkBack in-app**: legge automaticamente ogni traduzione
-- **Modalità ipovedenti**: annuncia la traduzione appena arriva
+- **Modalità ipovedenti**: testo grande, alto contrasto, layout semplificato
+- **TalkBack in-app**: descrizioni vocali pensate per screen reader (Android TalkBack / iOS VoiceOver)
+- **Modalità accessibile**: riduce animazioni, aumenta leggibilità
+- Tutte le icone decorative nascoste agli screen reader (`aria-hidden="true"`)
 
 ### Profilo utente
-- Nome, età, sesso, occupazione, città — passati all'AI per personalizzare gli esempi
-- Progressi: livello (Base → Intermedio → Avanzato → Esperto), streak, ore, vocabolario
+- Nome, età, sesso, livello di lingua, occupazione, città, interessi
+- Passati all'AI per personalizzare esempi e spiegazioni
+- Progressi: livello (Base → Intermedio → Avanzato → Esperto), streak, ore, vocabolario, calendario
+
+### Demo interattive (5)
+- **Demo 1 — Traduzione & X-Ray**: digita → traduci → analisi grammaticale parola per parola
+- **Demo 2 — Pronuncia & IPA**: traduci → audio nativo → IPA + sillabazione
+- **Demo 3 — Shadowing**: frase AI → ascolta → ripeti → score
+- **Demo 4 — Chat AI & Roleplay**: traduci → apre tutor AI → scenari roleplay
+- **Demo 5 — Segnalibri & Vocabolario**: traduci → salva ⭐ → apre tab vocabolario
+- Cursore animato che segue ogni azione, narrazione italiana in sintesi vocale, barra di progresso step
 
 ### PWA & Offline
 - Installabile su Android, iOS, desktop
-- Service worker con cache estrategia per uso offline
+- Service worker con precaching completo (font, Tatoeba, asset)
+- Aggiornamento automatico: banner viola con pulsante "Aggiorna" + toast verde di conferma
+
+### Versioning automatico
+- Versione generata al deploy dal timestamp (`YYYY.MM.DD.HHMM`)
+- Il frontend rileva la nuova versione al ritorno in primo piano e propone il ricaricamento
 
 ---
 
@@ -66,11 +93,13 @@
 | Frontend | React + Vite + TypeScript |
 | Styling | CSS-in-JS inline (sistema 3D custom) |
 | AI | DeepSeek (`deepseek/deepseek-chat`) via OpenRouter |
-| Traduzione | Lingva (proxy server-side, no CORS) |
+| Traduzione | Lingva proxy server-side + MyMemory fallback |
 | Voce | Web Speech API (sintesi + riconoscimento) |
+| IPA | Endpoint AI dedicato `/api/ai/ipa` |
 | Backend | Express + Node.js |
 | Deploy | Replit VM |
 | Monorepo | pnpm workspaces |
+| PWA | vite-plugin-pwa (Workbox) |
 
 ---
 
@@ -78,9 +107,9 @@
 
 ```
 artifacts/
-  lingua-ai/          → PWA principale        → /lingua-ai/
-  diario-pescatore/   → Diario di pesca PWA   → /
-  api-server/         → API Express            → /api/*
+  lingua-ai/            → PWA principale          → /lingua-ai/
+  diario-pescatore/     → Diario di pesca PWA     → /
+  api-server/           → API Express             → /api/*
   lingua-ai-demo-video/ → Video demo animato
 ```
 
@@ -111,6 +140,6 @@ Intestatario: Mazzocchi Livio
 
 ---
 
-## Lingue supportate
+## Lingue supportate (29)
 
 Inglese · Spagnolo · Francese · Tedesco · Portoghese · Russo · Cinese · Giapponese · Coreano · Arabo · Hindi · Turco · Olandese · Polacco · Ucraino · Rumeno · Greco · Svedese · Danese · Finlandese · Ceco · Ungherese · Ebraico · Thai · Vietnamita · Indonesiano · Persiano · Catalano · Norvegese
