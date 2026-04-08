@@ -94,6 +94,12 @@ Produzione: `https://web-app-creator--liviomazzocchi.replit.app/lingua-ai/`
 - Cursore animato che segue ogni azione, narrazione italiana in sintesi vocale, barra di progresso step
 - La finestra si chiude automaticamente al termine della demo
 
+### Palloncino ☕ "Sostieni il progetto"
+- Appare automaticamente dopo 20 secondi dall'apertura dell'app, fluttua sullo schermo con moto sinusoidale
+- Visibile per 12 secondi, poi scompare per 35 secondi — ciclo continuo finché l'utente non interagisce
+- Al click: scorre alla sezione **☕ Supporta il progetto** e la apre, poi si nasconde per 15 minuti prima di riprendere il ciclo
+- Movimento gestito via RAF direttamente sul DOM (nessun re-render React); visibilità tramite CSS `@keyframes balloonShow` (67s ciclo)
+
 ### PWA & Offline
 - Installabile su Android, iOS, desktop
 - Service worker con precaching completo (font, Tatoeba, asset)
