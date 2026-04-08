@@ -38,6 +38,7 @@ export default function VideoTemplate() {
   const containerRef = useRef<HTMLDivElement>(null);
   const [audioPlaying, setAudioPlaying] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [fsUnsupported, setFsUnsupported] = useState(false);
 
   const startAudio = () => {
     const audio = audioRef.current;
@@ -47,11 +48,35 @@ export default function VideoTemplate() {
     audio.play().then(() => setAudioPlaying(true)).catch(() => {});
   };
 
-  const toggleFullscreen = () => {
-    if (!document.fullscreenElement) {
-      containerRef.current?.requestFullscreen();
-    } else {
-      document.exitFullscreen();
+  const toggleFullscreen = async () => {
+    const el = containerRef.current as HTMLElement & {
+      webkitRequestFullscreen?: () => Promise<void>;
+    };
+    const doc = document as Document & {
+      webkitFullscreenElement?: Element;
+      webkitExitFullscreen?: () => Promise<void>;
+    };
+    const inFs = !!(document.fullscreenElement || doc.webkitFullscreenElement);
+    try {
+      if (!inFs) {
+        if (el.requestFullscreen) {
+          await el.requestFullscreen();
+        } else if (el.webkitRequestFullscreen) {
+          await el.webkitRequestFullscreen();
+        } else {
+          setFsUnsupported(true);
+          setTimeout(() => setFsUnsupported(false), 3000);
+        }
+      } else {
+        if (document.exitFullscreen) {
+          await document.exitFullscreen();
+        } else if (doc.webkitExitFullscreen) {
+          await doc.webkitExitFullscreen();
+        }
+      }
+    } catch {
+      setFsUnsupported(true);
+      setTimeout(() => setFsUnsupported(false), 3000);
     }
   };
 
@@ -64,9 +89,16 @@ export default function VideoTemplate() {
   }, []);
 
   useEffect(() => {
-    const onFsChange = () => setIsFullscreen(!!document.fullscreenElement);
+    const onFsChange = () => {
+      const doc = document as Document & { webkitFullscreenElement?: Element };
+      setIsFullscreen(!!(document.fullscreenElement || doc.webkitFullscreenElement));
+    };
     document.addEventListener('fullscreenchange', onFsChange);
-    return () => document.removeEventListener('fullscreenchange', onFsChange);
+    document.addEventListener('webkitfullscreenchange', onFsChange);
+    return () => {
+      document.removeEventListener('fullscreenchange', onFsChange);
+      document.removeEventListener('webkitfullscreenchange', onFsChange);
+    };
   }, []);
 
   return (
