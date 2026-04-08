@@ -20,37 +20,68 @@ export default defineConfig({
       base: basePath,
       scope: basePath,
       workbox: {
-        // Asset statici (JS, CSS, immagini): Stale-While-Revalidate
-        // → serve dalla cache subito, aggiorna in background
+        // ── Precache: asset statici generati dal build (JS, CSS, HTML, icone) ────
+        // VitePWA li individua automaticamente dal dist; offline funziona subito.
+        globPatterns: ["**/*.{js,css,html,ico,png,svg,webp,woff,woff2}"],
+
+        // ── Navigazione offline: serve sempre l'app shell ────────────────────────
+        // Senza questo, un reload offline restituisce 404 invece dell'app.
+        navigateFallback: "index.html",
+        navigateFallbackDenylist: [/^\/api\//, /^\/__/],
+
+        // ── Runtime caching ──────────────────────────────────────────────────────
         runtimeCaching: [
           {
-            urlPattern: /\/lingua-ai\/(src|node_modules|@vite|@react-refresh|@fs)\/.*/,
-            handler: "StaleWhileRevalidate",
+            // Font Google: Cache-First (cambiano di rado, 1 anno)
+            // Inter viene scaricato una volta sola e usato offline per sempre.
+            urlPattern: /^https:\/\/fonts\.(googleapis|gstatic)\.com\/.*/i,
+            handler: "CacheFirst",
             options: {
-              cacheName: "lingua-ai-dev-assets",
-              expiration: { maxEntries: 100, maxAgeSeconds: 60 * 60 * 24 },
+              cacheName: "lingua-ai-fonts",
+              expiration: { maxEntries: 20, maxAgeSeconds: 60 * 60 * 24 * 365 },
+              cacheableResponse: { statuses: [0, 200] },
             },
           },
           {
-            // API interne: Network-first → prova la rete, fallback su cache
+            // API interne: Network-First → prova la rete, fallback su cache
+            // Traduzione, versione, AI: online → risposta fresca; offline → ultima risposta salvata.
             urlPattern: /\/api\/.*/,
             handler: "NetworkFirst",
             options: {
               cacheName: "lingua-ai-api",
               networkTimeoutSeconds: 5,
               expiration: { maxEntries: 50, maxAgeSeconds: 60 * 5 },
+              cacheableResponse: { statuses: [0, 200] },
             },
           },
           {
-            // Font Google: Cache-first (cambiano di rado)
-            urlPattern: /^https:\/\/fonts\.(googleapis|gstatic)\.com\/.*/i,
-            handler: "CacheFirst",
+            // Tatoeba API (quiz frasi d'esempio): Network-First, cache 24h
+            urlPattern: /^https:\/\/tatoeba\.org\/.*/i,
+            handler: "NetworkFirst",
             options: {
-              cacheName: "lingua-ai-fonts",
-              expiration: { maxEntries: 20, maxAgeSeconds: 60 * 60 * 24 * 365 },
+              cacheName: "lingua-ai-tatoeba",
+              networkTimeoutSeconds: 6,
+              expiration: { maxEntries: 200, maxAgeSeconds: 60 * 60 * 24 },
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
+          {
+            // OpenRouter / DeepSeek AI: Network-Only (risposte uniche, mai cacheabili)
+            urlPattern: /^https:\/\/openrouter\.ai\/.*/i,
+            handler: "NetworkOnly",
+          },
+          {
+            // Immagini esterne generiche: Stale-While-Revalidate, 30 giorni
+            urlPattern: /^https:\/\/.+\.(png|jpg|jpeg|webp|svg|gif)(\?.*)?$/i,
+            handler: "StaleWhileRevalidate",
+            options: {
+              cacheName: "lingua-ai-images",
+              expiration: { maxEntries: 60, maxAgeSeconds: 60 * 60 * 24 * 30 },
+              cacheableResponse: { statuses: [0, 200] },
             },
           },
         ],
+
         // Pulisce automaticamente le vecchie cache quando il SW si aggiorna
         cleanupOutdatedCaches: true,
       },
