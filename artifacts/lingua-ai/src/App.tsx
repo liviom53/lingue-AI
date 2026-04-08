@@ -1378,6 +1378,21 @@ export default function App() {
   const langName = langObj.name;
   const langFlag = langObj.flag;
 
+  // Forma d'onda animata — 5 barre con timing irregolare per sembrare reattiva all'audio
+  const micWaveform = (color: string) => (
+    <span aria-hidden="true" style={{ display: 'inline-flex', alignItems: 'center', gap: '2.5px', height: '22px', marginLeft: '4px', marginRight: '2px', flexShrink: 0 }}>
+      {([
+        ['waveBar1', '0.57s', '16px'],
+        ['waveBar2', '0.78s', '20px'],
+        ['waveBar3', '0.51s', '22px'],
+        ['waveBar4', '0.69s', '18px'],
+        ['waveBar5', '0.88s', '14px'],
+      ] as const).map(([anim, dur, h], i) => (
+        <span key={i} style={{ display: 'block', width: '3px', height: h, background: color, borderRadius: '99px', transformOrigin: 'center', animation: `${anim} ${dur} ease-in-out infinite` }} />
+      ))}
+    </span>
+  );
+
   return (
     <div style={styles.main}>
       <div style={{ maxWidth: '500px', margin: '0 auto' }}>
@@ -1950,13 +1965,14 @@ export default function App() {
                   '0 10px 18px rgba(239,68,68,0.18)',
                   '0 5px 12px rgba(0,0,0,0.40)',
                 ].join(',') : styles.btn.boxShadow,
-                animation: isListening ? 'micGlowRed 1.4s ease-in-out infinite' : 'none',
               }}
               onClick={startInputSpeech}
               aria-label={isListening ? 'Dettatura attiva, clicca per fermare' : 'Avvia dettatura vocale'}
               aria-pressed={isListening}
             >
-              <Mic aria-hidden="true" size={18} style={isListening ? { animation: 'micPulse 0.9s ease-in-out infinite', display: 'inline-flex' } : undefined} /> DETTA
+              <Mic aria-hidden="true" size={18} />
+              {isListening ? micWaveform('rgba(255,255,255,0.92)') : null}
+              {isListening ? 'FERMA' : 'DETTA'}
             </button>
             {dictError && (
               <p role="alert" style={{ margin: '-10px 0 0', fontSize: '0.78rem', color: '#fbbf24', background: '#1e293b', borderRadius: '6px', padding: '6px 10px' }}>
@@ -2354,11 +2370,12 @@ export default function App() {
             <button
               aria-label={isPracticing ? 'Ferma registrazione pronuncia' : practiceResult ? 'Riprova la pratica pronuncia' : 'Avvia pratica pronuncia'}
               aria-pressed={isPracticing}
-              style={{ ...styles.btn, backgroundColor: isPracticing ? '#f59e0b' : '#10b981', animation: isPracticing ? 'micGlowAmber 1.4s ease-in-out infinite' : 'none' }}
+              style={{ ...styles.btn, backgroundColor: isPracticing ? '#f59e0b' : '#10b981' }}
               onClick={startPracticeSession}
             >
-              <Mic aria-hidden="true" size={18} style={isPracticing ? { animation: 'micPulse 0.9s ease-in-out infinite', display: 'inline-flex' } : undefined} />
-              {isPracticing ? '⏹ Ferma' : practiceResult ? 'RIPROVA' : 'PRATICA PRONUNCIA'}
+              <Mic aria-hidden="true" size={18} />
+              {isPracticing ? micWaveform('rgba(30,24,10,0.85)') : null}
+              {isPracticing ? 'FERMA' : practiceResult ? 'RIPROVA' : 'PRATICA PRONUNCIA'}
             </button>
             {!('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) && (
               <p style={{ margin: '6px 0 0', fontSize: '0.72rem', color: '#94a3b8' }}>
@@ -2401,10 +2418,11 @@ export default function App() {
                       aria-label={shadowStep === 'listening' ? 'Ferma registrazione shadowing' : 'Avvia registrazione, ripeti la frase'}
                       aria-pressed={shadowStep === 'listening'}
                       onClick={startShadowListen}
-                      style={{ ...styles.btn, backgroundColor: shadowStep === 'listening' ? '#f59e0b' : '#10b981', flex: 1, animation: shadowStep === 'listening' ? 'micGlowAmber 1.4s ease-in-out infinite' : 'none' }}
+                      style={{ ...styles.btn, backgroundColor: shadowStep === 'listening' ? '#f59e0b' : '#10b981', flex: 1 }}
                     >
-                      <Mic aria-hidden="true" size={16} style={shadowStep === 'listening' ? { animation: 'micPulse 0.9s ease-in-out infinite', display: 'inline-flex' } : undefined} />
-                      {shadowStep === 'listening' ? '⏹ Ferma' : 'Ripeti ora!'}
+                      <Mic aria-hidden="true" size={16} />
+                      {shadowStep === 'listening' ? micWaveform('rgba(30,24,10,0.85)') : null}
+                      {shadowStep === 'listening' ? 'Ferma' : 'Ripeti ora!'}
                     </button>
                   </div>
                   {shadowError && (
