@@ -46,6 +46,8 @@
 - Dopo una traduzione premi PRATICA PRONUNCIA
 - Il riconoscimento vocale confronta la tua pronuncia con la traduzione corretta
 - Punteggio e feedback parola per parola
+- Funziona nella lingua selezionata (tedesco, giapponese, spagnolo, ecc.) — non solo in inglese
+- Richiede Chrome o Edge; su altri browser la funzione potrebbe non essere disponibile
 
 ### Quiz Tatoeba
 - Frasi reali scritte da madrelingua, in cache per uso offline
