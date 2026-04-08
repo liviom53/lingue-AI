@@ -6,7 +6,7 @@
 ![Vite](https://img.shields.io/badge/Vite-7-purple)
 ![PWA](https://img.shields.io/badge/PWA-ready-orange)
 
-> PWA per imparare le lingue straniere partendo dall'italiano, con traduzione AI, shadowing, roleplay, grammatica X-Ray, segnalibri, quiz Tatoeba, profilo personalizzato, sezione donazioni e supporto offline completo.
+> PWA per italiani che imparano lingue straniere: traduzione in 29 lingue, pronuncia realistica, shadowing, roleplay AI, grammatica X-Ray, segnalibri, quiz Tatoeba, profilo personalizzato e supporto offline completo.
 
 Produzione: `https://web-app-creator--liviomazzocchi.replit.app/lingua-ai/`
 
@@ -15,104 +15,143 @@ Produzione: `https://web-app-creator--liviomazzocchi.replit.app/lingua-ai/`
 ## Funzionalità
 
 ### Traduzione
-- Traduzione **italiano → 29+ lingue** tramite istanze pubbliche Lingva (richieste parallele con timeout 4s)
-- Fallback automatico su **MyMemory API** (gratuita, senza chiave) se Lingva non risponde
-- 5 lingue rapide (Inglese, Spagnolo, Francese, Tedesco, Portoghese) + dropdown "Altre lingue"
-- Flag reali da `flagcdn.com`
+- Italiano → **29 lingue** tramite istanze Lingva in parallelo (timeout 4s) con fallback automatico **MyMemory API**
+- **Dettatura vocale** (pulsante DETTA): parla in italiano, il testo appare automaticamente — Chrome, Edge, Safari
+- Forma d'onda animata a 5 barre sul microfono durante la registrazione
+- Cache locale (`lingua_ai_translation_cache`, max 40 voci) per tradurre offline le parole già cercate
+- Indicatore "💾 Da cache" quando la risposta arriva dalla memoria locale
 
-### TUTOR AI (DeepSeek)
-- Traduzione avanzata con:
-  - **Pronuncia fonetica** in italiano (es. "el-LÒ") — mostrata in verde sotto la traduzione
-  - **Spiegazione grammaticale** in italiano
-  - **Frase d'esempio** nella lingua target
-- Personalizzata in base al profilo utente
+### Pronuncia & IPA
+- Sintesi vocale nativa con pulsante 🔊, velocità regolabile e numero di ripetizioni
+- **🐢 Tartaruga**: riproduce la traduzione a 0.4x per analizzare fonemi difficili
+- Selezione voce tra quelle disponibili sul dispositivo
+- **IPA + sillabazione**: trascrizione fonetica internazionale generata da AI
+- Pronuncia fonetica semplificata (es. "el-LÒ") per le lingue con alfabeto latino
+
+### Varianti di traduzione
+- Pulsante **🔀 Mostra varianti**: genera 2-3 alternative (Formale / Informale / Colloquiale) via DeepSeek
+- Ogni variante ha un pulsante 🔊 per ascoltarla direttamente
 
 ### Grammatica X-Ray
-- Tocca qualsiasi parola della traduzione per vederne: categoria grammaticale, genere, tempo verbale e una nota utile
-- Pannello inline senza uscire dal flusso di lettura
+- Tocca qualsiasi parola della traduzione per analizzarla con DeepSeek
+- Mostra: parte del discorso, genere/numero, tempo verbale, radice etimologica, curiosità
+- Pannello inline direttamente sotto la parola selezionata
 
-### Chat & Roleplay per scenario
-- Chat libera nella lingua studiata con DeepSeek AI
-- Correzione grammaticale inline con "💡 Correzione:"
-- **Roleplay**: scegli uno scenario reale (Ristorante, Aeroporto, Medico, Hotel, Colloquio, Supermercato) e l'AI interpreta il personaggio nella lingua target
+### Tutor AI (DeepSeek via OpenRouter)
+- Traduzione arricchita: `traduzione · pronuncia · spiegazione grammaticale · frase d'esempio`
+- Personalizzata in base al profilo utente (nome, età, livello, occupazione, interessi)
+
+### Chat AI & Roleplay
+- Interfaccia a **bolle di chat** con avatar, timestamp HH:MM, pulsante copia e contatore messaggi
+- Conversazione nella lingua target con correzioni grammaticali inline (💡)
+- **Dettatura in chat** (pulsante DETTA): parla nella lingua selezionata, non in italiano
+- **Scenari roleplay**: 🍽️ Ristorante · ✈️ Aeroporto · 🏥 Medico · 🏨 Hotel · 💼 Colloquio · 🛒 Supermercato · 💬 Libera
 
 ### Shadowing
-- L'AI genera una frase naturale, la pronuncia via sintesi vocale
-- Ripeti subito con il microfono e ottieni un punteggio percentuale
-- La tecnica più usata dai poliglotti — ora integrata nell'app
-- Compatibile con Android Chrome PWA (riconoscimento vocale diretto senza double-acquisition)
+- L'AI genera una frase naturale → ascolta → ripeti ad alta voce → score
+- Forma d'onda animata durante la registrazione
+- Tecnica usata dai poliglotti per assorbire ritmo e intonazione naturale
 
-### Voce
-- Sintesi vocale con selezione voce e velocità regolabile
-- IPA per inglese via `dictionaryapi.dev`; fonetica Lingva per altre lingue
-- Pratica pronuncia con riconoscimento vocale (Chrome/Edge) e score parola per parola
-- Dettatura italiana nel campo di testo principale con feedback errori visibile
+### Pratica pronuncia
+- Dopo una traduzione premi PRATICA PRONUNCIA
+- Il riconoscimento vocale confronta la tua pronuncia con la traduzione corretta
+- Punteggio e feedback parola per parola
+- Funziona nella lingua selezionata (tedesco, giapponese, spagnolo, ecc.) — non solo in inglese
+- Richiede Chrome o Edge; su altri browser la funzione potrebbe non essere disponibile
+
+### Feedback aptico
+- Vibrazione breve (50ms) all'avvio del microfono — "sto ascoltando"
+- Doppia vibrazione (30-50-30ms) al completamento — "risultato ricevuto"
+- Vibrazione singola (100ms) in caso di errore
+- Attivo su Android/Chrome; ignorato silenziosamente su iOS e desktop
 
 ### Quiz Tatoeba
-- Frasi reali da `tatoeba.org` nella lingua selezionata
-- 4 opzioni di risposta con feedback immediato
+- Frasi reali scritte da madrelingua, in cache per uso offline
+- Modalità a risposta multipla (4 opzioni)
 
-### Segnalibri
-- Salva parole/frasi con un tocco (`lingua_ai_bookmarks`)
-- Quiz veloce sulle parole salvate
+### Segnalibri & Vocabolario
+- Salva traduzioni con ⭐ in `localStorage`
+- Sezione Vocabolario con filtro e ricerca
+- Quiz a 4 opzioni per ripassare le parole salvate
+
+### Accessibilità
+- **Modalità ipovedenti**: testo grande, alto contrasto, layout semplificato, traduzione automatica dopo dettatura
+- **TalkBack in-app**: descrizioni vocali per screen reader (Android TalkBack / iOS VoiceOver)
+- **Modalità accessibile**: riduce animazioni, aumenta leggibilità
+- Tutte le icone decorative nascoste agli screen reader (`aria-hidden="true"`)
 
 ### Profilo utente
-- Campi facoltativi: Nome, Età, Sesso, Occupazione, Città
-- Campi avanzati: Studi, Hobby, Interessi (chip blu), Musica preferita (chip viola), Note libere
-- Salvato in `localStorage` (`lingua_ai_profile`)
-- Inviato a DeepSeek per personalizzare esempi e registro linguistico
-- Popup di benvenuto alla prima apertura (ignorabile con "Non ora")
+- Nome, età, sesso, livello di lingua, occupazione, città, interessi
+- Passati all'AI per personalizzare esempi e spiegazioni
+- Progressi: livello (Base → Intermedio → Avanzato → Esperto), streak, ore, vocabolario, calendario
 
-### Progressi
-- Tracciamento automatico: minuti totali, streak giorni, conteggio traduzioni, parole imparate, tentativi pronuncia
-- Livelli: Base → Intermedio → Avanzato → Esperto
-- Consigli personalizzati in base all'utilizzo
+### Demo interattive (5)
+- **Demo 1 — Traduzione & X-Ray**: digita → traduci → analisi grammaticale parola per parola
+- **Demo 2 — Pronuncia & IPA**: traduci → audio nativo → IPA + sillabazione
+- **Demo 3 — Shadowing**: frase AI → ascolta → ripeti → score
+- **Demo 4 — Chat AI & Roleplay**: traduci → apre tutor AI → scenari roleplay
+- **Demo 5 — Segnalibri & Vocabolario**: traduci → salva ⭐ → apre tab vocabolario
+- Cursore animato che segue ogni azione, narrazione italiana in sintesi vocale, barra di progresso step
+- La finestra si chiude automaticamente al termine della demo
 
-### Donazioni
-- Sezione collassabile "☕ Supporta il progetto" con bottoni PayPal e Ko-fi
-- Chiusa per default
-
-### Demo & Aiuto
-- 4 script demo con cursore animato, narrazione in italiano e scroll automatico
-- Guida rapida con sezioni filtrabili per testo (highlight risultati)
-- **"🔍 Cerca"**: filtra le sezioni della guida in tempo reale
-- **"🤖 Chiedi AI"**: risposta personalizzata da DeepSeek sull'uso dell'app
-
-### Modalità offline
-- Cache traduzioni in `localStorage` (`lingua_ai_translation_cache`, max 40 voci)
-- Service Worker via `vite-plugin-pwa` (Workbox): Stale-While-Revalidate per statici, Network-first per API, Cache-first per font
-- Banner offline + badge "💾 Da cache offline" sul risultato
-- Banner aggiornamento PWA con pulsante "Aggiorna"
+### PWA & Offline
+- Installabile su Android, iOS, desktop
+- Service worker con precaching completo (font, Tatoeba, asset)
+- Aggiornamento automatico: banner viola con pulsante "Aggiorna" + toast verde di conferma
+- Versione generata dal timestamp di avvio (`YYYY.MM.DD.HHMM`)
 
 ---
 
-## Interfaccia
+## Privacy
 
-### Layout
+| Dato | Come viene usato |
+|---|---|
+| Profilo utente | Salvato solo in `localStorage`, mai trasmesso a terzi |
+| Testi tradotti / chat | Inviati a DeepSeek via OpenRouter solo per generare la risposta |
+| Lingva API | Nessun tracciamento, nessuna chiave richiesta |
+| Web Speech API | Elaborazione vocale su server Google (Chrome/Edge) — nessun audio salvato dall'app |
+| Cookie | Nessun cookie di profilazione o analytics |
+
+---
+
+## Stack tecnico
+
+| Layer | Tecnologia |
+|---|---|
+| Frontend | React 19 + Vite 7 + TypeScript |
+| Styling | CSS-in-JS inline (sistema 3D custom) + index.css |
+| AI | DeepSeek (`deepseek/deepseek-chat`) via OpenRouter |
+| Traduzione | Lingva proxy server-side (parallelo) + MyMemory fallback |
+| Voce | Web Speech API (sintesi + riconoscimento) |
+| IPA | Endpoint AI dedicato `/api/ai/ipa` |
+| Backend | Express + Node.js |
+| Deploy | Replit VM |
+| Monorepo | pnpm workspaces |
+| PWA | vite-plugin-pwa (Workbox) |
+
+---
+
+## Layout
+
 ```
 Header (logo + titolo + sottotitolo arancione)
-🇮🇹 ▶ Demo & Aiuto            [accordion]
-Selettore lingua (5 fissi + Altre lingue)
+🇮🇹 ▶ Demo & Aiuto              [accordion — 5 demo]
+Selettore lingua (5 fissi + Altre 24 lingue)
 Textarea "Scrivi o detta in Italiano..."
 🎙 DETTA  |  ✈ TRADUCI  |  🧳 TUTOR AI
-⚙️  Impostazioni voce          [collassabile]
-🔁  Shadowing                  [collassabile]
-💬  Conversa con DeepSeek AI   [collassabile]
-📚  Quiz Tatoeba               [collassabile]
+⚙️  Impostazioni voce            [collassabile]
+🔁  Shadowing                    [collassabile]
+💬  Conversa con DeepSeek AI     [collassabile]
+📚  Quiz Tatoeba                 [collassabile]
 ──────────────────────────────────────────────
-Tab: 👤 Profilo · 📊 Progressi
-☕  Supporta il progetto        [collassabile]
+Tab: 👤 Profilo · 📊 Progressi · 📖 Vocabolario
+☕  Supporta il progetto          [collassabile]
 ```
 
-### Sistema 3D visivo
-L'intera UI usa un sistema visivo a tre dimensioni basato su `box-shadow` a strati zero-blur:
+---
 
-- **Sfondo**: tre radial-gradient sovrapposti (`#183060`, `#1c0d44`, `#0d2a1a`) su `#080e1c`
-- **Carte**: gradiente `140deg` da `#3d5f82` (alto-sinistra) a `#0e1620` (basso-destra); bevel completo con fasce luminose/scure su tutti e 4 i bordi; faccia inferiore a 5 strati (fino a 10px di spessore fisico)
-- **Bottoni**: flottano di 5px (`translateY(-5px)`); bevel con top highlight al 42%; faccia inferiore colorata; pressione fisica su `:active`
-- **Hover sezioni**: lift a -4px + `brightness(1.06)` + bevel potenziato
+## Colori sezioni accordion
 
-### Colori sezioni accordion
 | Sezione | Colore |
 |---|---|
 | Impostazioni voce | `#3b82f6` (blu) |
@@ -124,63 +163,19 @@ L'intera UI usa un sistema visivo a tre dimensioni basato su `box-shadow` a stra
 
 ---
 
-## Come avviare in locale
-
-### Prerequisiti
-- Node.js ≥ 18
-- pnpm
-
-```bash
-# Installa le dipendenze (dalla root del monorepo)
-pnpm install
-
-# Avvia il server API
-pnpm --filter @workspace/api-server run dev
-
-# Avvia il frontend
-pnpm --filter @workspace/lingua-ai run dev
-```
-
-Apri `http://localhost:<PORT>/lingua-ai/` nel browser.
-
----
-
-## Tecnologie
-
-| Categoria | Tecnologia |
-|---|---|
-| Frontend | React 19 + TypeScript + Vite 7 |
-| Styling | Inline styles (React.CSSProperties) + index.css |
-| Font | Inter (Google Fonts) |
-| AI | DeepSeek (`deepseek/deepseek-chat`) via OpenRouter |
-| Traduzione | Lingva API (parallela) + MyMemory fallback |
-| Voce | Web Speech API (sintesi + riconoscimento) |
-| Quiz | Tatoeba API (`tatoeba.org/en/api_v0`) |
-| PWA | `vite-plugin-pwa` + Workbox (Service Worker) |
-| Persistenza | localStorage (6 chiavi) |
-| Deploy | Express + file statici |
-
----
-
 ## localStorage
 
 | Chiave | Contenuto |
 |---|---|
-| `lingua_ai_profile` | Profilo utente (nome, età, occupazione, interessi, ecc.) |
+| `lingua_ai_profile` | Profilo utente |
 | `lingua_ai_progress` | Progressi (streak, minuti, traduzioni, ecc.) |
 | `lingua_ai_bookmarks` | Segnalibri salvati |
 | `lingua_ai_translation_cache` | Cache traduzioni offline (max 40 voci) |
-| `pwa_install_dismissed` | Stato banner installazione PWA |
+| `pwa_install_dismissed_ts` | Stato banner installazione PWA |
 | `profile_popup_dismissed` | Stato popup benvenuto profilo |
-
----
-
-## Variabili d'ambiente (server)
-
-| Variabile | Descrizione |
-|---|---|
-| `AI_INTEGRATIONS_OPENROUTER_BASE_URL` | URL base OpenRouter |
-| `AI_INTEGRATIONS_OPENROUTER_API_KEY` | Chiave API OpenRouter |
+| `modalita_accessibile` | Modalità accessibile attiva |
+| `talkback_inapp` | TalkBack in-app attivo |
+| `modalita_ipovedenti` | Modalità ipovedenti attiva |
 
 ---
 
@@ -193,24 +188,43 @@ Apri `http://localhost:<PORT>/lingua-ai/` nel browser.
 | `POST` | `/api/ai/shadowing` | Genera frase per shadowing |
 | `POST` | `/api/ai/grammar-xray` | Analisi grammaticale parola |
 | `POST` | `/api/ai/ipa` | IPA e sillabazione |
+| `POST` | `/api/ai/variants` | Varianti formale/informale/colloquiale |
 | `POST` | `/api/ai/app-help` | Risposta AI su funzionalità dell'app |
-| `GET` | `/api/ai/lingva` | Proxy Lingva + fallback MyMemory |
+| `POST` | `/api/ai/lingva` | Proxy Lingva + fallback MyMemory |
+| `GET` | `/api/version` | Versione corrente (timestamp avvio server) |
 
 ---
 
-## File principali
+## Avvio locale
 
-| File | Descrizione |
-|---|---|
-| `src/App.tsx` | Frontend (~3100 righe): UI, state, offline, demo, quiz, bookmark, profilo, donazioni |
-| `src/styles.ts` | Oggetto `styles` con CSS custom property tokens |
-| `src/index.css` | Stili globali + `:root` CSS custom properties |
-| `src/vite-env.d.ts` | Dichiarazioni tipo per `virtual:pwa-register/react` |
-| `vite.config.ts` | Config Vite + VitePWA (Workbox strategies) |
-| `index.html` | Caricamento font Inter da Google Fonts |
+```bash
+pnpm install
+pnpm --filter @workspace/api-server run dev
+pnpm --filter @workspace/lingua-ai run dev
+```
+
+Variabili d'ambiente (file `.env` in `artifacts/api-server/`):
+
+```bash
+AI_INTEGRATIONS_OPENROUTER_BASE_URL=...
+AI_INTEGRATIONS_OPENROUTER_API_KEY=...
+```
+
+---
+
+## Donazioni
+
+**PostePay** — IBAN: `IT62U3608105138220295220310`
+Intestatario: Mazzocchi Livio
+
+---
+
+## Lingue supportate (29)
+
+Inglese · Spagnolo · Francese · Tedesco · Portoghese · Russo · Cinese · Giapponese · Coreano · Arabo · Hindi · Turco · Olandese · Polacco · Ucraino · Rumeno · Greco · Svedese · Danese · Finlandese · Ceco · Ungherese · Ebraico · Thai · Vietnamita · Indonesiano · Persiano · Catalano · Norvegese
 
 ---
 
 ## Licenza
 
-MIT © limax
+MIT © Livio Mazzocchi
