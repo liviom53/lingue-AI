@@ -451,6 +451,7 @@ export default function App() {
   const [balloonPos, setBalloonPos] = useState({ x: window.innerWidth - 180, y: window.innerHeight - 80 });
   const [balloonStopped, setBalloonStopped] = useState(false);
   const balloonRafRef = useRef<number | null>(null);
+  const balloonRestartRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const donazioniRef = useRef<HTMLElement>(null);
 
   // Animazione sinusoidale continua — visibilità gestita interamente da CSS (@keyframes balloonShow)
@@ -4059,8 +4060,22 @@ export default function App() {
           <div
             role="button"
             tabIndex={0}
-            onClick={() => { setBalloonStopped(true); if (balloonRafRef.current) cancelAnimationFrame(balloonRafRef.current); setShowDonazioni(true); donazioniRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }}
-            onKeyDown={e => { if (e.key === 'Enter') { setBalloonStopped(true); if (balloonRafRef.current) cancelAnimationFrame(balloonRafRef.current); setShowDonazioni(true); donazioniRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }); } }}
+            onClick={() => {
+              setBalloonStopped(true);
+              if (balloonRafRef.current) cancelAnimationFrame(balloonRafRef.current);
+              setShowDonazioni(true);
+              donazioniRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              if (balloonRestartRef.current) clearTimeout(balloonRestartRef.current);
+              balloonRestartRef.current = setTimeout(() => setBalloonStopped(false), 2 * 60 * 1000);
+            }}
+            onKeyDown={e => { if (e.key === 'Enter') {
+              setBalloonStopped(true);
+              if (balloonRafRef.current) cancelAnimationFrame(balloonRafRef.current);
+              setShowDonazioni(true);
+              donazioniRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              if (balloonRestartRef.current) clearTimeout(balloonRestartRef.current);
+              balloonRestartRef.current = setTimeout(() => setBalloonStopped(false), 2 * 60 * 1000);
+            } }}
             aria-label="Sostieni il progetto con una donazione"
             style={{
               position: 'fixed',
