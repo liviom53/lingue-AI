@@ -4086,7 +4086,7 @@ export default function App() {
               gap: '6px',
             }}>
               <span style={{ fontSize: '1.1rem' }}>☕</span>
-              <span>Offrimi un caffè</span>
+              <span>Sostieni il progetto</span>
             </div>
             {/* Codina del palloncino — punta verso il basso a destra */}
             <div style={{
