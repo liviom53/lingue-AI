@@ -4,9 +4,13 @@ import { HealthCheckResponse } from "@workspace/api-zod";
 const router: IRouter = Router();
 const SERVER_START = Date.now();
 
-// ── Versione app ─────────────────────────────────────────────────────────────
-// Aggiorna questo valore ad ogni deploy (il frontend lo legge e lo mostra)
-export const APP_VERSION = "1.3.0";
+// Versione generata automaticamente dalla data/ora del deploy — nessuna modifica manuale necessaria
+const _d = new Date(SERVER_START);
+export const APP_VERSION =
+  `${_d.getFullYear()}.` +
+  `${String(_d.getMonth() + 1).padStart(2, '0')}.` +
+  `${String(_d.getDate()).padStart(2, '0')}` +
+  `.${String(_d.getHours()).padStart(2, '0')}${String(_d.getMinutes()).padStart(2, '0')}`;
 
 router.get("/healthz", (_req, res) => {
   const data = HealthCheckResponse.parse({ status: "ok" });

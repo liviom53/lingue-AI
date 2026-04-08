@@ -3588,7 +3588,7 @@ export default function App() {
             {[
               { label: '👤 Autore', value: 'Livio Mazzocchi', color: '#3b82f6' },
               { label: '📄 Licenza', value: 'MIT', color: '#10b981' },
-              { label: '🔖 Versione', value: `v${runningVersionStr ?? '1.3.0'}`, color: '#a855f7' },
+              { label: '🔖 Versione', value: runningVersionStr ? `v${runningVersionStr}` : '…', color: '#a855f7' },
             ].map(b => (
               <span key={b.label} style={{
                 fontSize: '0.7rem', padding: '2px 8px', borderRadius: '999px',
