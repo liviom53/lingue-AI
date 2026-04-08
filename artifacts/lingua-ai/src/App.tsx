@@ -449,9 +449,11 @@ export default function App() {
   const [showTabPanel, setShowTabPanel] = useState(false);
   const [showDonazioni, setShowDonazioni] = useState(false);
   const [balloonPos, setBalloonPos] = useState({ x: window.innerWidth - 180, y: window.innerHeight - 80 });
+  const [balloonStopped, setBalloonStopped] = useState(false);
   const balloonRafRef = useRef<number | null>(null);
   const donazioniRef = useRef<HTMLElement>(null);
   useEffect(() => {
+    if (balloonStopped) return;
     const W = window.innerWidth, H = window.innerHeight;
     const cx = W * 0.5, cy = H * 0.5;
     const ax = W * 0.38, ay = H * 0.35;
@@ -465,7 +467,7 @@ export default function App() {
     };
     balloonRafRef.current = requestAnimationFrame(tick);
     return () => { if (balloonRafRef.current) cancelAnimationFrame(balloonRafRef.current); };
-  }, []);
+  }, [balloonStopped]);
   const [showAccessibilita, setShowAccessibilita] = useState(false);
   const [modalitaAccessibile, setModalitaAccessibile] = useState(() => localStorage.getItem('modalita_accessibile') === '1');
   const [talkbackInApp, setTalkbackInApp] = useState(() => localStorage.getItem('talkback_inapp') === '1');
@@ -4055,8 +4057,8 @@ export default function App() {
           <div
             role="button"
             tabIndex={0}
-            onClick={() => { setShowDonazioni(true); donazioniRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }}
-            onKeyDown={e => { if (e.key === 'Enter') { setShowDonazioni(true); donazioniRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }); } }}
+            onClick={() => { setBalloonStopped(true); if (balloonRafRef.current) cancelAnimationFrame(balloonRafRef.current); setShowDonazioni(true); donazioniRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }}
+            onKeyDown={e => { if (e.key === 'Enter') { setBalloonStopped(true); if (balloonRafRef.current) cancelAnimationFrame(balloonRafRef.current); setShowDonazioni(true); donazioniRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }); } }}
             aria-label="Sostieni il progetto con una donazione"
             style={{
               position: 'fixed',
