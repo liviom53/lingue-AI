@@ -274,13 +274,45 @@ export default function App() {
     updateServiceWorker,
   } = useRegisterSW({
     onRegistered(r) {
-      // Controllo aggiornamenti ogni 60 minuti (utile per app installata sul telefono)
-      if (r) {
-        setInterval(() => r.update(), 60 * 60 * 1000);
-      }
+      // Controllo aggiornamenti SW ogni 60 minuti
+      if (r) setInterval(() => r.update(), 60 * 60 * 1000);
     },
     onRegisterError(e) { console.warn('SW errore:', e); },
   });
+
+  // ── Controllo versione server (indipendente dal SW) ──────────────────────
+  // Funziona anche quando il SW serve contenuto cachato vecchio
+  const [serverNeedRefresh, setServerNeedRefresh] = useState(false);
+  useEffect(() => {
+    const checkVersion = async () => {
+      try {
+        const res = await fetch('/api/version', { cache: 'no-store' });
+        if (!res.ok) return;
+        const { v } = await res.json();
+        const stored = localStorage.getItem('app_server_version');
+        if (stored && stored !== String(v)) {
+          setServerNeedRefresh(true);
+        } else {
+          localStorage.setItem('app_server_version', String(v));
+        }
+      } catch { /* offline o errore rete — ignora */ }
+    };
+    checkVersion();
+    const onVisible = () => { if (document.visibilityState === 'visible') checkVersion(); };
+    document.addEventListener('visibilitychange', onVisible);
+    return () => document.removeEventListener('visibilitychange', onVisible);
+  }, []);
+
+  const forceUpdate = async () => {
+    // Rimuove tutti i SW e svuota le cache, poi ricarica
+    try {
+      const regs = await navigator.serviceWorker?.getRegistrations() ?? [];
+      await Promise.all(regs.map(r => r.unregister()));
+      const keys = await caches.keys();
+      await Promise.all(keys.map(k => caches.delete(k)));
+    } catch { /* ignora errori */ }
+    window.location.reload();
+  };
 
   // ── Installazione PWA (A2HS) ─────────────────────────────────────────────
   const [installPrompt, setInstallPrompt] = useState<any>(null);
@@ -1297,14 +1329,18 @@ export default function App() {
         </header>
 
         {/* Banner aggiornamento PWA */}
-        {needRefresh && (
-          <div style={{ background: '#1e293b', border: '1px solid #a855f7', borderRadius: '10px', padding: '10px 14px', marginBottom: '8px', fontSize: '0.82rem', color: '#d8b4fe', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
-            <span>🔄 Nuova versione disponibile</span>
+        {(needRefresh || serverNeedRefresh) && (
+          <div role="alert" aria-live="assertive" style={{ background: 'linear-gradient(135deg,#1e1b4b,#2e1065)', border: '1.5px solid #a855f7', borderRadius: '12px', padding: '12px 16px', marginBottom: '10px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', boxShadow: '0 4px 16px rgba(168,85,247,0.3)' }}>
+            <div>
+              <p style={{ margin: 0, fontSize: '0.88rem', fontWeight: 'bold', color: '#d8b4fe' }}>🔄 Nuova versione disponibile</p>
+              <p style={{ margin: '2px 0 0', fontSize: '0.72rem', color: '#a78bfa' }}>Aggiorna per avere le ultime funzionalità</p>
+            </div>
             <button
-              onClick={() => updateServiceWorker(true)}
-              style={{ display: 'flex', alignItems: 'center', gap: '5px', background: '#7c3aed', color: '#fff', border: 'none', borderRadius: '6px', padding: '4px 12px', cursor: 'pointer', fontWeight: 'bold', fontSize: '0.8rem', whiteSpace: 'nowrap' }}
+              aria-label="Aggiorna l'app alla nuova versione"
+              onClick={serverNeedRefresh ? forceUpdate : () => updateServiceWorker(true)}
+              style={{ display: 'flex', alignItems: 'center', gap: '5px', background: '#7c3aed', color: '#fff', border: 'none', borderRadius: '8px', padding: '8px 14px', cursor: 'pointer', fontWeight: 'bold', fontSize: '0.85rem', whiteSpace: 'nowrap', boxShadow: '0 2px 8px rgba(124,58,237,0.5)' }}
             >
-              <RefreshCw size={13} /> Aggiorna
+              <RefreshCw size={14} /> Aggiorna
             </button>
           </div>
         )}
