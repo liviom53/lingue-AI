@@ -182,6 +182,27 @@ button:active:not([disabled]) {
   to   { opacity: 1; transform: translateY(0); }
 }
 
+/* ── Microfono attivo — feedback visivo ──────────────── */
+
+/* Icona mic: scala su-giù come un cuore che batte */
+@keyframes micPulse {
+  0%, 100% { transform: scale(1);    opacity: 1; }
+  40%       { transform: scale(1.35); opacity: 1; }
+  60%       { transform: scale(1.2);  opacity: 0.85; }
+}
+
+/* Anello pulsante rosso — DETTA attivo */
+@keyframes micGlowRed {
+  0%, 100% { outline: 3px solid rgba(239,68,68,0);    outline-offset: 2px; }
+  50%       { outline: 3px solid rgba(239,68,68,0.65); outline-offset: 5px; }
+}
+
+/* Anello pulsante ambra — PRATICA / SHADOWING attivi */
+@keyframes micGlowAmber {
+  0%, 100% { outline: 3px solid rgba(245,158,11,0);    outline-offset: 2px; }
+  50%       { outline: 3px solid rgba(245,158,11,0.65); outline-offset: 5px; }
+}
+
 /* ── Cursore demo ────────────────────────────────────── */
 #demo-cursor {
   pointer-events: none;
