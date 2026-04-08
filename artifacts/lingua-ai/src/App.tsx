@@ -1523,6 +1523,8 @@ export default function App() {
                   <button
                     key={l.code}
                     className="lang-btn"
+                    aria-pressed={active}
+                    aria-label={`${active ? 'Lingua selezionata: ' : 'Seleziona lingua: '}${l.name}`}
                     onClick={() => { setSelectedLang(l.code); setShowMoreLangs(false); }}
                     style={{
                       ...styles.btn,
@@ -1614,6 +1616,7 @@ export default function App() {
               boxSizing: 'border-box',
             }}
             data-demo="textarea"
+            aria-label="Testo da tradurre, scrivi in italiano"
             value={inputText}
             onChange={e => setInputText(e.target.value)}
             onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleTranslate(); } }}
@@ -1635,11 +1638,13 @@ export default function App() {
                 ].join(',') : styles.btn.boxShadow,
               }}
               onClick={startInputSpeech}
+              aria-label={isListening ? 'Dettatura attiva, clicca per fermare' : 'Avvia dettatura vocale'}
+              aria-pressed={isListening}
             >
               <Mic size={18} /> DETTA
             </button>
             {dictError && (
-              <p style={{ margin: '-10px 0 0', fontSize: '0.78rem', color: '#fbbf24', background: '#1e293b', borderRadius: '6px', padding: '6px 10px' }}>
+              <p role="alert" style={{ margin: '-10px 0 0', fontSize: '0.78rem', color: '#fbbf24', background: '#1e293b', borderRadius: '6px', padding: '6px 10px' }}>
                 {dictError}
               </p>
             )}
@@ -1647,6 +1652,7 @@ export default function App() {
               <button
                 className="action-btn"
                 data-demo="translate-btn"
+                aria-label="Traduci il testo in italiano"
                 style={{ ...styles.btn, ...styles.btnOrange, marginTop: 0 }}
                 onClick={() => handleTranslate()}
                 disabled={loading || aiLoading}
@@ -1655,6 +1661,7 @@ export default function App() {
               </button>
               <button
                 className="action-btn"
+                aria-label="Traduzione con spiegazione grammaticale tramite AI"
                 style={{
                   ...styles.btn, ...styles.btnOrange, marginTop: 0,
                   backgroundColor: '#e8d0a0', color: '#1e293b',
@@ -1685,6 +1692,8 @@ export default function App() {
         <section style={{ ...styles.card, border: '1px solid #3b82f6' }}>
           <button
             onClick={() => setShowVoiceSettings(v => !v)}
+            aria-expanded={showVoiceSettings}
+            aria-controls="voice-settings-panel"
             style={{
               width: '100%',
               background: 'none',
@@ -1705,13 +1714,14 @@ export default function App() {
           </button>
 
           {showVoiceSettings && (
-            <>
+            <div id="voice-settings-panel">
               {voices.length > 0 ? (
                 <div style={{ marginBottom: '12px' }}>
                   <label style={{ fontSize: '0.8rem', color: '#94a3b8', display: 'block', marginBottom: '4px' }}>
                     Voce {langVoices.length > 0 ? `(${langVoices.length} per questa lingua)` : '(tutte disponibili)'}
                   </label>
                   <select
+                    aria-label="Seleziona voce di sintesi"
                     value={selectedVoiceURI}
                     onChange={e => setSelectedVoiceURI(e.target.value)}
                     style={{
@@ -1751,6 +1761,8 @@ export default function App() {
                   ] as const).map(({ label, rate }) => (
                     <button
                       key={rate}
+                      aria-pressed={Math.abs(speechRate - rate) < 0.05}
+                      aria-label={`Velocità ${label.replace(/[🐢▶🚀]/g, '').trim()}`}
                       onClick={() => setSpeechRate(rate)}
                       style={{
                         flex: 1, padding: '5px 4px', borderRadius: '6px', border: 'none',
@@ -1784,6 +1796,8 @@ export default function App() {
                   {[1, 2, 3, 5].map(n => (
                     <button
                       key={n}
+                      aria-pressed={loopCount === n}
+                      aria-label={n === 1 ? 'Loop disattivato (1 ripetizione)' : `Ripeti ${n} volte`}
                       onClick={() => setLoopCount(n)}
                       style={{
                         padding: '5px 14px', borderRadius: '6px', border: 'none',
@@ -1795,6 +1809,7 @@ export default function App() {
                   ))}
                   {loopCount > 1 && (
                     <button
+                      aria-label="Ferma ripetizione automatica"
                       onClick={stopLoop}
                       style={{
                         padding: '5px 10px', borderRadius: '6px', border: 'none',
@@ -1805,12 +1820,12 @@ export default function App() {
                   )}
                 </div>
               </div>
-            </>
+            </div>
           )}
         </section>
 
         {translatedText && (
-          <section style={{ ...styles.card, border: '2px solid #10b981' }}>
+          <section aria-live="polite" aria-label="Risultato traduzione" style={{ ...styles.card, border: '2px solid #10b981' }}>
             {fromCache && (
               <div style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', background: '#1e3a5f', color: '#7dd3fc', borderRadius: '6px', padding: '2px 8px', fontSize: '0.72rem', fontWeight: 'bold', marginBottom: '8px' }}>
                 💾 Da cache offline
@@ -1837,6 +1852,7 @@ export default function App() {
               <div style={{ display: 'flex', gap: '8px', flexShrink: 0, marginLeft: '8px' }}>
                 <button
                   title="Copia traduzione"
+                  aria-label={copied ? 'Traduzione copiata' : 'Copia traduzione'}
                   onClick={() => {
                     navigator.clipboard.writeText(translatedText).then(() => {
                       setCopied(true);
@@ -1849,6 +1865,8 @@ export default function App() {
                 </button>
                 <button
                   title={bookmarked ? 'Già nei preferiti' : 'Salva nei preferiti'}
+                  aria-label={bookmarked ? 'Già salvato nei segnalibri' : 'Salva nei segnalibri'}
+                  aria-pressed={bookmarked}
                   onClick={() => {
                     if (bookmarked) return;
                     const langName = ALL_LANGUAGES.find(l => l.code === selectedLang)?.name ?? selectedLang;
@@ -1864,6 +1882,7 @@ export default function App() {
                 </button>
                 <button
                   title={shared ? 'Copiato!' : 'Condividi traduzione'}
+                  aria-label={shared ? 'Traduzione condivisa' : 'Condividi traduzione'}
                   onClick={() => {
                     const langName = ALL_LANGUAGES.find(l => l.code === selectedLang)?.name ?? selectedLang;
                     const text = `🇮🇹 "${inputText.trim()}"\n➡ ${langName}: "${translatedText}"`;
@@ -1880,18 +1899,19 @@ export default function App() {
                 >
                   {shared ? <Check size={20} /> : <Share2 size={20} />}
                 </button>
-                <Volume2
-                  size={24}
-                  color="#10b981"
-                  style={{ cursor: 'pointer' }}
+                <button
+                  aria-label={`Ascolta la traduzione in ${ALL_LANGUAGES.find(l => l.code === selectedLang)?.name ?? selectedLang}`}
                   onClick={() => speak(translatedText)}
-                />
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '2px', display: 'flex', alignItems: 'center' }}
+                >
+                  <Volume2 size={24} color="#10b981" />
+                </button>
               </div>
             </div>
             <p style={{ margin: '4px 0 0', fontSize: '0.7rem', color: '#475569' }}>🔬 Tocca una parola per analisi grammaticale</p>
             {(xrayWord || xrayLoading) && (
               <div style={{ marginTop: '8px', padding: '10px', backgroundColor: '#0f172a', borderRadius: '8px', border: '1px solid #3b82f6', position: 'relative' }}>
-                <button onClick={() => { setXrayWord(null); setXrayData(null); }} style={{ position: 'absolute', top: '6px', right: '6px', background: 'none', border: 'none', cursor: 'pointer', color: '#64748b' }}><X size={14} /></button>
+                <button aria-label="Chiudi analisi grammaticale" onClick={() => { setXrayWord(null); setXrayData(null); }} style={{ position: 'absolute', top: '6px', right: '6px', background: 'none', border: 'none', cursor: 'pointer', color: '#64748b' }}><X size={14} /></button>
                 <p style={{ margin: '0 0 6px', fontSize: '0.7rem', color: '#3b82f6', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em' }}>🔬 X-Ray: <em style={{ fontStyle: 'normal', color: '#93c5fd' }}>{xrayWord}</em></p>
                 {xrayLoading ? (
                   <p style={{ margin: 0, color: '#64748b', fontSize: '0.85rem' }}><Loader2 className="animate-spin" size={14} style={{ display: 'inline', marginRight: '6px' }} />Analisi in corso...</p>
@@ -1949,6 +1969,7 @@ export default function App() {
             {/* IPA + Sillabazione per tutte le lingue */}
             {!ipaData && (
               <button
+                aria-label={ipaLoading ? 'Caricamento IPA e sillabazione in corso' : 'Mostra trascrizione IPA e sillabazione'}
                 onClick={fetchIpa}
                 disabled={ipaLoading}
                 style={{
@@ -1963,11 +1984,11 @@ export default function App() {
               </button>
             )}
             {ipaData && (
-              <div style={{ marginTop: '6px', background: '#0f172a', borderRadius: '8px', padding: '8px 12px', border: '1px solid #1e3a5f', display: 'flex', flexDirection: 'column', gap: '3px' }}>
+              <div aria-live="polite" style={{ marginTop: '6px', background: '#0f172a', borderRadius: '8px', padding: '8px 12px', border: '1px solid #1e3a5f', display: 'flex', flexDirection: 'column', gap: '3px' }}>
                 <span style={{ fontSize: '0.68rem', color: '#475569', textTransform: 'uppercase', letterSpacing: '0.06em' }}>🔤 IPA · sillabazione</span>
                 <span style={{ fontSize: '1rem', color: '#93c5fd', fontFamily: 'monospace', letterSpacing: '0.05em' }}>{ipaData.ipa}</span>
                 <span style={{ fontSize: '0.9rem', color: '#6ee7b7', letterSpacing: '0.12em' }}>{ipaData.syllables}</span>
-                <button onClick={() => setIpaData(null)} style={{ alignSelf: 'flex-end', background: 'none', border: 'none', color: '#475569', cursor: 'pointer', fontSize: '0.7rem', padding: 0, marginTop: '2px' }}>✕ chiudi</button>
+                <button aria-label="Chiudi IPA" onClick={() => setIpaData(null)} style={{ alignSelf: 'flex-end', background: 'none', border: 'none', color: '#475569', cursor: 'pointer', fontSize: '0.7rem', padding: 0, marginTop: '2px' }}>✕ chiudi</button>
               </div>
             )}
             {aiExplanation && (
@@ -1985,7 +2006,7 @@ export default function App() {
               <p style={{ fontSize: '0.85rem', color: '#94a3b8', marginTop: '8px' }}>🎙️ Dì la frase...</p>
             )}
             {practiceResult && !isPracticing && (
-              <div style={{ marginTop: '10px' }}>
+              <div aria-live="polite" style={{ marginTop: '10px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
                   <span style={{
                     fontSize: '1.4rem', fontWeight: 'bold',
@@ -2015,6 +2036,8 @@ export default function App() {
               </div>
             )}
             <button
+              aria-label={isPracticing ? 'Microfono attivo, in ascolto della tua pronuncia' : practiceResult ? 'Riprova la pratica pronuncia' : 'Avvia pratica pronuncia'}
+              aria-pressed={isPracticing}
               style={{ ...styles.btn, backgroundColor: isPracticing ? '#f59e0b' : '#10b981' }}
               onClick={startPracticeSession}
               disabled={isPracticing}
@@ -2035,6 +2058,7 @@ export default function App() {
           <button
             data-demo="shadow-toggle"
             onClick={() => setShowShadow(v => !v)}
+            aria-expanded={showShadow}
             style={{ width: '100%', background: 'none', border: 'none', color: '#c084fc', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: 0, fontSize: '0.9rem', fontWeight: 'bold' }}
           >
             <span>🔁 Shadowing — ripeti e impara</span>
@@ -2045,7 +2069,7 @@ export default function App() {
               <p style={{ fontSize: '0.78rem', color: '#94a3b8', margin: '0 0 10px' }}>
                 L'AI genera una frase e la parla. Ripeti subito — poi scopri il tuo punteggio.
               </p>
-              <button onClick={fetchShadowPhrase} disabled={shadowLoading} style={{ ...styles.btn, backgroundColor: '#7c3aed', marginBottom: '10px' }}>
+              <button aria-label={shadowLoading ? 'Generazione frase in corso' : 'Genera nuova frase per lo shadowing'} onClick={fetchShadowPhrase} disabled={shadowLoading} style={{ ...styles.btn, backgroundColor: '#7c3aed', marginBottom: '10px' }}>
                 {shadowLoading ? <Loader2 className="animate-spin" size={18} /> : '✨'} Genera nuova frase
               </button>
               {shadowPhrase && (
@@ -2054,10 +2078,12 @@ export default function App() {
                   <p style={{ margin: '0 0 2px', fontSize: '0.85rem', color: '#a78bfa', fontStyle: 'italic' }}>si legge: {shadowPhrase.phonetic}</p>
                   <p style={{ margin: '0 0 12px', fontSize: '0.8rem', color: '#64748b' }}>🇮🇹 {shadowPhrase.translation}</p>
                   <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                    <button onClick={() => speak(shadowPhrase.phrase)} style={{ ...styles.btn, backgroundColor: '#4f46e5', flex: 1 }}>
+                    <button aria-label="Riascolta la frase di shadowing" onClick={() => speak(shadowPhrase.phrase)} style={{ ...styles.btn, backgroundColor: '#4f46e5', flex: 1 }}>
                       <Volume2 size={16} /> Riascolta
                     </button>
                     <button
+                      aria-label={shadowStep === 'listening' ? 'Microfono attivo, sto ascoltando' : 'Avvia registrazione, ripeti la frase'}
+                      aria-pressed={shadowStep === 'listening'}
                       onClick={startShadowListen}
                       disabled={shadowStep === 'listening'}
                       style={{ ...styles.btn, backgroundColor: shadowStep === 'listening' ? '#f59e0b' : '#10b981', flex: 1 }}
@@ -2067,7 +2093,7 @@ export default function App() {
                     </button>
                   </div>
                   {shadowError && (
-                    <p style={{ margin: '8px 0 0', fontSize: '0.8rem', color: '#fbbf24', background: '#1e293b', borderRadius: '6px', padding: '6px 10px' }}>
+                    <p role="alert" style={{ margin: '8px 0 0', fontSize: '0.8rem', color: '#fbbf24', background: '#1e293b', borderRadius: '6px', padding: '6px 10px' }}>
                       {shadowError}
                     </p>
                   )}
@@ -2077,7 +2103,7 @@ export default function App() {
                     </p>
                   )}
                   {shadowStep === 'result' && shadowScore !== null && (
-                    <div style={{ marginTop: '10px', padding: '10px', backgroundColor: '#1e293b', borderRadius: '8px' }}>
+                    <div aria-live="polite" style={{ marginTop: '10px', padding: '10px', backgroundColor: '#1e293b', borderRadius: '8px' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '6px' }}>
                         <span style={{ fontSize: '1.6rem', fontWeight: 'bold', color: shadowScore === 100 ? '#10b981' : shadowScore >= 60 ? '#f59e0b' : '#ef4444' }}>
                           {shadowScore}%
@@ -2127,6 +2153,7 @@ export default function App() {
         <section data-demo="chat-section" style={{ ...styles.card, border: '1px solid #fb923c' }}>
           <button
             onClick={() => setShowChat(!showChat)}
+            aria-expanded={showChat}
             style={{
               width: '100%',
               background: 'none',
@@ -2165,6 +2192,8 @@ export default function App() {
                 <p style={{ margin: '0 0 6px', fontSize: '0.7rem', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>🎭 Scegli uno scenario o conversa liberamente</p>
                 <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
                   <button
+                    aria-pressed={roleplayScenario === null}
+                    aria-label="Conversazione libera"
                     onClick={() => { setRoleplayScenario(null); setChatMessages([]); }}
                     style={{ padding: '4px 10px', borderRadius: '20px', border: '1px solid', borderColor: roleplayScenario === null ? '#fb923c' : '#334155', backgroundColor: roleplayScenario === null ? '#fb923c22' : 'transparent', color: roleplayScenario === null ? '#fb923c' : '#64748b', fontSize: '0.78rem', cursor: 'pointer', fontWeight: roleplayScenario === null ? 'bold' : 'normal' }}
                   >
@@ -2173,6 +2202,8 @@ export default function App() {
                   {SCENARIOS.map(s => (
                     <button
                       key={s.id}
+                      aria-pressed={roleplayScenario === s.id}
+                      aria-label={`Scenario roleplay: ${s.label}`}
                       onClick={() => handleRoleplayStart(s.id)}
                       style={{ padding: '4px 10px', borderRadius: '20px', border: '1px solid', borderColor: roleplayScenario === s.id ? '#fb923c' : '#334155', backgroundColor: roleplayScenario === s.id ? '#fb923c22' : 'transparent', color: roleplayScenario === s.id ? '#fb923c' : '#64748b', fontSize: '0.78rem', cursor: 'pointer', fontWeight: roleplayScenario === s.id ? 'bold' : 'normal' }}
                     >
@@ -2219,11 +2250,13 @@ export default function App() {
                     }}>
                       {msg.content}
                       {msg.role === 'assistant' && (
-                        <Volume2
-                          size={12}
-                          style={{ cursor: 'pointer', marginLeft: '6px', opacity: 0.6, display: 'inline', verticalAlign: 'middle' }}
+                        <button
+                          aria-label="Ascolta risposta dell'AI"
                           onClick={() => speak(msg.content)}
-                        />
+                          style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'inline', verticalAlign: 'middle', marginLeft: '6px' }}
+                        >
+                          <Volume2 size={12} style={{ opacity: 0.6 }} />
+                        </button>
                       )}
                     </div>
                   </div>
@@ -2239,6 +2272,7 @@ export default function App() {
               </div>
               <div style={{ display: 'flex', gap: '8px' }}>
                 <input
+                  aria-label={`Scrivi il tuo messaggio in ${langName}`}
                   style={{
                     flex: 1,
                     padding: '8px',
@@ -2255,6 +2289,7 @@ export default function App() {
                   disabled={chatLoading}
                 />
                 <button
+                  aria-label="Invia messaggio"
                   onClick={handleChatSend}
                   disabled={chatLoading || !chatInput.trim()}
                   style={{
@@ -2270,6 +2305,7 @@ export default function App() {
                 </button>
                 {chatMessages.length > 0 && (
                   <button
+                    aria-label="Nuova conversazione, cancella i messaggi"
                     onClick={() => setChatMessages([])}
                     style={{
                       padding: '8px',
@@ -2297,6 +2333,7 @@ export default function App() {
               setShowTatoeba(next);
               if (next && tatPairs.length === 0) fetchTatoebaQuiz(selectedLang);
             }}
+            aria-expanded={showTatoeba}
             style={{ width: '100%', background: 'none', border: 'none', color: '#818cf8', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: 0, fontSize: '0.9rem', fontWeight: 'bold' }}
           >
             <span>📚 Quiz Tatoeba — frasi reali da madrelingua</span>
@@ -2413,6 +2450,7 @@ export default function App() {
         <section data-demo="tab-panel-toggle" style={{ ...styles.card, border: '1px solid #60a5fa' }}>
           <button
             onClick={() => setShowTabPanel(v => !v)}
+            aria-expanded={showTabPanel}
             style={{ width: '100%', background: 'none', border: 'none', color: '#60a5fa', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: 0, fontSize: '0.9rem', fontWeight: 'bold' }}
           >
             <span>⭐ Profilo & Progressi</span>
@@ -2429,7 +2467,11 @@ export default function App() {
             { id: 'calendario', label: '📅 Calendario' },
             { id: 'vocabolario',label: '📚 Vocabolario' },
           ] as const).map(({ id, label }) => (
-            <button key={id} onClick={() => setActiveTab(id)} style={{
+            <button key={id} onClick={() => setActiveTab(id)}
+              role="tab"
+              aria-selected={activeTab === id}
+              aria-label={label.replace(/[👤📊📅📚]/g, '').trim()}
+              style={{
               flexShrink: 0,
               padding: '7px 14px', border: 'none', borderRadius: '999px', cursor: 'pointer',
               fontWeight: 'bold', fontSize: '0.8rem',
@@ -2654,6 +2696,8 @@ export default function App() {
                         <button
                           key={chip}
                           type="button"
+                          aria-pressed={selected}
+                          aria-label={`Interesse: ${chip}${selected ? ', selezionato' : ''}`}
                           onClick={() => {
                             const curr = profile.interessi.split(',').map(s => s.trim()).filter(Boolean);
                             const next = selected ? curr.filter(c => c !== chip) : [...curr, chip];
@@ -2677,6 +2721,8 @@ export default function App() {
                         <button
                           key={chip}
                           type="button"
+                          aria-pressed={selected}
+                          aria-label={`Genere musicale: ${chip}${selected ? ', selezionato' : ''}`}
                           onClick={() => {
                             const curr = profile.musica.split(',').map(s => s.trim()).filter(Boolean);
                             const next = selected ? curr.filter(c => c !== chip) : [...curr, chip];
