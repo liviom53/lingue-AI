@@ -458,8 +458,8 @@ export default function App() {
     const start = performance.now();
     const tick = (now: number) => {
       const t = (now - start) / 1000;
-      const x = cx + ax * Math.sin(0.31 * t);
-      const y = cy + ay * Math.sin(0.47 * t + 1.1);
+      const x = cx + ax * Math.sin(0.12 * t);
+      const y = cy + ay * Math.sin(0.17 * t + 1.1);
       setBalloonPos({ x, y });
       balloonRafRef.current = requestAnimationFrame(tick);
     };
