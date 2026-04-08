@@ -505,6 +505,7 @@ export default function App() {
   const [helpFilter, setHelpFilter] = useState('');
   const [helpAiResult, setHelpAiResult] = useState<string | null>(null);
   const [helpAiLoading, setHelpAiLoading] = useState(false);
+  const [helpListening, setHelpListening] = useState(false);
   const [activeDemoNum, setActiveDemoNum] = useState<1|2|3|4>(1);
   const [progress, setProgress] = useState<ProgressStats>(loadProgress);
   const [profile, setProfile] = useState<UserProfile>(loadProfile);
@@ -1642,6 +1643,39 @@ export default function App() {
                       }}
                     />
                     <div style={{ display: 'flex', gap: '6px' }}>
+                      <button
+                        aria-label={helpListening ? 'Dettatura attiva, clicca per fermare' : 'Avvia dettatura per cercare nell\'aiuto'}
+                        aria-pressed={helpListening}
+                        onClick={() => {
+                          const SR = (window as any).SpeechRecognition ?? (window as any).webkitSpeechRecognition;
+                          if (!SR) return;
+                          if (helpListening) return;
+                          const rec = new SR();
+                          rec.lang = 'it-IT';
+                          rec.interimResults = false;
+                          rec.maxAlternatives = 1;
+                          setHelpListening(true);
+                          rec.onresult = (e: any) => {
+                            const t = e.results[0][0].transcript;
+                            setHelpSearch(t);
+                            setHelpFilter(t);
+                            setHelpAiResult(null);
+                          };
+                          rec.onend = () => setHelpListening(false);
+                          rec.onerror = () => setHelpListening(false);
+                          rec.start();
+                        }}
+                        style={{
+                          padding: '8px 12px', borderRadius: '8px', border: 'none',
+                          background: helpListening ? '#ef4444' : '#2d3f52',
+                          color: '#fff', fontWeight: 'bold', fontSize: '0.79rem',
+                          cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px',
+                          flexShrink: 0,
+                        }}
+                      >
+                        <Mic aria-hidden="true" size={14} />
+                        {helpListening ? micWaveform('rgba(255,255,255,0.92)') : 'DETTA'}
+                      </button>
                       <button
                         onClick={() => { setHelpFilter(helpSearch); setHelpAiResult(null); }}
                         style={{
