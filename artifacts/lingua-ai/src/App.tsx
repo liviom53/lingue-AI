@@ -285,7 +285,18 @@ export default function App() {
   // "Versione più recente" = quella restituita dal server (fetched dalla rete)
   // Il confronto è: in_uso !== più_recente → mostra banner
   const [serverNeedRefresh, setServerNeedRefresh] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [justUpdated, setJustUpdated] = useState(false);
   const latestServerVersionRef = useRef<string | null>(null);
+
+  // Mostra banner "aggiornato" se la pagina è appena stata ricaricata dopo un update
+  useEffect(() => {
+    if (sessionStorage.getItem('app_just_updated') === '1') {
+      sessionStorage.removeItem('app_just_updated');
+      setJustUpdated(true);
+      setTimeout(() => setJustUpdated(false), 4000);
+    }
+  }, []);
 
   useEffect(() => {
     const SESSION_KEY = 'app_running_v'; // versione caricata all'avvio di questa sessione
@@ -319,11 +330,13 @@ export default function App() {
   }, []);
 
   const forceUpdate = async () => {
-    // Prima di ricaricare, aggiorna la "versione in uso" alla nuova →
-    // così dopo il reload il banner NON riappare
+    setIsUpdating(true);
+    // Prima di ricaricare: aggiorna la versione in uso (no banner al reload)
     if (latestServerVersionRef.current) {
       sessionStorage.setItem('app_running_v', latestServerVersionRef.current);
     }
+    // Segnala che la prossima apertura è post-aggiornamento → mostra conferma
+    sessionStorage.setItem('app_just_updated', '1');
     try {
       const regs = await navigator.serviceWorker?.getRegistrations() ?? [];
       await Promise.all(regs.map(r => r.unregister()));
@@ -1347,8 +1360,19 @@ export default function App() {
           )}
         </header>
 
+        {/* Banner conferma aggiornamento completato */}
+        {justUpdated && (
+          <div role="status" aria-live="polite" style={{ background: 'linear-gradient(135deg,#052e16,#064e3b)', border: '1.5px solid #10b981', borderRadius: '12px', padding: '12px 16px', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '10px', boxShadow: '0 4px 16px rgba(16,185,129,0.3)' }}>
+            <span style={{ fontSize: '1.4rem' }}>✅</span>
+            <div>
+              <p style={{ margin: 0, fontSize: '0.88rem', fontWeight: 'bold', color: '#6ee7b7' }}>App aggiornata con successo!</p>
+              <p style={{ margin: '2px 0 0', fontSize: '0.72rem', color: '#34d399' }}>Stai usando l&apos;ultima versione disponibile</p>
+            </div>
+          </div>
+        )}
+
         {/* Banner aggiornamento PWA */}
-        {(needRefresh || serverNeedRefresh) && (
+        {(needRefresh || serverNeedRefresh) && !isUpdating && (
           <div role="alert" aria-live="assertive" style={{ background: 'linear-gradient(135deg,#1e1b4b,#2e1065)', border: '1.5px solid #a855f7', borderRadius: '12px', padding: '12px 16px', marginBottom: '10px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', boxShadow: '0 4px 16px rgba(168,85,247,0.3)' }}>
             <div>
               <p style={{ margin: 0, fontSize: '0.88rem', fontWeight: 'bold', color: '#d8b4fe' }}>🔄 Nuova versione disponibile</p>
@@ -1356,11 +1380,20 @@ export default function App() {
             </div>
             <button
               aria-label="Aggiorna l'app alla nuova versione"
-              onClick={serverNeedRefresh ? forceUpdate : () => updateServiceWorker(true)}
-              style={{ display: 'flex', alignItems: 'center', gap: '5px', background: '#7c3aed', color: '#fff', border: 'none', borderRadius: '8px', padding: '8px 14px', cursor: 'pointer', fontWeight: 'bold', fontSize: '0.85rem', whiteSpace: 'nowrap', boxShadow: '0 2px 8px rgba(124,58,237,0.5)' }}
+              disabled={isUpdating}
+              onClick={forceUpdate}
+              style={{ display: 'flex', alignItems: 'center', gap: '5px', background: '#7c3aed', color: '#fff', border: 'none', borderRadius: '8px', padding: '8px 14px', cursor: 'pointer', fontWeight: 'bold', fontSize: '0.85rem', whiteSpace: 'nowrap', boxShadow: '0 2px 8px rgba(124,58,237,0.5)', opacity: isUpdating ? 0.7 : 1 }}
             >
-              <RefreshCw size={14} /> Aggiorna
+              <RefreshCw size={14} style={{ animation: isUpdating ? 'spin 1s linear infinite' : 'none' }} /> {isUpdating ? 'Aggiornamento…' : 'Aggiorna'}
             </button>
+          </div>
+        )}
+
+        {/* Spinner durante aggiornamento */}
+        {isUpdating && (
+          <div role="status" aria-live="polite" style={{ background: '#1e1b4b', border: '1.5px solid #a855f7', borderRadius: '12px', padding: '12px 16px', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <RefreshCw size={18} style={{ color: '#a78bfa', animation: 'spin 1s linear infinite', flexShrink: 0 }} />
+            <p style={{ margin: 0, fontSize: '0.85rem', color: '#d8b4fe', fontWeight: 'bold' }}>Aggiornamento in corso… attendere</p>
           </div>
         )}
 
