@@ -449,6 +449,23 @@ export default function App() {
   const [showTabPanel, setShowTabPanel] = useState(false);
   const [showDonazioni, setShowDonazioni] = useState(false);
   const [showFloatingDonation, setShowFloatingDonation] = useState(false);
+  const [balloonPos, setBalloonPos] = useState({ x: window.innerWidth - 180, y: window.innerHeight - 80 });
+  const balloonRafRef = useRef<number | null>(null);
+  useEffect(() => {
+    const W = window.innerWidth, H = window.innerHeight;
+    const cx = W * 0.72, cy = H * 0.72;
+    const ax = W * 0.18, ay = H * 0.16;
+    const start = performance.now();
+    const tick = (now: number) => {
+      const t = (now - start) / 1000;
+      const x = cx + ax * Math.sin(0.31 * t);
+      const y = cy + ay * Math.sin(0.47 * t + 1.1);
+      setBalloonPos({ x, y });
+      balloonRafRef.current = requestAnimationFrame(tick);
+    };
+    balloonRafRef.current = requestAnimationFrame(tick);
+    return () => { if (balloonRafRef.current) cancelAnimationFrame(balloonRafRef.current); };
+  }, []);
   const [showAccessibilita, setShowAccessibilita] = useState(false);
   const [modalitaAccessibile, setModalitaAccessibile] = useState(() => localStorage.getItem('modalita_accessibile') === '1');
   const [talkbackInApp, setTalkbackInApp] = useState(() => localStorage.getItem('talkback_inapp') === '1');
@@ -4043,12 +4060,13 @@ export default function App() {
             aria-label="Sostieni il progetto con una donazione"
             style={{
               position: 'fixed',
-              bottom: '28px',
-              right: '20px',
+              left: balloonPos.x,
+              top: balloonPos.y,
               zIndex: 9990,
               opacity: 0.75,
               cursor: 'pointer',
               userSelect: 'none',
+              transition: 'left 0.08s linear, top 0.08s linear',
             }}
             onMouseEnter={e => (e.currentTarget.style.opacity = '1')}
             onMouseLeave={e => (e.currentTarget.style.opacity = '0.75')}
