@@ -4046,22 +4046,22 @@ export default function App() {
               opacity: 0.7,
               background: '#1e293b',
               border: '1px solid #334155',
-              borderRadius: '50px',
-              padding: '8px 14px',
+              borderRadius: '50%',
+              width: '44px',
+              height: '44px',
               display: 'flex',
               alignItems: 'center',
-              gap: '6px',
+              justifyContent: 'center',
               cursor: 'pointer',
-              fontSize: '0.82rem',
-              color: '#cbd5e1',
+              fontSize: '1.3rem',
               boxShadow: '0 2px 12px rgba(0,0,0,0.4)',
               transition: 'opacity 0.2s',
+              padding: 0,
             }}
             onMouseEnter={e => (e.currentTarget.style.opacity = '1')}
             onMouseLeave={e => (e.currentTarget.style.opacity = '0.7')}
           >
-            <span style={{ fontSize: '1rem' }}>☕</span>
-            <span>Offrimi un caffè</span>
+            ☕
           </button>
 
           {showFloatingDonation && (
