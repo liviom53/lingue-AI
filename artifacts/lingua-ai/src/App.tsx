@@ -1197,7 +1197,9 @@ export default function App() {
     demoTimersRef.current.push(startTypingId);
   };
 
-  const langName = (ALL_LANGUAGES.find(l => l.code === selectedLang) ?? ALL_LANGUAGES[0]).name;
+  const langObj = ALL_LANGUAGES.find(l => l.code === selectedLang) ?? ALL_LANGUAGES[0];
+  const langName = langObj.name;
+  const langFlag = langObj.flag;
 
   return (
     <div style={styles.main}>
@@ -2224,7 +2226,15 @@ export default function App() {
             }}
           >
             <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <Bot size={18} /> Conversa in {langName} con DeepSeek AI
+              <Bot size={18} /> Conversa con DeepSeek
+              <span style={{
+                display: 'inline-flex', alignItems: 'center', gap: '4px',
+                background: '#fb923c22', border: '1px solid #fb923c66',
+                borderRadius: '20px', padding: '2px 8px',
+                fontSize: '0.75rem', color: '#fb923c', fontWeight: 'bold',
+              }}>
+                {langFlag} {langName}
+              </span>
             </span>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               {showChat && (
