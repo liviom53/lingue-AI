@@ -3045,7 +3045,7 @@ export default function App() {
             aria-controls="accessibilita-panel"
             style={{ width: '100%', background: 'none', border: 'none', color: '#10b981', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: 0, fontSize: '0.9rem', fontWeight: 'bold' }}
           >
-            <span>♿ Accessibilità & TalkBack</span>
+            <span>♿ Accessibilità per ipovedenti con TalkBack</span>
             {showAccessibilita ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
           </button>
           {showAccessibilita && (
