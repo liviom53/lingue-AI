@@ -448,13 +448,13 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<'profilo' | 'progressi' | 'calendario' | 'vocabolario' | 'demo'>('profilo');
   const [showTabPanel, setShowTabPanel] = useState(false);
   const [showDonazioni, setShowDonazioni] = useState(false);
-  const [balloonPos, setBalloonPos] = useState({ x: window.innerWidth - 180, y: window.innerHeight - 80 });
   const [balloonStopped, setBalloonStopped] = useState(false);
   const balloonRafRef = useRef<number | null>(null);
   const balloonRestartRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const balloonElRef = useRef<HTMLDivElement>(null);
   const donazioniRef = useRef<HTMLElement>(null);
 
-  // Animazione sinusoidale continua — visibilità gestita interamente da CSS (@keyframes balloonShow)
+  // Movimento sinusoidale via DOM diretto — nessun re-render React, la CSS animation non si azzera
   useEffect(() => {
     if (balloonStopped) return;
     const W = window.innerWidth, H = window.innerHeight;
@@ -465,7 +465,10 @@ export default function App() {
       const t = (now - start) / 1000;
       const x = cx + ax * Math.sin(0.12 * t);
       const y = cy + ay * Math.sin(0.17 * t + 1.1);
-      setBalloonPos({ x, y });
+      if (balloonElRef.current) {
+        balloonElRef.current.style.left = `${x}px`;
+        balloonElRef.current.style.top = `${y}px`;
+      }
       balloonRafRef.current = requestAnimationFrame(tick);
     };
     balloonRafRef.current = requestAnimationFrame(tick);
@@ -4058,6 +4061,7 @@ export default function App() {
       {!demoActive && (
         <>
           <div
+            ref={balloonElRef}
             role="button"
             tabIndex={0}
             onClick={() => {
@@ -4079,12 +4083,11 @@ export default function App() {
             aria-label="Sostieni il progetto con una donazione"
             style={{
               position: 'fixed',
-              left: balloonPos.x,
-              top: balloonPos.y,
+              left: window.innerWidth - 180,
+              top: window.innerHeight - 80,
               zIndex: 9990,
               cursor: 'pointer',
               userSelect: 'none',
-              transition: 'left 0.08s linear, top 0.08s linear',
               animation: balloonStopped ? 'none' : 'balloonShow 67s linear infinite',
               opacity: balloonStopped ? 0 : undefined,
               pointerEvents: balloonStopped ? 'none' : undefined,
