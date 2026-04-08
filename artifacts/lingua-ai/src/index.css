@@ -172,10 +172,14 @@ button:active:not([disabled]) {
     0 1px 2px rgba(0,0,0,0.25) !important;
 }
 
-/* ── Animazione rotazione (spinner aggiornamento) ────── */
+/* ── Animazioni aggiornamento ────────────────────────── */
 @keyframes spin {
   from { transform: rotate(0deg); }
   to   { transform: rotate(360deg); }
+}
+@keyframes progress8s {
+  from { width: 0%; }
+  to   { width: 100%; }
 }
 
 /* ── Cursore demo ────────────────────────────────────── */

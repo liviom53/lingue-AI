@@ -336,8 +336,8 @@ export default function App() {
 
   const forceUpdate = async () => {
     setIsUpdating(true);
-    // Pausa: l'utente vede il messaggio "Aggiornamento in corso…" per 3 sec
-    await new Promise(resolve => setTimeout(resolve, 3000));
+    // Pausa: l'utente vede il messaggio "Aggiornamento in corso…" per 8 sec
+    await new Promise(resolve => setTimeout(resolve, 8000));
     // Aggiorna la versione in uso (no banner al reload)
     if (latestServerVersionRef.current) {
       sessionStorage.setItem('app_running_v', latestServerVersionRef.current);
@@ -1400,9 +1400,18 @@ export default function App() {
 
         {/* Spinner durante aggiornamento */}
         {isUpdating && (
-          <div role="status" aria-live="polite" style={{ background: '#1e1b4b', border: '1.5px solid #a855f7', borderRadius: '12px', padding: '12px 16px', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <RefreshCw size={18} style={{ color: '#a78bfa', animation: 'spin 1s linear infinite', flexShrink: 0 }} />
-            <p style={{ margin: 0, fontSize: '0.85rem', color: '#d8b4fe', fontWeight: 'bold' }}>Aggiornamento in corso… attendere</p>
+          <div role="status" aria-live="polite" style={{ background: 'linear-gradient(135deg,#1e1b4b,#2e1065)', border: '1.5px solid #a855f7', borderRadius: '12px', padding: '14px 16px', marginBottom: '10px', boxShadow: '0 4px 16px rgba(168,85,247,0.3)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
+              <RefreshCw size={18} style={{ color: '#a78bfa', animation: 'spin 1s linear infinite', flexShrink: 0 }} />
+              <div>
+                <p style={{ margin: 0, fontSize: '0.88rem', color: '#d8b4fe', fontWeight: 'bold' }}>Installazione aggiornamento…</p>
+                <p style={{ margin: '2px 0 0', fontSize: '0.72rem', color: '#a78bfa' }}>Non chiudere l&apos;app, attendere il completamento</p>
+              </div>
+            </div>
+            {/* Barra di progresso animata — 8 secondi */}
+            <div style={{ background: 'rgba(168,85,247,0.2)', borderRadius: '999px', height: '6px', overflow: 'hidden' }}>
+              <div style={{ height: '100%', borderRadius: '999px', background: 'linear-gradient(90deg,#7c3aed,#a855f7,#c084fc)', animation: 'progress8s 8s linear forwards' }} />
+            </div>
           </div>
         )}
 
