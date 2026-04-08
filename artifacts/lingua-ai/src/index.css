@@ -181,6 +181,10 @@ button:active:not([disabled]) {
   from { opacity: 0; transform: translateY(20px); }
   to   { opacity: 1; transform: translateY(0); }
 }
+@keyframes floatBalloon {
+  0%,100% { transform: translateY(0px); }
+  50%     { transform: translateY(-6px); }
+}
 
 /* ── Forma d'onda microfono — 5 barre con timing irregolare ─ */
 /* Ogni barra ha una curva diversa per sembrare reattiva all'audio */

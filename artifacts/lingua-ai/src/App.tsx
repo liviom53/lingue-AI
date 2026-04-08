@@ -4035,34 +4035,64 @@ export default function App() {
       {/* Floating ☕ donation button */}
       {!demoActive && (
         <>
-          <button
+          <div
+            role="button"
+            tabIndex={0}
             onClick={() => setShowFloatingDonation(v => !v)}
-            aria-label="Sostieni il progetto"
+            onKeyDown={e => e.key === 'Enter' && setShowFloatingDonation(v => !v)}
+            aria-label="Sostieni il progetto con una donazione"
             style={{
               position: 'fixed',
-              bottom: '22px',
-              right: '16px',
+              bottom: '28px',
+              right: '20px',
               zIndex: 9990,
-              opacity: 0.7,
-              background: '#1e293b',
-              border: '1px solid #334155',
-              borderRadius: '50%',
-              width: '44px',
-              height: '44px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
+              opacity: 0.75,
               cursor: 'pointer',
-              fontSize: '1.3rem',
-              boxShadow: '0 2px 12px rgba(0,0,0,0.4)',
-              transition: 'opacity 0.2s',
-              padding: 0,
+              animation: 'floatBalloon 3s ease-in-out infinite',
+              userSelect: 'none',
             }}
             onMouseEnter={e => (e.currentTarget.style.opacity = '1')}
-            onMouseLeave={e => (e.currentTarget.style.opacity = '0.7')}
+            onMouseLeave={e => (e.currentTarget.style.opacity = '0.75')}
           >
-            ☕
-          </button>
+            {/* Corpo del palloncino */}
+            <div style={{
+              background: '#1e293b',
+              border: '1.5px solid #475569',
+              borderRadius: '16px',
+              padding: '8px 14px',
+              fontSize: '0.82rem',
+              color: '#e2e8f0',
+              whiteSpace: 'nowrap',
+              boxShadow: '0 4px 16px rgba(0,0,0,0.45)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+            }}>
+              <span style={{ fontSize: '1.1rem' }}>☕</span>
+              <span>Offrimi un caffè</span>
+            </div>
+            {/* Codina del palloncino — punta verso il basso a destra */}
+            <div style={{
+              position: 'absolute',
+              bottom: '-9px',
+              right: '18px',
+              width: 0,
+              height: 0,
+              borderLeft: '8px solid transparent',
+              borderRight: '8px solid transparent',
+              borderTop: '10px solid #475569',
+            }} />
+            <div style={{
+              position: 'absolute',
+              bottom: '-7px',
+              right: '19px',
+              width: 0,
+              height: 0,
+              borderLeft: '7px solid transparent',
+              borderRight: '7px solid transparent',
+              borderTop: '9px solid #1e293b',
+            }} />
+          </div>
 
           {showFloatingDonation && (
             <div
