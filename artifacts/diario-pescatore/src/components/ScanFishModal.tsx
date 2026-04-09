@@ -21,12 +21,8 @@ function matchSpecie(aiSpecie: string): string {
   return "Altra specie";
 }
 
-type Step = "choose" | "scanning" | "success" | "fail";
-
-interface ScanResult {
-  specie: string;
-  note?: string;
-}
+type Step = "choose" | "scanning" | "result";
+type ScanOutcome = "success" | "fail" | null;
 
 interface Props {
   open: boolean;
@@ -41,6 +37,7 @@ export function ScanFishModal({ open, onClose }: Props) {
   const { toast } = useToast();
 
   const [step, setStep] = useState<Step>("choose");
+  const [outcome, setOutcome] = useState<ScanOutcome>(null);
   const [photo, setPhoto] = useState<string | null>(null);
   const [form, setForm] = useState(emptyForm);
 
@@ -49,6 +46,7 @@ export function ScanFishModal({ open, onClose }: Props) {
 
   function reset() {
     setStep("choose");
+    setOutcome(null);
     setPhoto(null);
     setForm(emptyForm);
   }
@@ -70,13 +68,14 @@ export function ScanFishModal({ open, onClose }: Props) {
       const data: any = await res.json();
       if (data.riconosciuto && data.specie) {
         setForm(f => ({ ...f, specie: matchSpecie(data.specie) }));
-        setStep("success");
+        setOutcome("success");
       } else {
-        setStep("fail");
+        setOutcome("fail");
       }
     } catch {
-      setStep("fail");
+      setOutcome("fail");
     }
+    setStep("result");
   }
 
   function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
@@ -146,8 +145,8 @@ export function ScanFishModal({ open, onClose }: Props) {
             <p style={{ margin: "2px 0 0", fontSize: "0.72rem", color: "#475569" }}>
               {step === "choose" && "Scansiona o carica dalla galleria"}
               {step === "scanning" && "Analisi in corso…"}
-              {step === "success" && "Specie riconosciuta — completa e salva"}
-              {step === "fail" && "Identificazione non riuscita"}
+              {step === "result" && outcome === "success" && "Specie riconosciuta — completa e salva"}
+              {step === "result" && outcome === "fail" && "Identificazione non riuscita"}
             </p>
           </div>
           <button onClick={handleClose} style={{ background: "none", border: "none", color: "#64748b", cursor: "pointer", padding: "4px" }}>
@@ -190,77 +189,74 @@ export function ScanFishModal({ open, onClose }: Props) {
             </div>
           )}
 
-          {/* ─── STEP: FAIL ─── */}
-          {step === "fail" && (
+          {/* ─── STEP: RESULT (success + fail) ─── */}
+          {step === "result" && (
             <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
-              {photo && <img src={photo} alt="cattura" style={{ width: "100%", height: "160px", objectFit: "cover", borderRadius: "12px", opacity: 0.5 }} />}
-              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "8px", padding: "12px", background: "#1e1a0a", border: "1px solid #854d0e", borderRadius: "12px" }}>
-                <AlertCircle style={{ width: 28, height: 28, color: "#eab308" }} />
-                <span style={{ fontSize: "0.85rem", color: "#fef08a", textAlign: "center" }}>Nessun pesce riconosciuto.<br />Riprova con una foto più chiara.</span>
-              </div>
-              <div style={{ display: "flex", gap: "10px" }}>
-                <button onClick={reset} style={{ ...btnBase, background: "#1e293b", color: "#94a3b8" }}>
-                  <RefreshCw style={{ width: 15, height: 15 }} /> Riprova
-                </button>
-                <button onClick={handleClose} style={{ ...btnBase, background: "#1e293b", color: "#94a3b8" }}>
-                  <X style={{ width: 15, height: 15 }} /> Esci
-                </button>
-              </div>
-            </div>
-          )}
+              {photo && (
+                <img
+                  src={photo}
+                  alt="cattura"
+                  style={{ width: "100%", height: "160px", objectFit: "cover", borderRadius: "12px", opacity: outcome === "fail" ? 0.5 : 1 }}
+                />
+              )}
 
-          {/* ─── STEP: SUCCESS ─── */}
-          {step === "success" && (
-            <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
-              {photo && <img src={photo} alt="cattura" style={{ width: "100%", height: "160px", objectFit: "cover", borderRadius: "12px" }} />}
-
-              <p style={{ margin: 0, fontSize: "0.7rem", color: "#38bdf8", textTransform: "uppercase", letterSpacing: "0.1em", fontWeight: 700 }}>Cattura</p>
-
-              <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-                <div>
-                  <label style={lbl}>Specie *</label>
-                  <select value={form.specie} onChange={e => setForm(f => ({ ...f, specie: e.target.value }))} style={{ ...inp, appearance: "none" }}>
-                    <option value="">Seleziona specie…</option>
-                    {SPECIE_LIST.map(s => <option key={s} value={s}>{s}</option>)}
-                  </select>
+              {outcome === "fail" && (
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "8px", padding: "12px", background: "#1e1a0a", border: "1px solid #854d0e", borderRadius: "12px" }}>
+                  <AlertCircle style={{ width: 28, height: 28, color: "#eab308" }} />
+                  <span style={{ fontSize: "0.85rem", color: "#fef08a", textAlign: "center" }}>Nessun pesce riconosciuto.<br />Riprova con una foto più chiara.</span>
                 </div>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
-                  <div>
-                    <label style={lbl}>Peso (kg)</label>
-                    <input type="number" step="0.01" min="0" placeholder="Es. 1.5" value={form.peso} onChange={e => setForm(f => ({ ...f, peso: e.target.value }))} style={inp} />
+              )}
+
+              {outcome === "success" && (
+                <>
+                  <p style={{ margin: 0, fontSize: "0.7rem", color: "#38bdf8", textTransform: "uppercase", letterSpacing: "0.1em", fontWeight: 700 }}>Cattura</p>
+                  <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                    <div>
+                      <label style={lbl}>Specie *</label>
+                      <select value={form.specie} onChange={e => setForm(f => ({ ...f, specie: e.target.value }))} style={{ ...inp, appearance: "none" }}>
+                        <option value="">Seleziona specie…</option>
+                        {SPECIE_LIST.map(s => <option key={s} value={s}>{s}</option>)}
+                      </select>
+                    </div>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+                      <div>
+                        <label style={lbl}>Peso (kg)</label>
+                        <input type="number" step="0.01" min="0" placeholder="Es. 1.5" value={form.peso} onChange={e => setForm(f => ({ ...f, peso: e.target.value }))} style={inp} />
+                      </div>
+                      <div>
+                        <label style={lbl}>Lunghezza (cm)</label>
+                        <input type="number" step="0.1" min="0" placeholder="Es. 45" value={form.lunghezza} onChange={e => setForm(f => ({ ...f, lunghezza: e.target.value }))} style={inp} />
+                      </div>
+                    </div>
+                    <div>
+                      <label style={lbl}>Spot</label>
+                      <select value={form.spotId} onChange={e => setForm(f => ({ ...f, spotId: e.target.value }))} style={{ ...inp, appearance: "none" }}>
+                        <option value="">Nessuno spot</option>
+                        {(spots as any[]).map((s: any) => <option key={s.id} value={s.id}>{s.nome}</option>)}
+                      </select>
+                    </div>
+                    <div>
+                      <label style={lbl}>Note</label>
+                      <textarea placeholder="Dove, come, con quale esca…" value={form.note} onChange={e => setForm(f => ({ ...f, note: e.target.value }))} style={{ ...inp, height: "64px", resize: "none" }} />
+                    </div>
                   </div>
-                  <div>
-                    <label style={lbl}>Lunghezza (cm)</label>
-                    <input type="number" step="0.1" min="0" placeholder="Es. 45" value={form.lunghezza} onChange={e => setForm(f => ({ ...f, lunghezza: e.target.value }))} style={inp} />
-                  </div>
-                </div>
-                <div>
-                  <label style={lbl}>Spot</label>
-                  <select value={form.spotId} onChange={e => setForm(f => ({ ...f, spotId: e.target.value }))} style={{ ...inp, appearance: "none" }}>
-                    <option value="">Nessuno spot</option>
-                    {(spots as any[]).map((s: any) => <option key={s.id} value={s.id}>{s.nome}</option>)}
-                  </select>
-                </div>
-                <div>
-                  <label style={lbl}>Note</label>
-                  <textarea placeholder="Dove, come, con quale esca…" value={form.note} onChange={e => setForm(f => ({ ...f, note: e.target.value }))} style={{ ...inp, height: "64px", resize: "none" }} />
-                </div>
-              </div>
+                </>
+              )}
 
-              {/* 3 bottoni */}
+              {/* ─── Sempre 3 bottoni ─── */}
               <div style={{ display: "flex", gap: "8px" }}>
                 <button onClick={reset} style={{ ...btnBase, background: "#1e293b", color: "#94a3b8", flex: "0 0 auto", padding: "12px 14px" }}>
                   <RefreshCw style={{ width: 15, height: 15 }} /> Riprova
                 </button>
                 <button
                   onClick={handleSave}
-                  disabled={!form.specie || addMutation.isPending}
+                  disabled={outcome !== "success" || !form.specie || addMutation.isPending}
                   style={{
                     ...btnBase, flex: 1,
-                    background: form.specie ? "linear-gradient(135deg,#0ea5e9,#0369a1)" : "#1e293b",
-                    color: form.specie ? "#fff" : "#475569",
-                    boxShadow: form.specie ? "0 4px 16px rgba(14,165,233,0.25)" : "none",
-                    cursor: form.specie ? "pointer" : "not-allowed",
+                    background: (outcome === "success" && form.specie) ? "linear-gradient(135deg,#0ea5e9,#0369a1)" : "#1e293b",
+                    color: (outcome === "success" && form.specie) ? "#fff" : "#475569",
+                    boxShadow: (outcome === "success" && form.specie) ? "0 4px 16px rgba(14,165,233,0.25)" : "none",
+                    cursor: (outcome === "success" && form.specie) ? "pointer" : "not-allowed",
                   }}
                 >
                   <CheckCircle style={{ width: 15, height: 15 }} />
