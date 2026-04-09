@@ -494,7 +494,7 @@ router.post("/variants", async (req: Request, res: Response) => {
 });
 
 // ── Scanner cattura: riconoscimento specie via vision AI ─────────────────────
-const VISION_MODEL = "google/gemini-2.5-flash-lite";
+const VISION_MODEL = "meta-llama/llama-3.2-11b-vision-instruct";
 
 router.post("/scan-fish", async (req: Request, res: Response) => {
   const { imageBase64 } = req.body as { imageBase64: string };
