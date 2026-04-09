@@ -493,6 +493,59 @@ router.post("/variants", async (req: Request, res: Response) => {
   }
 });
 
+// ── Open-Meteo marine: condizioni attuali Porto Badino ──────────────────────
+const DIARIO_LAT = 41.40;
+const DIARIO_LON = 13.03;
+
+function degreesToCompass(deg: number): string {
+  const dirs = ["N", "NE", "E", "SE", "S", "SO", "O", "NO"];
+  return dirs[Math.round(deg / 45) % 8];
+}
+
+async function fetchMarineContext(): Promise<string> {
+  try {
+    const [marineRes, weatherRes] = await Promise.all([
+      fetch(
+        `https://marine-api.open-meteo.com/v1/marine?latitude=${DIARIO_LAT}&longitude=${DIARIO_LON}` +
+        `&current=wave_height,wave_direction,wave_period,wind_wave_height,swell_wave_height,swell_wave_direction,sea_surface_temperature` +
+        `&timezone=Europe%2FRome`,
+        { signal: AbortSignal.timeout(5000) }
+      ),
+      fetch(
+        `https://api.open-meteo.com/v1/forecast?latitude=${DIARIO_LAT}&longitude=${DIARIO_LON}` +
+        `&current=temperature_2m,wind_speed_10m,wind_direction_10m,wind_gusts_10m,weather_code` +
+        `&timezone=Europe%2FRome`,
+        { signal: AbortSignal.timeout(5000) }
+      ),
+    ]);
+
+    if (!marineRes.ok || !weatherRes.ok) return "";
+
+    const marine = await marineRes.json() as any;
+    const weather = await weatherRes.json() as any;
+
+    const mc = marine.current;
+    const wc = weather.current;
+
+    const windDir = degreesToCompass(Number(wc.wind_direction_10m));
+    const waveDir = degreesToCompass(Number(mc.wave_direction));
+    const swellDir = degreesToCompass(Number(mc.swell_wave_direction));
+
+    return (
+      `\n\n📡 CONDIZIONI MARINE ATTUALI (Porto Badino / Costa Laziale):` +
+      `\n- Mare: onde ${mc.wave_height}m (periodo ${mc.wave_period}s) da ${waveDir}` +
+      `\n- Swell: ${mc.swell_wave_height}m da ${swellDir}` +
+      `\n- Onde vento: ${mc.wind_wave_height}m` +
+      `\n- Temperatura mare: ${mc.sea_surface_temperature}°C` +
+      `\n- Vento: ${wc.wind_speed_10m} km/h (raffiche ${wc.wind_gusts_10m} km/h) da ${windDir}` +
+      `\n- Temp. aria: ${wc.temperature_2m}°C` +
+      `\nUsa questi dati reali per calibrare i tuoi consigli di pesca.`
+    );
+  } catch {
+    return "";
+  }
+}
+
 // ── Diario del Pescatore — chat AI ──────────────────────────────────────────
 router.post("/diario", async (req: Request, res: Response) => {
   const { messages } = req.body as {
@@ -502,13 +555,19 @@ router.post("/diario", async (req: Request, res: Response) => {
     res.status(400).json({ error: "Missing messages" });
     return;
   }
+
+  const marineCtx = await fetchMarineContext();
+
   const systemContent =
     "Sei un esperto pescatore della costa laziale del Mar Tirreno. " +
-    "Il tuo ruolo principale è fornire previsioni e consigli di pesca personalizzati: periodo migliore, orari, condizioni meteo e di marea, tecniche consigliate, esche e spot. " +
+    "Il tuo ruolo principale è fornire previsioni e consigli di pesca personalizzati: " +
+    "periodo migliore, orari, condizioni meteo e di marea, tecniche consigliate, esche e spot. " +
     "Solo pesca da terra. Conosci perfettamente le specie locali (spigola, cefalo, muggine, anguilla, " +
-    "granchio blu, orata, leccia, ombrina, mormora), le tecniche (surfcasting, feeder, spinning, bolognese, fondo notturno). " +
+    "granchio blu, orata, leccia, ombrina, mormora) e le tecniche (surfcasting, feeder, spinning, bolognese, fondo notturno). " +
     "Aiuti anche l'utente a registrare dati nel Diario via chat. " +
-    "Rispondi SEMPRE in italiano, in modo breve (max 5 righe), pratico e amichevole.";
+    "Rispondi SEMPRE in italiano, in modo conciso e pratico, e usa i dati meteo-marini reali quando disponibili." +
+    marineCtx;
+
   try {
     const completion = await openrouter.chat.completions.create({
       model: MODEL,
