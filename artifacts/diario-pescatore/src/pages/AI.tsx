@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { Bot, Send, Mic, MicOff, AlertCircle } from "lucide-react";
+import ReactMarkdown from "react-markdown";
 
 interface Message { role: "user" | "assistant"; content: string; }
 
@@ -117,7 +118,18 @@ export default function AI() {
                 ? "bg-primary text-primary-foreground rounded-tr-sm"
                 : "bg-background border border-white/5 text-foreground rounded-tl-sm"
             }`}>
-              <p className="text-sm leading-relaxed whitespace-pre-wrap">{msg.content}</p>
+              {msg.role === "assistant" ? (
+                <div className="text-sm leading-relaxed prose prose-sm prose-invert max-w-none
+                  [&>p]:mb-2 [&>p:last-child]:mb-0
+                  [&>ul]:mb-2 [&>ul]:pl-4 [&>ul>li]:mb-1
+                  [&>ol]:mb-2 [&>ol]:pl-4 [&>ol>li]:mb-1
+                  [&>strong]:text-primary [&>ul>li>strong]:text-primary
+                  [&>h1]:text-base [&>h2]:text-sm [&>h3]:text-sm">
+                  <ReactMarkdown>{msg.content}</ReactMarkdown>
+                </div>
+              ) : (
+                <p className="text-sm leading-relaxed whitespace-pre-wrap">{msg.content}</p>
+              )}
             </div>
           </div>
         ))}
