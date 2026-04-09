@@ -218,8 +218,8 @@ const TABS=[
   {id:"tecnica",label:"🎣 Tecnica"},
   {id:"esche",label:"🪱 Esche"},
   {id:"specie",label:"🐟 Specie"},
-  {id:"campo",label:"🌊 Campo"},
-  {id:"ai",label:"🤖 AI"},
+  {id:"campo",label:"🌊 Dati reali osservati"},
+  {id:"ai",label:"🤖 Assistente AI"},
 ];
 
 const DEEPSEEK_KEY="sk-84b89b428959461e818ad77775913978";
@@ -301,7 +301,7 @@ export function FishingForecastCard({stazioneKey}:{stazioneKey:string}) {
         <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3"/>
         <div className="flex items-start justify-between mb-4 relative z-10">
           <div>
-            <p className="text-xs text-primary font-bold uppercase tracking-widest mb-1">🎣 Indice Pescabilità</p>
+            <p className="text-xs text-primary font-bold uppercase tracking-widest mb-1">🎣 Indice Pescosità</p>
             <p className="text-xs text-muted-foreground">{STAZIONI[stazioneKey]?.nome??"Porto Badino"}</p>
           </div>
           <div className="flex items-center gap-3 bg-background/50 px-3 py-1.5 rounded-full border border-white/5">
