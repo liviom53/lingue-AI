@@ -91,7 +91,7 @@ export function AppLayout({ children, onLogoTap }: { children: React.ReactNode; 
               🎣
             </div>
             <div>
-              <h1 className="font-bold text-base leading-tight text-sidebar-foreground">Diario Pescatore</h1>
+              <h1 className="font-bold text-base leading-tight text-sidebar-foreground">Diario del Pescatore</h1>
               <p className="text-xs text-primary/80 font-medium tracking-wide uppercase">v3.5 · by Livio</p>
             </div>
           </div>
