@@ -50,6 +50,18 @@ interface UserProfile {
   altro?: string;
 }
 
+function buildLevelContext(level?: string): string {
+  if (!level) return "";
+  const map: Record<string, string> = {
+    base:       "Principiante (A1-A2): usa vocabolario semplice, frasi brevi e spiegazioni elementari, adatte a chi inizia da zero.",
+    intermedio: "Intermedio (B1-B2): usa vocabolario intermedio, frasi di media complessità, spiegazioni chiare ma non banali.",
+    avanzato:   "Avanzato (C1-C2): usa vocabolario ricco e strutture grammaticali complesse, spiegazioni approfondite e sfumature linguistiche.",
+  };
+  const desc = map[level];
+  if (!desc) return "";
+  return `\n\nLivello dell'utente: ${desc} Adatta tono, complessità e scelta lessicale di conseguenza.`;
+}
+
 function buildProfileContext(p?: UserProfile): string {
   if (!p) return "";
   const parts: string[] = [];
@@ -68,10 +80,11 @@ function buildProfileContext(p?: UserProfile): string {
 }
 
 router.post("/translate", async (req: Request, res: Response) => {
-  const { text, targetLang, userProfile } = req.body as {
+  const { text, targetLang, userProfile, level } = req.body as {
     text: string;
     targetLang: string;
     userProfile?: UserProfile;
+    level?: string;
   };
   if (!text || !targetLang) {
     res.status(400).json({ error: "Missing text or targetLang" });
@@ -79,6 +92,7 @@ router.post("/translate", async (req: Request, res: Response) => {
   }
   const langName = LANG_NAMES[targetLang] ?? targetLang;
   const profileCtx = buildProfileContext(userProfile);
+  const levelCtx = buildLevelContext(level);
   try {
     const completion = await openrouter.chat.completions.create({
       model: MODEL,
@@ -91,7 +105,7 @@ Respond ONLY with valid JSON in this exact format (no markdown, no extra text):
 - translation: the ${langName} translation
 - pronunciation: a simplified phonetic spelling of the translation that an Italian speaker can read and roughly pronounce correctly (e.g. for English "Hello" write "el-LÒ", for "Thank you" write "senk-IÙ"). Use Italian phonetic conventions. Capitalize stressed syllables. Keep it short.
 - explanation: one short sentence explaining an interesting grammar point or word choice (in Italian). If the user has a known profession or background, relate the example to it when natural.
-- example: one short additional example sentence in ${langName} using a key word from the translation${profileCtx}`,
+- example: one short additional example sentence in ${langName} using a key word from the translation${profileCtx}${levelCtx}`,
         },
         { role: "user", content: text },
       ],
@@ -106,11 +120,12 @@ Respond ONLY with valid JSON in this exact format (no markdown, no extra text):
 });
 
 router.post("/chat", async (req: Request, res: Response) => {
-  const { messages, targetLang, userProfile, scenario } = req.body as {
+  const { messages, targetLang, userProfile, scenario, level } = req.body as {
     messages: { role: "user" | "assistant"; content: string }[];
     targetLang: string;
     userProfile?: UserProfile;
     scenario?: string;
+    level?: string;
   };
   if (!messages || !targetLang) {
     res.status(400).json({ error: "Missing messages or targetLang" });
@@ -118,6 +133,7 @@ router.post("/chat", async (req: Request, res: Response) => {
   }
   const langName = LANG_NAMES[targetLang] ?? targetLang;
   const profileCtx = buildProfileContext(userProfile);
+  const levelCtx = buildLevelContext(level);
 
   let systemContent: string;
   if (scenario) {
@@ -128,7 +144,7 @@ Rules:
 - Always speak in ${langName} only (short, natural sentences — 2-3 max)
 - If the user makes a grammar or vocabulary mistake, gently correct it at the very end with "💡 Correzione:" followed by the correction in Italian
 - Start the conversation with a natural, in-character greeting that sets the scene
-- Help the user practice vocabulary and phrases relevant to this real-life situation${profileCtx}`;
+- Help the user practice vocabulary and phrases relevant to this real-life situation${profileCtx}${levelCtx}`;
   } else {
     systemContent = `You are a friendly ${langName} language tutor helping an Italian speaker practice ${langName}.
 Rules:
@@ -136,7 +152,7 @@ Rules:
 - Keep responses short and natural (2-4 sentences)
 - If the user makes a grammar mistake, gently correct it at the very end with "💡 Correzione:" followed by the correction in Italian
 - Be encouraging and conversational
-- Personalize examples and topics based on the user profile when relevant${profileCtx}`;
+- Personalize examples and topics based on the user profile when relevant${profileCtx}${levelCtx}`;
   }
 
   try {

@@ -252,6 +252,7 @@ const lookupCache = (text: string, lang: string): CachedTranslation | null => {
 
 export default function App() {
   const [selectedLang, setSelectedLang] = useState('en');
+  const [selectedLevel, setSelectedLevel] = useState<'base' | 'intermedio' | 'avanzato' | null>(null);
   const [inputText, setInputText] = useState('');
   const [translatedText, setTranslatedText] = useState('');
   const [loading, setLoading] = useState(false);
@@ -1031,7 +1032,7 @@ export default function App() {
       const res = await fetch('/api/ai/translate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text, targetLang: selectedLang, userProfile: profile }),
+        body: JSON.stringify({ text, targetLang: selectedLang, userProfile: profile, level: selectedLevel }),
       });
       if (!res.ok) throw new Error('Errore AI. Riprova.');
       const data = await res.json();
@@ -2179,6 +2180,41 @@ export default function App() {
                   </div>
                 )}
               </div>
+            </div>
+
+            {/* ── Selezione livello ───────────────────────────────────────────── */}
+            <div style={{ display: 'flex', gap: '8px', paddingTop: '2px', paddingBottom: '6px' }}>
+              {([
+                { key: 'base',       icon: '🌱', label: 'Principiante', sub: 'A1-A2' },
+                { key: 'intermedio', icon: '📚', label: 'Intermedio',   sub: 'B1-B2' },
+                { key: 'avanzato',   icon: '🎓', label: 'Avanzato',     sub: 'C1-C2' },
+              ] as const).map(({ key, icon, label, sub }) => {
+                const active = selectedLevel === key;
+                return (
+                  <button
+                    key={key}
+                    onClick={() => setSelectedLevel(active ? null : key)}
+                    style={{
+                      flex: 1,
+                      padding: '7px 4px',
+                      borderRadius: '10px',
+                      border: `1.5px solid ${active ? '#fb923c' : '#334155'}`,
+                      background: active ? 'linear-gradient(135deg,#fb923c22,#a855f711)' : '#0f172a',
+                      color: active ? '#fb923c' : '#64748b',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      gap: '1px',
+                      transition: 'all 0.15s ease',
+                    }}
+                  >
+                    <span style={{ fontSize: '1rem' }}>{icon}</span>
+                    <span style={{ fontSize: '0.68rem', fontWeight: 700, lineHeight: 1.1 }}>{label}</span>
+                    <span style={{ fontSize: '0.58rem', color: active ? '#fb923c88' : '#475569', lineHeight: 1 }}>{sub}</span>
+                  </button>
+                );
+              })}
             </div>
         </section>
 
