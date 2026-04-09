@@ -3,16 +3,25 @@ import { Heart, Copy, Check, Coffee, Waves, ExternalLink } from "lucide-react";
 
 const IBAN = "IT62U3608105138220295220310";
 const BENEFICIARIO = "Mazzocchi Livio";
+const POSTEPAY = "5333 1712 0435 4399";
 const PAYPAL_URL = "https://www.paypal.com/donate?business=livio.mazzocchi%40gmail.com&currency_code=EUR";
 const KOFI_URL = "https://ko-fi.com/liviomazzocchi";
 
 export default function Donazioni() {
   const [copied, setCopied] = useState(false);
+  const [copiedPostepay, setCopiedPostepay] = useState(false);
 
   function copyIban() {
     navigator.clipboard.writeText(IBAN).then(() => {
       setCopied(true);
       setTimeout(() => setCopied(false), 2500);
+    });
+  }
+
+  function copyPostepay() {
+    navigator.clipboard.writeText(POSTEPAY.replace(/\s/g, "")).then(() => {
+      setCopiedPostepay(true);
+      setTimeout(() => setCopiedPostepay(false), 2500);
     });
   }
 
@@ -87,6 +96,44 @@ export default function Donazioni() {
           <Coffee className="w-4 h-4" />
           Offrimi un caffè ☕
         </a>
+      </div>
+
+      {/* PostePay */}
+      <div className="bg-card border border-white/10 rounded-2xl p-5 space-y-4">
+        <div className="flex items-center gap-2">
+          <div className="w-5 h-5 flex items-center justify-center">
+            <svg viewBox="0 0 24 24" className="w-5 h-5" xmlns="http://www.w3.org/2000/svg">
+              <rect width="24" height="24" rx="4" fill="#FFCC00"/>
+              <text x="12" y="16" textAnchor="middle" fontSize="9" fontWeight="bold" fill="#002B7F">PP</text>
+            </svg>
+          </div>
+          <h2 className="font-semibold">PostePay Evolution</h2>
+        </div>
+        <p className="text-sm text-muted-foreground">
+          Ricarica direttamente da app Postepay, sportello Poste o tabaccheria.
+        </p>
+        <div className="bg-background rounded-xl p-4 space-y-1">
+          <div className="text-xs text-muted-foreground mb-2">Numero carta</div>
+          <div className="flex items-center justify-between gap-3">
+            <code className="text-primary font-mono text-sm tracking-widest">
+              {POSTEPAY}
+            </code>
+            <button
+              onClick={copyPostepay}
+              className="shrink-0 p-2 rounded-lg bg-primary/10 hover:bg-primary/20 transition-colors text-primary"
+              title="Copia numero carta"
+            >
+              {copiedPostepay ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+            </button>
+          </div>
+          {copiedPostepay && (
+            <p className="text-xs text-primary mt-1">Numero copiato!</p>
+          )}
+        </div>
+        <div className="bg-background rounded-xl p-4">
+          <div className="text-xs text-muted-foreground mb-1">Intestatario</div>
+          <p className="font-semibold text-white">{BENEFICIARIO}</p>
+        </div>
       </div>
 
       {/* IBAN */}
