@@ -1,5 +1,10 @@
 uploads = []
-generated = []
+
+[[generated]]
+id = "iqzwEZmi5drzxqixmXDMo"
+uri = "file://artifacts/lingua-ai-demo-video/public/images/campus-bg.png"
+type = "image"
+title = "generated_image"
 
 [[outputs]]
 id = "JZzNyj8SvTTfcfNm3hKFD"
