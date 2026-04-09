@@ -503,10 +503,10 @@ router.post("/diario", async (req: Request, res: Response) => {
     return;
   }
   const systemContent =
-    "Sei un esperto pescatore del Canale Fiume Portatore e della foce di Porto Badino (costa laziale, Mar Tirreno). " +
-    "Solo pesca da terra. Conosci perfettamente il canale, le specie locali (spigola, cefalo, muggine, anguilla, " +
+    "Sei un esperto pescatore della costa laziale del Mar Tirreno. " +
+    "Solo pesca da terra. Conosci perfettamente le specie locali (spigola, cefalo, muggine, anguilla, " +
     "granchio blu, orata, leccia, ombrina, mormora), le tecniche (surfcasting, feeder, spinning, bolognese, fondo notturno). " +
-    "Puoi anche aiutare a registrare dati nel diario se l'utente te lo chiede. " +
+    "Aiuti l'utente a registrare dati nel Diario via chat. " +
     "Rispondi SEMPRE in italiano, in modo breve (max 5 righe), pratico e amichevole.";
   try {
     const completion = await openrouter.chat.completions.create({
