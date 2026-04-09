@@ -61,3 +61,84 @@ h1, h2, h3, h4, h5, h6 {
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
+
+/* ── Rock ambient animations ─────────────────────────────── */
+
+@keyframes blobPulseOrange {
+  0%   { transform: translate(0,0) scale(1);    opacity: 0.30; filter: blur(80px); }
+  25%  { transform: translate(4%,6%) scale(1.18); opacity: 0.50; filter: blur(60px); }
+  50%  { transform: translate(-6%,3%) scale(0.92); opacity: 0.28; filter: blur(90px); }
+  75%  { transform: translate(8%,-4%) scale(1.25); opacity: 0.45; filter: blur(55px); }
+  100% { transform: translate(0,0) scale(1);    opacity: 0.30; filter: blur(80px); }
+}
+
+@keyframes blobPulsePurple {
+  0%   { transform: translate(0,0) scale(1);     opacity: 0.28; filter: blur(80px); }
+  30%  { transform: translate(-5%,-7%) scale(1.22); opacity: 0.48; filter: blur(58px); }
+  60%  { transform: translate(7%,4%) scale(0.88);  opacity: 0.22; filter: blur(95px); }
+  85%  { transform: translate(-3%,8%) scale(1.30);  opacity: 0.42; filter: blur(50px); }
+  100% { transform: translate(0,0) scale(1);     opacity: 0.28; filter: blur(80px); }
+}
+
+@keyframes blobPulseBlue {
+  0%,100% { opacity: 0.10; transform: scale(1);    filter: blur(100px); }
+  50%     { opacity: 0.22; transform: scale(1.30); filter: blur(70px); }
+}
+
+@keyframes scanlines {
+  0%   { background-position: 0 0; }
+  100% { background-position: 0 100%; }
+}
+
+@keyframes sparkFloat {
+  0%   { transform: translateY(0) scale(1);   opacity: 0.9; }
+  100% { transform: translateY(-120px) scale(0); opacity: 0; }
+}
+
+@keyframes ringPulse {
+  0%   { transform: translate(-50%,-50%) scale(0.85); opacity: 0.18; }
+  50%  { transform: translate(-50%,-50%) scale(1.1);  opacity: 0.35; }
+  100% { transform: translate(-50%,-50%) scale(0.85); opacity: 0.18; }
+}
+
+@keyframes ringPulse2 {
+  0%   { transform: translate(-50%,-50%) scale(1.05); opacity: 0.12; }
+  50%  { transform: translate(-50%,-50%) scale(0.9);  opacity: 0.28; }
+  100% { transform: translate(-50%,-50%) scale(1.05); opacity: 0.12; }
+}
+
+.blob-orange-ambient {
+  animation: blobPulseOrange 7s ease-in-out infinite;
+}
+.blob-purple-ambient {
+  animation: blobPulsePurple 9s ease-in-out infinite;
+  animation-delay: -3s;
+}
+.blob-blue-ambient {
+  animation: blobPulseBlue 11s ease-in-out infinite;
+  animation-delay: -5s;
+}
+.ring-ambient-1 {
+  animation: ringPulse 4s ease-in-out infinite;
+}
+.ring-ambient-2 {
+  animation: ringPulse2 5.5s ease-in-out infinite;
+  animation-delay: -2s;
+}
+.scanlines-overlay {
+  background-image: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 3px,
+    rgba(0,0,0,0.18) 3px,
+    rgba(0,0,0,0.18) 4px
+  );
+  animation: scanlines 8s linear infinite;
+  pointer-events: none;
+}
+.spark {
+  position: absolute;
+  border-radius: 50%;
+  animation: sparkFloat linear infinite;
+  will-change: transform, opacity;
+}

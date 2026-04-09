@@ -260,41 +260,82 @@ export default function VideoTemplate() {
         <video src={`${import.meta.env.BASE_URL}videos/bg-loop.mp4`} autoPlay muted loop playsInline className="w-full h-full object-cover" />
       </div>
 
-      {/* ── Blob arancione (lento, scene-driven) ────────────────── */}
-      <motion.div
-        className="absolute pointer-events-none"
+      {/* ── Blob arancione — CSS ambient (sempre visibile) ──────── */}
+      <div
+        className="absolute pointer-events-none blob-orange-ambient"
         style={{
-          width: '85vw', height: '85vw', borderRadius: '50%',
-          background: 'radial-gradient(circle, #fb923c, transparent 70%)',
-          top: '-25%', left: '-15%', filter: 'blur(80px)',
+          width: '90vw', height: '90vw', borderRadius: '50%',
+          background: 'radial-gradient(circle, #ff6a00 0%, #fb923c 35%, transparent 70%)',
+          top: '-25%', left: '-18%',
         }}
-        animate={{ x: pos.x, y: pos.y, scale: pos.scale, opacity: 0.32 }}
-        transition={{ duration: 8, ease: 'easeInOut' }}
       />
 
-      {/* ── Blob viola (lento, controfase) ──────────────────────── */}
-      <motion.div
-        className="absolute pointer-events-none"
+      {/* ── Blob viola — CSS ambient (controfase) ────────────────── */}
+      <div
+        className="absolute pointer-events-none blob-purple-ambient"
         style={{
-          width: '75vw', height: '75vw', borderRadius: '50%',
-          background: 'radial-gradient(circle, #a855f7, transparent 70%)',
-          bottom: '-15%', right: '-15%', filter: 'blur(80px)',
+          width: '80vw', height: '80vw', borderRadius: '50%',
+          background: 'radial-gradient(circle, #7c3aed 0%, #a855f7 40%, transparent 70%)',
+          bottom: '-18%', right: '-18%',
         }}
-        animate={{ x: pos.y, y: pos.x, scale: bgPositions[(currentScene + 3) % 8].scale, opacity: 0.28 }}
-        transition={{ duration: 10, ease: 'easeInOut' }}
       />
 
-      {/* ── Blob blu (statico, alti) ─────────────────────────────── */}
-      <motion.div
-        className="absolute pointer-events-none"
+      {/* ── Blob blu — CSS ambient ────────────────────────────────── */}
+      <div
+        className="absolute pointer-events-none blob-blue-ambient"
         style={{
-          width: '60vw', height: '60vw', borderRadius: '50%',
-          background: 'radial-gradient(circle, #3b82f6, transparent 70%)',
-          top: '20%', left: '30%', filter: 'blur(100px)',
+          width: '65vw', height: '65vw', borderRadius: '50%',
+          background: 'radial-gradient(circle, #1d4ed8 0%, #3b82f6 40%, transparent 70%)',
+          top: '15%', left: '25%',
         }}
-        animate={{ scale: [1, 1.15, 1], opacity: [0.1, 0.18, 0.1] }}
-        transition={{ duration: 14, repeat: Infinity, ease: 'easeInOut' }}
       />
+
+      {/* ── Anelli ambient sempre visibili ───────────────────────── */}
+      <div
+        className="absolute pointer-events-none ring-ambient-1"
+        style={{
+          width: '105vw', height: '105vw', borderRadius: '50%',
+          border: '1px solid rgba(251,146,60,0.25)',
+          boxShadow: '0 0 40px rgba(251,146,60,0.12)',
+          top: '50%', left: '50%',
+          transform: 'translate(-50%,-50%)',
+        }}
+      />
+      <div
+        className="absolute pointer-events-none ring-ambient-2"
+        style={{
+          width: '80vw', height: '80vw', borderRadius: '50%',
+          border: '1px solid rgba(168,85,247,0.2)',
+          boxShadow: '0 0 30px rgba(168,85,247,0.1)',
+          top: '50%', left: '50%',
+          transform: 'translate(-50%,-50%)',
+        }}
+      />
+
+      {/* ── Spark particles decorative ───────────────────────────── */}
+      {[
+        { left: '12%', bottom: '20%', size: 3, dur: '3.2s', delay: '0s',   color: '#fb923c' },
+        { left: '25%', bottom: '15%', size: 2, dur: '2.7s', delay: '0.6s', color: '#fb923c' },
+        { left: '38%', bottom: '25%', size: 4, dur: '4.0s', delay: '1.2s', color: '#a855f7' },
+        { left: '52%', bottom: '18%', size: 2, dur: '3.5s', delay: '0.3s', color: '#3b82f6' },
+        { left: '66%', bottom: '22%', size: 3, dur: '2.9s', delay: '0.9s', color: '#a855f7' },
+        { left: '78%', bottom: '12%', size: 2, dur: '3.8s', delay: '1.5s', color: '#fb923c' },
+        { left: '88%', bottom: '28%', size: 4, dur: '4.2s', delay: '0.4s', color: '#3b82f6' },
+        { left: '5%',  bottom: '35%', size: 2, dur: '3.1s', delay: '1.8s', color: '#fb923c' },
+      ].map((s, i) => (
+        <div
+          key={i}
+          className="spark"
+          style={{
+            left: s.left, bottom: s.bottom,
+            width: s.size, height: s.size,
+            background: s.color,
+            boxShadow: `0 0 6px 2px ${s.color}88`,
+            animationDuration: s.dur,
+            animationDelay: s.delay,
+          }}
+        />
+      ))}
 
       {/* ── Beat ring 1 — basso/arancione (DOM diretto) ─────────── */}
       <div
