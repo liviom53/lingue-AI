@@ -380,21 +380,37 @@ export function FishingForecastCard({stazioneKey}:{stazioneKey:string}) {
             </div>
             <div className="bg-background rounded-2xl p-4 border border-white/5">
               <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold mb-3">Andamento orario</p>
-              <div className="flex items-end gap-0.5" style={{height:"72px"}}>
-                {hourlyScores.map((v,h)=>(
-                  <div key={h}
-                    className={cn("flex-1 rounded-sm transition-colors",
-                      h===now?"bg-primary":"bg-primary/30 hover:bg-primary/50")}
-                    style={{height:`${Math.max(3, Math.round(v * 0.68))}px`}}/>
-                ))}
-              </div>
-              <div className="flex gap-0.5 mt-1">
-                {hourlyScores.map((_,h)=>(
-                  <div key={h} className="flex-1 flex justify-center">
-                    {h%6===0&&<span className="text-[8px] text-muted-foreground">{h}h</span>}
-                  </div>
-                ))}
-              </div>
+              {(()=>{
+                const W=300,H=64,pad=4;
+                const min=Math.min(...hourlyScores),max=Math.max(...hourlyScores);
+                const range=Math.max(max-min,10);
+                const px=(h:number)=>pad+(h/23)*(W-pad*2);
+                const py=(v:number)=>H-pad-((v-min)/range)*(H-pad*2);
+                const pts=hourlyScores.map((v,h)=>`${px(h).toFixed(1)},${py(v).toFixed(1)}`).join(" ");
+                const area=`M${px(0)},${H} L${pts.split(" ").map((p,i)=>i===0?`${p}`:`L${p}`).join(" ")} L${px(23)},${H} Z`;
+                const nowX=px(now);
+                const nowY=py(hourlyScores[now]);
+                return(
+                  <svg viewBox={`0 0 ${W} ${H}`} className="w-full" style={{height:"72px",overflow:"visible"}}>
+                    <defs>
+                      <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.35"/>
+                        <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0.03"/>
+                      </linearGradient>
+                    </defs>
+                    <path d={area} fill="url(#areaGrad)"/>
+                    <polyline points={pts} fill="none" stroke="hsl(var(--primary))" strokeWidth="1.5" strokeLinejoin="round" strokeLinecap="round"/>
+                    {[0,6,12,18,23].map(h=>(
+                      <line key={h} x1={px(h)} y1={H-2} x2={px(h)} y2={H} stroke="hsl(var(--muted-foreground))" strokeWidth="0.5" opacity="0.4"/>
+                    ))}
+                    <line x1={nowX} y1={pad} x2={nowX} y2={H} stroke="hsl(var(--primary))" strokeWidth="0.8" strokeDasharray="2,2" opacity="0.5"/>
+                    <circle cx={nowX} cy={nowY} r="3" fill="hsl(var(--primary))" stroke="hsl(var(--background))" strokeWidth="1.5"/>
+                    {[0,6,12,18].map(h=>(
+                      <text key={h} x={px(h)} y={H+10} textAnchor="middle" fontSize="7" fill="currentColor" opacity="0.5">{h}h</text>
+                    ))}
+                  </svg>
+                );
+              })()}
             </div>
             <div className={cn("rounded-2xl p-3 border text-sm flex items-center gap-3",
               favWindDir?"bg-green-500/10 border-green-500/20 text-green-300":"bg-amber-500/10 border-amber-500/20 text-amber-300")}>
