@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, lazy, Suspense } from "react";
-import { Switch, Route, Router as WouterRouter } from "wouter";
+import { Switch, Route, Router as WouterRouter, useLocation } from "wouter";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -44,9 +44,105 @@ function PageLoader() {
   );
 }
 
+function BalloonDonation() {
+  const [, navigate] = useLocation();
+  const [balloonStopped, setBalloonStopped] = useState(false);
+  const balloonRafRef = useRef<number | null>(null);
+  const balloonRestartRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const balloonElRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (balloonStopped) return;
+    const W = window.innerWidth, H = window.innerHeight;
+    const cx = W * 0.5, cy = H * 0.5;
+    const ax = W * 0.38, ay = H * 0.35;
+    const start = performance.now();
+    const tick = (now: number) => {
+      const t = (now - start) / 1000;
+      const x = cx + ax * Math.sin(0.12 * t);
+      const y = cy + ay * Math.sin(0.17 * t + 1.1);
+      if (balloonElRef.current) {
+        balloonElRef.current.style.left = `${x}px`;
+        balloonElRef.current.style.top = `${y}px`;
+      }
+      balloonRafRef.current = requestAnimationFrame(tick);
+    };
+    balloonRafRef.current = requestAnimationFrame(tick);
+    return () => { if (balloonRafRef.current) cancelAnimationFrame(balloonRafRef.current); };
+  }, [balloonStopped]);
+
+  function handleClick() {
+    setBalloonStopped(true);
+    if (balloonRafRef.current) cancelAnimationFrame(balloonRafRef.current);
+    navigate("/donazioni");
+    if (balloonRestartRef.current) clearTimeout(balloonRestartRef.current);
+    balloonRestartRef.current = setTimeout(() => setBalloonStopped(false), 15 * 60 * 1000);
+  }
+
+  return (
+    <div
+      ref={balloonElRef}
+      role="button"
+      tabIndex={0}
+      onClick={handleClick}
+      onKeyDown={e => { if (e.key === "Enter") handleClick(); }}
+      aria-label="Sostieni il progetto con una donazione"
+      style={{
+        position: "fixed",
+        left: window.innerWidth - 180,
+        top: window.innerHeight - 80,
+        zIndex: 9990,
+        cursor: "pointer",
+        userSelect: "none",
+        animation: balloonStopped ? "none" : "balloonShow 67s linear infinite",
+        opacity: balloonStopped ? 0 : undefined,
+        pointerEvents: balloonStopped ? "none" : undefined,
+      }}
+    >
+      <div style={{
+        background: "#1e293b",
+        border: "1.5px solid #475569",
+        borderRadius: "16px",
+        padding: "8px 14px",
+        fontSize: "0.82rem",
+        color: "#e2e8f0",
+        whiteSpace: "nowrap",
+        boxShadow: "0 4px 16px rgba(0,0,0,0.45)",
+        display: "flex",
+        alignItems: "center",
+        gap: "6px",
+      }}>
+        <span style={{ fontSize: "1.1rem" }}>☕</span>
+        <span>Sostieni il progetto</span>
+      </div>
+      <div style={{
+        position: "absolute",
+        bottom: "-9px",
+        right: "18px",
+        width: 0,
+        height: 0,
+        borderLeft: "8px solid transparent",
+        borderRight: "8px solid transparent",
+        borderTop: "10px solid #475569",
+      }} />
+      <div style={{
+        position: "absolute",
+        bottom: "-7px",
+        right: "19px",
+        width: 0,
+        height: 0,
+        borderLeft: "7px solid transparent",
+        borderRight: "7px solid transparent",
+        borderTop: "9px solid #1e293b",
+      }} />
+    </div>
+  );
+}
+
 function Router({ onLogoTap }: { onLogoTap: () => void }) {
   return (
     <AppLayout onLogoTap={onLogoTap}>
+      <BalloonDonation />
       <Suspense fallback={<PageLoader />}>
         <Switch>
           <Route path="/" component={Dashboard} />
