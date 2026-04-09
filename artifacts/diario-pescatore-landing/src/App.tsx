@@ -102,7 +102,7 @@ export default function App() {
             </h1>
           </div>
           <p style={{ margin: 0, fontSize: '1rem', color: '#94a3b8', lineHeight: 1.5 }}>
-            Il tuo compagno di pesca AI — gratuito,<br />offline e sempre con te.
+            Il tuo compagno di pesca AI — gratuito<br />e sempre con te.
           </p>
           <p style={{ margin: '8px 0 0', fontSize: '0.78rem', color: '#0ea5e9', fontStyle: 'italic' }}>
             "Ad Maiora Semper"
