@@ -69,7 +69,7 @@ function importData() {
   input.click();
 }
 
-export function AppLayout({ children }: { children: React.ReactNode }) {
+export function AppLayout({ children, onLogoTap }: { children: React.ReactNode; onLogoTap?: () => void }) {
   const [location] = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -84,7 +84,10 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
       <aside className="hidden md:flex flex-col w-64 bg-sidebar border-r border-sidebar-border shadow-2xl z-20 shrink-0">
         <div className="p-5 pb-2 border-b border-sidebar-border">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-blue-600 flex items-center justify-center shadow-lg shadow-primary/20 text-xl">
+            <div
+              className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-blue-600 flex items-center justify-center shadow-lg shadow-primary/20 text-xl cursor-pointer select-none"
+              onClick={onLogoTap}
+            >
               🎣
             </div>
             <div>
@@ -151,7 +154,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
 
         {/* SCAN FAB */}
         <button
-          onClick={() => setIsMobileMenuOpen(true)}
+          onClick={() => { setIsMobileMenuOpen(true); onLogoTap?.(); }}
           className="relative -top-5 flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-tr from-primary to-blue-500 shadow-[0_0_24px_hsla(175,80%,40%,0.5)] border-4 border-background text-white hover:scale-105 active:scale-95 transition-all duration-200"
         >
           <span className="text-2xl">🎣</span>
