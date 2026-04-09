@@ -2193,6 +2193,7 @@ export default function App() {
                 return (
                   <button
                     key={key}
+                    aria-pressed={active}
                     onClick={() => setSelectedLevel(active ? null : key)}
                     style={{
                       flex: 1,
