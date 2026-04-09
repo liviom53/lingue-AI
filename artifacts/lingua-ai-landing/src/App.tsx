@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
 
 const APP_URL = 'https://web-app-creator--liviomazzocchi.replit.app/lingua-ai/';
@@ -31,6 +31,14 @@ const stepsIos = [
 export default function App() {
   const [copied, setCopied] = useState(false);
   const [tab, setTab] = useState<'android' | 'ios'>('android');
+
+  useEffect(() => {
+    const SESSION_KEY = 'landing_view_tracked';
+    if (!sessionStorage.getItem(SESSION_KEY)) {
+      sessionStorage.setItem(SESSION_KEY, '1');
+      fetch('/api/stats/track/landing_view', { method: 'POST' }).catch(() => {});
+    }
+  }, []);
 
   const copyUrl = () => {
     navigator.clipboard.writeText(APP_URL).then(() => {

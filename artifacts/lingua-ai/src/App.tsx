@@ -268,6 +268,16 @@ export default function App() {
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [fromCache, setFromCache] = useState(false);
 
+  // ── Pannello admin segreto ──────────────────────────────────────────────────
+  const [adminOpen, setAdminOpen] = useState(false);
+  const [adminAuthenticated, setAdminAuthenticated] = useState(false);
+  const [adminInput, setAdminInput] = useState('');
+  const [adminStats, setAdminStats] = useState<any[]>([]);
+  const [adminLoading, setAdminLoading] = useState(false);
+  const [adminError, setAdminError] = useState<string | null>(null);
+  const logoTapCountRef = useRef(0);
+  const logoTapTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   // ── Aggiornamento PWA ───────────────────────────────────────────────────────
   const {
     needRefresh: [needRefresh],
@@ -346,6 +356,61 @@ export default function App() {
     document.addEventListener('visibilitychange', onVisible);
     return () => document.removeEventListener('visibilitychange', onVisible);
   }, []);
+
+  // ── Tracking apertura app + installazione ───────────────────────────────────
+  useEffect(() => {
+    const SESSION_OPEN_KEY = 'app_open_tracked';
+    if (!sessionStorage.getItem(SESSION_OPEN_KEY)) {
+      sessionStorage.setItem(SESSION_OPEN_KEY, '1');
+      fetch('/api/stats/track/app_open', { method: 'POST' }).catch(() => {});
+    }
+    const onInstalled = () => {
+      fetch('/api/stats/track/app_installed', { method: 'POST' }).catch(() => {});
+    };
+    window.addEventListener('appinstalled', onInstalled);
+    return () => window.removeEventListener('appinstalled', onInstalled);
+  }, []);
+
+  // ── Scorciatoia tastiera admin: Ctrl+Shift+A ────────────────────────────────
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.ctrlKey && e.shiftKey && e.key === 'A') {
+        e.preventDefault();
+        setAdminOpen(true);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  // ── 7 tap sul logo per aprire il pannello admin (mobile) ────────────────────
+  const handleLogoTap = () => {
+    logoTapCountRef.current += 1;
+    if (logoTapTimerRef.current) clearTimeout(logoTapTimerRef.current);
+    logoTapTimerRef.current = setTimeout(() => { logoTapCountRef.current = 0; }, 2500);
+    if (logoTapCountRef.current >= 7) {
+      logoTapCountRef.current = 0;
+      if (logoTapTimerRef.current) clearTimeout(logoTapTimerRef.current);
+      setAdminOpen(true);
+    }
+  };
+
+  // ── Login e fetch stats admin ───────────────────────────────────────────────
+  const adminLogin = async () => {
+    setAdminLoading(true);
+    setAdminError(null);
+    try {
+      const res = await fetch(`/api/stats?password=${encodeURIComponent(adminInput)}`);
+      if (!res.ok) throw new Error('Password errata');
+      const data = await res.json();
+      setAdminStats(data.stats);
+      setAdminAuthenticated(true);
+    } catch (e: any) {
+      setAdminError(e.message ?? 'Errore');
+    } finally {
+      setAdminLoading(false);
+    }
+  };
 
   const forceUpdate = async () => {
     setUpdateStep('Preparazione…');
@@ -1510,7 +1575,7 @@ export default function App() {
     <div style={styles.main}>
       <div style={{ maxWidth: '500px', margin: '0 auto' }}>
         <header style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '12px', marginBottom: '10px' }}>
-          <img src={appIcon} alt="Impara una Lingua" style={{ width: '80px', height: '80px', borderRadius: '14px', flexShrink: 0 }} />
+          <img src={appIcon} alt="Impara una Lingua" onClick={handleLogoTap} style={{ width: '80px', height: '80px', borderRadius: '14px', flexShrink: 0, cursor: 'pointer', userSelect: 'none' }} />
           <div style={{ minWidth: 0, flex: 1 }}>
             <h1 style={{ margin: 0, fontSize: 'clamp(1rem, 5vw, 1.9rem)', lineHeight: 1.2 }}>Impara una lingua con l&apos;AI</h1>
             <p style={{ color: '#f97316', fontSize: 'clamp(0.8rem, 3.8vw, 1.45rem)', margin: '4px 0 0' }}>Inizia a parlarla male... poi si vedrà</p>
@@ -4134,6 +4199,103 @@ export default function App() {
           </div>
 
         </>
+      )}
+
+      {/* ── Pannello admin segreto ─────────────────────────────────────────── */}
+      {adminOpen && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 999999,
+          background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(6px)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          padding: '16px',
+        }} onClick={() => { setAdminOpen(false); setAdminAuthenticated(false); setAdminInput(''); setAdminError(null); }}>
+          <div onClick={e => e.stopPropagation()} style={{
+            background: '#0f172a', border: '1px solid #334155',
+            borderRadius: '20px', padding: '24px', width: '100%', maxWidth: '420px',
+            maxHeight: '80vh', overflowY: 'auto',
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+              <h2 style={{ margin: 0, fontSize: '1rem', fontWeight: 800, color: '#f8fafc' }}>🔐 Pannello statistiche</h2>
+              <button onClick={() => { setAdminOpen(false); setAdminAuthenticated(false); setAdminInput(''); setAdminError(null); }}
+                style={{ background: 'none', border: 'none', color: '#64748b', cursor: 'pointer', fontSize: '1.2rem', lineHeight: 1 }}>✕</button>
+            </div>
+
+            {!adminAuthenticated ? (
+              <div>
+                <p style={{ fontSize: '0.82rem', color: '#94a3b8', marginBottom: '12px' }}>Inserisci la password per vedere le statistiche.</p>
+                <input
+                  type="password"
+                  value={adminInput}
+                  onChange={e => setAdminInput(e.target.value)}
+                  onKeyDown={e => e.key === 'Enter' && adminLogin()}
+                  placeholder="Password…"
+                  autoFocus
+                  style={{
+                    width: '100%', padding: '10px 14px', borderRadius: '10px',
+                    background: '#1e293b', border: '1px solid #334155',
+                    color: '#f8fafc', fontSize: '0.9rem', marginBottom: '12px',
+                    outline: 'none', boxSizing: 'border-box',
+                  }}
+                />
+                {adminError && <p style={{ color: '#f87171', fontSize: '0.8rem', marginBottom: '10px' }}>❌ {adminError}</p>}
+                <button
+                  onClick={adminLogin}
+                  disabled={adminLoading || !adminInput}
+                  style={{
+                    width: '100%', padding: '10px', borderRadius: '10px', border: 'none',
+                    background: adminLoading || !adminInput ? '#1e293b' : 'linear-gradient(135deg,#fb923c,#a855f7)',
+                    color: adminLoading || !adminInput ? '#475569' : '#fff',
+                    fontWeight: 700, cursor: adminLoading || !adminInput ? 'not-allowed' : 'pointer',
+                    fontSize: '0.88rem',
+                  }}
+                >
+                  {adminLoading ? 'Verifica…' : '🔓 Accedi'}
+                </button>
+              </div>
+            ) : (
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                  <p style={{ margin: 0, fontSize: '0.78rem', color: '#64748b' }}>Dati dal database — aggiornati in tempo reale</p>
+                  <button onClick={adminLogin} style={{ background: 'none', border: 'none', color: '#60a5fa', cursor: 'pointer', fontSize: '0.75rem' }}>🔄 Aggiorna</button>
+                </div>
+                {adminStats.length === 0 ? (
+                  <p style={{ color: '#94a3b8', fontSize: '0.85rem' }}>Nessun dato ancora registrato.</p>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                    {adminStats.map((row: any) => {
+                      const labels: Record<string, string> = {
+                        app_open: '📱 Aperture app',
+                        app_installed: '⬇️ Installazioni (Android)',
+                        landing_view: '🔗 Visite landing page',
+                        ai_call: '🤖 Chiamate AI',
+                      };
+                      return (
+                        <div key={row.event_name} style={{
+                          background: '#1e293b', borderRadius: '12px', padding: '14px',
+                          border: '1px solid #334155',
+                        }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
+                            <span style={{ fontWeight: 700, fontSize: '0.88rem', color: '#f8fafc' }}>{labels[row.event_name] ?? row.event_name}</span>
+                            <span style={{ fontWeight: 900, fontSize: '1.4rem', color: '#fb923c' }}>{row.total}</span>
+                          </div>
+                          <div style={{ display: 'flex', gap: '12px', fontSize: '0.72rem', color: '#64748b' }}>
+                            <span>Oggi: <strong style={{ color: '#94a3b8' }}>{row.last_24h}</strong></span>
+                            <span>7 giorni: <strong style={{ color: '#94a3b8' }}>{row.last_7d}</strong></span>
+                          </div>
+                          {row.last_event && (
+                            <div style={{ fontSize: '0.68rem', color: '#475569', marginTop: '4px' }}>
+                              Ultimo: {new Date(row.last_event).toLocaleString('it-IT')}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
       )}
 
       {/* Cursore animato demo — segue i punti di interesse */}
