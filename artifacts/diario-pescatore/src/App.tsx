@@ -114,7 +114,6 @@ function App() {
   const [adminDaily, setAdminDaily] = useState<DailyRow[]>([]);
   const [adminFirstEvent, setAdminFirstEvent] = useState<string | null>(null);
   const [adminLoading, setAdminLoading] = useState(false);
-  const [confirmClear, setConfirmClear] = useState(false);
 
   const logoTapCountRef = useRef(0);
   const logoTapTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -181,7 +180,6 @@ function App() {
     setAdminAuthenticated(false);
     setAdminInput("");
     setAdminError(null);
-    setConfirmClear(false);
   };
 
   const adminLogin = async () => {
@@ -200,12 +198,6 @@ function App() {
     } finally {
       setAdminLoading(false);
     }
-  };
-
-  const clearAllData = () => {
-    const keys = ["diario_uscite", "diario_catture", "diario_spot", "diario_attrezzatura", "diario_ricette", "diario_veicoli", "diario_finanze"];
-    keys.forEach(k => localStorage.removeItem(k));
-    setConfirmClear(false);
   };
 
   const totalEvents = adminStats.reduce((s, r) => s + Number(r.total), 0);
@@ -401,38 +393,6 @@ function App() {
                     <span style={{ fontSize: "1rem", fontWeight: 800, color: "#0ea5e9" }}>V{__APP_VERSION__}</span>
                   </div>
 
-                  {/* Zona pericolosa */}
-                  <div style={{ borderTop: "1px solid #1e293b", paddingTop: "16px" }}>
-                    <div style={{ fontSize: "0.72rem", color: "#64748b", marginBottom: "8px", textTransform: "uppercase", letterSpacing: "0.06em" }}>⚠️ Zona pericolosa</div>
-                    {!confirmClear ? (
-                      <button
-                        onClick={() => setConfirmClear(true)}
-                        style={{
-                          width: "100%", padding: "9px", borderRadius: "10px", border: "1px solid #7f1d1d",
-                          background: "transparent", color: "#f87171",
-                          fontWeight: 600, cursor: "pointer", fontSize: "0.85rem",
-                        }}
-                      >
-                        🗑️ Cancella tutti i dati locali
-                      </button>
-                    ) : (
-                      <div>
-                        <p style={{ fontSize: "0.8rem", color: "#fbbf24", marginBottom: "10px" }}>
-                          Sei sicuro? Questa operazione è irreversibile.
-                        </p>
-                        <div style={{ display: "flex", gap: "8px" }}>
-                          <button
-                            onClick={() => setConfirmClear(false)}
-                            style={{ flex: 1, padding: "9px", borderRadius: "10px", border: "1px solid #334155", background: "#1e293b", color: "#94a3b8", cursor: "pointer", fontSize: "0.85rem" }}
-                          >Annulla</button>
-                          <button
-                            onClick={clearAllData}
-                            style={{ flex: 1, padding: "9px", borderRadius: "10px", border: "none", background: "#dc2626", color: "#fff", fontWeight: 700, cursor: "pointer", fontSize: "0.85rem" }}
-                          >Sì, cancella tutto</button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
                 </div>
               )}
             </div>
