@@ -67,17 +67,19 @@ export default function App() {
 
         {/* Hero */}
         <div style={{ textAlign: 'center', padding: '32px 0 24px' }}>
-          <img
-            src="/lingua-ai-landing/icon-192.png"
-            alt="Lingue & AI"
-            style={{ width: '80px', height: '80px', borderRadius: '20px', marginBottom: '12px', boxShadow: '0 8px 32px #a855f766' }}
-          />
-          <h1 style={{ margin: '0 0 8px', fontSize: '2rem', fontWeight: 900,
-            background: 'linear-gradient(90deg, #fb923c, #a855f7)',
-            WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
-          }}>
-            Lingue &amp; AI
-          </h1>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '14px', marginBottom: '12px' }}>
+            <img
+              src="/lingua-ai-landing/icon-192.png"
+              alt="Lingue & AI"
+              style={{ width: '64px', height: '64px', borderRadius: '16px', boxShadow: '0 8px 32px #a855f766', flexShrink: 0 }}
+            />
+            <h1 style={{ margin: 0, fontSize: '2rem', fontWeight: 900,
+              background: 'linear-gradient(90deg, #fb923c, #a855f7)',
+              WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+            }}>
+              Lingue &amp; AI
+            </h1>
+          </div>
           <p style={{ margin: 0, fontSize: '1rem', color: '#94a3b8', lineHeight: 1.5 }}>
             Impara 29+ lingue con AI, pronuncia IPA,<br />shadowing e molto altro — gratis.
           </p>
