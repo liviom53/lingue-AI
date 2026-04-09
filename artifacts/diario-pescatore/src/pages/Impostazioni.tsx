@@ -69,7 +69,7 @@ export default function Impostazioni() {
           <h2 className="font-semibold text-base">Il tuo spot principale</h2>
         </div>
 
-        <div className="flex items-start gap-2 bg-primary/5 border border-primary/15 rounded-xl p-3 text-xs text-muted-foreground">
+        <div className="flex items-start gap-2 bg-primary/5 border border-primary/15 rounded-xl p-3 text-sm text-muted-foreground">
           <Info className="w-4 h-4 text-primary mt-0.5 shrink-0" />
           <span>
             Descrivi il tuo posto di pesca abituale: profondità, caratteristiche, specie presenti, sfide comuni.
@@ -91,7 +91,7 @@ export default function Impostazioni() {
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-muted-foreground mb-1.5">
+            <label className="block text-sm font-medium text-muted-foreground mb-1.5">
               Descrizione ({spot.descrizione.length}/600 caratteri)
             </label>
             <textarea
