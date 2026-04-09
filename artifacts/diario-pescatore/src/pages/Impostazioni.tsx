@@ -57,8 +57,8 @@ export default function Impostazioni() {
           <Settings className="w-5 h-5 text-primary" />
         </div>
         <div>
-          <h1 className="text-2xl font-bold">Impostazioni</h1>
-          <p className="text-sm text-muted-foreground">Personalizza l'esperienza dell'app</p>
+          <h1 className="text-2xl font-bold">Impostazioni Spot AI</h1>
+          <p className="text-sm text-muted-foreground">Personalizza l'esperienza dell'App con AI</p>
         </div>
       </div>
 
@@ -127,7 +127,7 @@ export default function Impostazioni() {
               />
             </div>
           </div>
-          <p className="text-[11px] text-muted-foreground/50">
+          <p className="text-sm text-muted-foreground/70">
             Le coordinate servono per ottenere le condizioni marine reali nella tua zona.
             Puoi trovarle su Google Maps tenendo premuto sulla posizione.
           </p>

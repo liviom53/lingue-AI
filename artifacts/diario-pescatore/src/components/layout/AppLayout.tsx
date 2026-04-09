@@ -22,7 +22,7 @@ const NAV_ITEMS = [
   { href: "/ai", label: "Assistente AI", icon: Bot, emoji: "🤖" },
   { href: "/parco-auto", label: "Parco Auto", icon: Car, emoji: "🚗" },
   { href: "/finanze", label: "Finanze", icon: Wallet, emoji: "💰" },
-  { href: "/impostazioni", label: "Impostazioni", icon: Settings, emoji: "⚙️" },
+  { href: "/impostazioni", label: "Impostazioni Spot AI", icon: Settings, emoji: "⚙️" },
   { href: "/donazioni", label: "Donazioni", icon: Heart, emoji: "❤️" },
 ];
 
