@@ -273,6 +273,8 @@ export default function App() {
   const [adminAuthenticated, setAdminAuthenticated] = useState(false);
   const [adminInput, setAdminInput] = useState('');
   const [adminStats, setAdminStats] = useState<any[]>([]);
+  const [adminDaily, setAdminDaily] = useState<any[]>([]);
+  const [adminFirstEvent, setAdminFirstEvent] = useState<string | null>(null);
   const [adminLoading, setAdminLoading] = useState(false);
   const [adminError, setAdminError] = useState<string | null>(null);
   const logoTapCountRef = useRef(0);
@@ -359,13 +361,15 @@ export default function App() {
 
   // ── Tracking apertura app + installazione ───────────────────────────────────
   useEffect(() => {
+    let sid = localStorage.getItem('_app_sid');
+    if (!sid) { sid = crypto.randomUUID(); localStorage.setItem('_app_sid', sid); }
     const SESSION_OPEN_KEY = 'app_open_tracked';
     if (!sessionStorage.getItem(SESSION_OPEN_KEY)) {
       sessionStorage.setItem(SESSION_OPEN_KEY, '1');
-      fetch('/api/stats/track/app_open', { method: 'POST' }).catch(() => {});
+      fetch('/api/stats/track/app_open', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ session_id: sid }) }).catch(() => {});
     }
     const onInstalled = () => {
-      fetch('/api/stats/track/app_installed', { method: 'POST' }).catch(() => {});
+      fetch('/api/stats/track/app_installed', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ session_id: sid }) }).catch(() => {});
     };
     window.addEventListener('appinstalled', onInstalled);
     return () => window.removeEventListener('appinstalled', onInstalled);
@@ -404,6 +408,8 @@ export default function App() {
       if (!res.ok) throw new Error('Password errata');
       const data = await res.json();
       setAdminStats(data.stats);
+      setAdminDaily(data.daily ?? []);
+      setAdminFirstEvent(data.first_event ?? null);
       setAdminAuthenticated(true);
     } catch (e: any) {
       setAdminError(e.message ?? 'Errore');
@@ -4252,48 +4258,121 @@ export default function App() {
                   {adminLoading ? 'Verifica…' : '🔓 Accedi'}
                 </button>
               </div>
-            ) : (
-              <div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                  <p style={{ margin: 0, fontSize: '0.78rem', color: '#64748b' }}>Dati dal database — aggiornati in tempo reale</p>
-                  <button onClick={adminLogin} style={{ background: 'none', border: 'none', color: '#60a5fa', cursor: 'pointer', fontSize: '0.75rem' }}>🔄 Aggiorna</button>
-                </div>
-                {adminStats.length === 0 ? (
-                  <p style={{ color: '#94a3b8', fontSize: '0.85rem' }}>Nessun dato ancora registrato.</p>
-                ) : (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                    {adminStats.map((row: any) => {
-                      const labels: Record<string, string> = {
-                        app_open: '📱 Aperture app',
-                        app_installed: '⬇️ Installazioni (Android)',
-                        landing_view: '🔗 Visite landing page',
-                        ai_call: '🤖 Chiamate AI',
-                      };
-                      return (
-                        <div key={row.event_name} style={{
-                          background: '#1e293b', borderRadius: '12px', padding: '14px',
-                          border: '1px solid #334155',
-                        }}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
-                            <span style={{ fontWeight: 700, fontSize: '0.88rem', color: '#f8fafc' }}>{labels[row.event_name] ?? row.event_name}</span>
-                            <span style={{ fontWeight: 900, fontSize: '1.4rem', color: '#fb923c' }}>{row.total}</span>
-                          </div>
-                          <div style={{ display: 'flex', gap: '12px', fontSize: '0.72rem', color: '#64748b' }}>
-                            <span>Oggi: <strong style={{ color: '#94a3b8' }}>{row.last_24h}</strong></span>
-                            <span>7 giorni: <strong style={{ color: '#94a3b8' }}>{row.last_7d}</strong></span>
-                          </div>
-                          {row.last_event && (
-                            <div style={{ fontSize: '0.68rem', color: '#475569', marginTop: '4px' }}>
-                              Ultimo: {new Date(row.last_event).toLocaleString('it-IT')}
+            ) : (() => {
+                const labels: Record<string, string> = {
+                  app_open: '📱 Aperture app',
+                  app_installed: '⬇️ Installazioni Android',
+                  landing_view: '🔗 Visite landing page',
+                  ai_call: '🤖 Chiamate AI',
+                };
+                const totalEvents = adminStats.reduce((s, r) => s + Number(r.total), 0);
+                const last7Days = Array.from({ length: 7 }, (_, i) => {
+                  const d = new Date(); d.setDate(d.getDate() - (6 - i));
+                  return d.toISOString().split('T')[0];
+                });
+                return (
+                  <div>
+                    {/* Intestazione */}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
+                      <div>
+                        <div style={{ fontSize: '0.7rem', color: '#64748b' }}>Totale eventi</div>
+                        <div style={{ fontSize: '1.6rem', fontWeight: 900, color: '#fb923c', lineHeight: 1 }}>{totalEvents}</div>
+                      </div>
+                      <div style={{ textAlign: 'right' }}>
+                        {adminFirstEvent && <div style={{ fontSize: '0.65rem', color: '#475569' }}>Dal {new Date(adminFirstEvent).toLocaleDateString('it-IT')}</div>}
+                        <button onClick={adminLogin} style={{ background: 'none', border: 'none', color: '#60a5fa', cursor: 'pointer', fontSize: '0.72rem', padding: 0 }}>🔄 Aggiorna</button>
+                      </div>
+                    </div>
+
+                    {adminStats.length === 0 ? (
+                      <p style={{ color: '#94a3b8', fontSize: '0.85rem' }}>Nessun dato ancora registrato.</p>
+                    ) : (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                        {adminStats.map((row: any) => {
+                          const trend7d = Number(row.prev_7d) === 0
+                            ? null
+                            : Math.round(((Number(row.last_7d) - Number(row.prev_7d)) / Number(row.prev_7d)) * 100);
+
+                          const dailyForEvent = last7Days.map(day => {
+                            const found = adminDaily.find((d: any) => d.event_name === row.event_name && d.day?.startsWith(day));
+                            return found ? Number(found.count) : 0;
+                          });
+                          const maxDay = Math.max(...dailyForEvent, 1);
+
+                          return (
+                            <div key={row.event_name} style={{
+                              background: '#1e293b', borderRadius: '14px', padding: '14px',
+                              border: '1px solid #334155',
+                            }}>
+                              {/* Titolo + totale */}
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '10px' }}>
+                                <span style={{ fontWeight: 700, fontSize: '0.85rem', color: '#f8fafc' }}>{labels[row.event_name] ?? row.event_name}</span>
+                                <span style={{ fontWeight: 900, fontSize: '1.5rem', color: '#fb923c', lineHeight: 1 }}>{row.total}</span>
+                              </div>
+
+                              {/* Grafico a barre — 7 giorni */}
+                              <div style={{ display: 'flex', gap: '3px', alignItems: 'flex-end', height: '36px', marginBottom: '8px' }}>
+                                {dailyForEvent.map((count, i) => (
+                                  <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-end', height: '100%' }}>
+                                    <div style={{
+                                      width: '100%', borderRadius: '3px 3px 0 0',
+                                      height: `${Math.max(count === 0 ? 4 : Math.round((count / maxDay) * 100), count === 0 ? 4 : 8)}%`,
+                                      background: count === 0
+                                        ? '#1e293b'
+                                        : i === 6
+                                          ? 'linear-gradient(180deg,#fb923c,#f97316)'
+                                          : 'linear-gradient(180deg,#6366f1,#4f46e5)',
+                                      opacity: count === 0 ? 0.3 : 1,
+                                    }} title={`${last7Days[i]}: ${count}`} />
+                                  </div>
+                                ))}
+                              </div>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.58rem', color: '#475569', marginBottom: '8px' }}>
+                                <span>{new Date(last7Days[0]).toLocaleDateString('it-IT', { day: 'numeric', month: 'short' })}</span>
+                                <span>oggi</span>
+                              </div>
+
+                              {/* Metriche */}
+                              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                                {[
+                                  { label: 'Oggi', value: row.last_24h },
+                                  { label: '7 giorni', value: row.last_7d },
+                                  { label: '30 giorni', value: row.last_30d },
+                                  { label: 'Univoci', value: row.unique_sessions || '—' },
+                                ].map(({ label, value }) => (
+                                  <div key={label} style={{
+                                    flex: '1', minWidth: '50px', background: '#0f172a',
+                                    borderRadius: '8px', padding: '6px 8px', textAlign: 'center',
+                                    border: '1px solid #1e293b',
+                                  }}>
+                                    <div style={{ fontSize: '0.65rem', color: '#475569', marginBottom: '2px' }}>{label}</div>
+                                    <div style={{ fontSize: '0.9rem', fontWeight: 700, color: '#e2e8f0' }}>{value}</div>
+                                  </div>
+                                ))}
+                              </div>
+
+                              {/* Trend + ultimo evento */}
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '8px' }}>
+                                {trend7d !== null && (
+                                  <span style={{ fontSize: '0.7rem', fontWeight: 700, color: trend7d >= 0 ? '#10b981' : '#f87171' }}>
+                                    {trend7d >= 0 ? '▲' : '▼'} {Math.abs(trend7d)}% vs 7gg prec.
+                                  </span>
+                                )}
+                                {row.last_event && (
+                                  <span style={{ fontSize: '0.63rem', color: '#475569' }}>
+                                    Ultimo: {new Date(row.last_event).toLocaleString('it-IT', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}
+                                  </span>
+                                )}
+                              </div>
                             </div>
-                          )}
-                        </div>
-                      );
-                    })}
+                          );
+                        })}
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
-            )}
+                );
+              })()
+            }
           </div>
         </div>
       )}

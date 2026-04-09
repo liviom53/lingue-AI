@@ -33,10 +33,16 @@ export default function App() {
   const [tab, setTab] = useState<'android' | 'ios'>('android');
 
   useEffect(() => {
+    let sid = localStorage.getItem('_app_sid');
+    if (!sid) { sid = crypto.randomUUID(); localStorage.setItem('_app_sid', sid); }
     const SESSION_KEY = 'landing_view_tracked';
     if (!sessionStorage.getItem(SESSION_KEY)) {
       sessionStorage.setItem(SESSION_KEY, '1');
-      fetch('/api/stats/track/landing_view', { method: 'POST' }).catch(() => {});
+      fetch('/api/stats/track/landing_view', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ session_id: sid }),
+      }).catch(() => {});
     }
   }, []);
 
