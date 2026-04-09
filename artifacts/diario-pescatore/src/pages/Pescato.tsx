@@ -1,8 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { pescatoAPI, spotAPI } from "@/hooks/use-local-data";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
-import { Plus, Trash2, Edit2, Fish, Scale, Ruler, Camera, RotateCcw } from "lucide-react";
+import { Plus, Trash2, Edit2, Fish, Scale, Ruler, Camera, RotateCcw, ScanLine, Loader2, CheckCircle, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 const SPECIE_LIST = [
@@ -35,6 +35,12 @@ export default function Pescato() {
     data: "", specie: "", peso: "", lunghezza: "", spotId: "",
     catchAndRelease: false, note: "", foto: ""
   });
+
+  const [scanState, setScanState] = useState<"idle" | "loading" | "result">("idle");
+  const [scanResult, setScanResult] = useState<{ specie: string; nome_scientifico: string; descrizione: string; peso_tipico: string; lunghezza_tipica: string } | null>(null);
+  const [scanPhoto, setScanPhoto] = useState<string>("");
+  const [scanError, setScanError] = useState<string>("");
+  const scanInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const raw = localStorage.getItem("_diario_scan_result");
@@ -106,6 +112,80 @@ export default function Pescato() {
     }
   };
 
+  const matchSpecie = (ai: string): string => {
+    const norm = ai.toLowerCase().trim();
+    for (const s of SPECIE_LIST) {
+      if (s === "Altra specie") continue;
+      const parts = s.toLowerCase().split("/");
+      if (parts.some(p => norm.includes(p) || p.includes(norm))) return s;
+    }
+    return "Altra specie";
+  };
+
+  const handleScanPhoto = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (scanInputRef.current) scanInputRef.current.value = "";
+    const reader = new FileReader();
+    reader.onload = async () => {
+      const base64 = reader.result as string;
+      setScanPhoto(base64);
+      setScanState("loading");
+      setScanError("");
+      try {
+        const res = await fetch("/api/ai/scan-fish", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ imageBase64: base64 }),
+        });
+        const data = await res.json();
+        if (data.riconosciuto) {
+          setScanResult({
+            specie: matchSpecie(data.specie),
+            nome_scientifico: data.nome_scientifico ?? "",
+            descrizione: data.descrizione ?? "",
+            peso_tipico: data.peso_tipico ?? "",
+            lunghezza_tipica: data.lunghezza_tipica ?? "",
+          });
+          setScanState("result");
+        } else {
+          setScanError(data.messaggio ?? "Specie non riconosciuta.");
+          setScanState("result");
+          setScanResult(null);
+        }
+      } catch {
+        setScanError("Errore di connessione. Riprova.");
+        setScanState("result");
+        setScanResult(null);
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleCompilaFromScan = () => {
+    if (!scanResult) return;
+    const today = new Date().toISOString().split("T")[0];
+    setFormData(f => ({
+      ...f,
+      specie: scanResult.specie,
+      foto: scanPhoto,
+      data: today,
+      note: scanResult.nome_scientifico ? `${scanResult.nome_scientifico}` : f.note,
+    }));
+    setScanState("idle");
+    setScanResult(null);
+    setScanPhoto("");
+    setIsFormOpen(true);
+    setEditingId(null);
+  };
+
+  const resetScan = () => {
+    setScanState("idle");
+    setScanResult(null);
+    setScanPhoto("");
+    setScanError("");
+  };
+
   if (isLoading) return <div className="p-8 text-center animate-pulse text-primary">Caricamento...</div>;
 
   const pesoTotale = catture.reduce((sum: number, c: any) => sum + (parseFloat(c.peso) || 0), 0);
@@ -117,14 +197,74 @@ export default function Pescato() {
           <h1 className="text-3xl font-display font-bold">Pescato</h1>
           <p className="text-muted-foreground">{catture.length} catture · {pesoTotale.toFixed(1)} kg totali</p>
         </div>
-        <button
-          onClick={() => { setIsFormOpen(!isFormOpen); setEditingId(null); }}
-          className="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-xl font-medium hover:bg-primary/90 transition-colors shadow-lg shadow-primary/20"
-        >
-          <Plus className="w-5 h-5" />
-          <span className="hidden sm:inline">Nuova Cattura</span>
-        </button>
+        <div className="flex items-center gap-2">
+          <label className={`flex items-center gap-2 px-4 py-2 rounded-xl font-medium transition-all cursor-pointer shadow-lg border border-primary/30 ${scanState === "loading" ? "bg-primary/20 text-primary pointer-events-none" : "bg-card text-primary hover:bg-primary/10"}`}>
+            {scanState === "loading"
+              ? <><Loader2 className="w-5 h-5 animate-spin" /><span className="hidden sm:inline">Analisi…</span></>
+              : <><ScanLine className="w-5 h-5" /><span className="hidden sm:inline">Scansiona</span></>
+            }
+            <input ref={scanInputRef} type="file" accept="image/*" capture="environment" onChange={handleScanPhoto} className="hidden" disabled={scanState === "loading"} />
+          </label>
+          <button
+            onClick={() => { setIsFormOpen(!isFormOpen); setEditingId(null); resetScan(); }}
+            className="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-xl font-medium hover:bg-primary/90 transition-colors shadow-lg shadow-primary/20"
+          >
+            <Plus className="w-5 h-5" />
+            <span className="hidden sm:inline">Nuova Cattura</span>
+          </button>
+        </div>
       </div>
+
+      {/* Scheda risultato scanner */}
+      {scanState === "result" && (
+        <div className={`rounded-2xl p-4 border animate-in fade-in slide-in-from-top-4 ${scanResult ? "bg-primary/5 border-primary/30" : "bg-destructive/5 border-destructive/30"}`}>
+          <div className="flex items-start gap-3">
+            {scanPhoto && <img src={scanPhoto} alt="scan" className="w-16 h-16 rounded-xl object-cover shrink-0" />}
+            <div className="flex-1 min-w-0">
+              {scanResult ? (
+                <>
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-lg">🐟</span>
+                    <span className="font-bold text-white">{scanResult.specie}</span>
+                    {scanResult.nome_scientifico && <span className="text-xs text-muted-foreground italic">({scanResult.nome_scientifico})</span>}
+                  </div>
+                  {scanResult.descrizione && <p className="text-xs text-muted-foreground mb-2 line-clamp-2">{scanResult.descrizione}</p>}
+                  <div className="flex flex-wrap gap-1 mb-3">
+                    {scanResult.peso_tipico && <span className="text-xs text-primary bg-primary/10 px-2 py-0.5 rounded-full">⚖️ {scanResult.peso_tipico}</span>}
+                    {scanResult.lunghezza_tipica && <span className="text-xs text-primary bg-primary/10 px-2 py-0.5 rounded-full">📏 {scanResult.lunghezza_tipica}</span>}
+                  </div>
+                  <div className="flex gap-2">
+                    <button onClick={handleCompilaFromScan} className="flex items-center gap-1.5 px-3 py-1.5 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors">
+                      <CheckCircle className="w-4 h-4" /> Compila i campi
+                    </button>
+                    <label className="flex items-center gap-1.5 px-3 py-1.5 bg-card border border-white/10 rounded-lg text-sm font-medium text-muted-foreground hover:bg-white/5 transition-colors cursor-pointer">
+                      <RotateCcw className="w-4 h-4" /> Riprova
+                      <input type="file" accept="image/*" capture="environment" onChange={handleScanPhoto} className="hidden" />
+                    </label>
+                    <button onClick={resetScan} className="flex items-center gap-1.5 px-3 py-1.5 bg-card border border-white/10 rounded-lg text-sm font-medium text-muted-foreground hover:bg-white/5 transition-colors">
+                      <X className="w-4 h-4" /> Esci
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <p className="font-medium text-destructive mb-1">Specie non riconosciuta</p>
+                  <p className="text-xs text-muted-foreground mb-3">{scanError}</p>
+                  <div className="flex gap-2">
+                    <label className="flex items-center gap-1.5 px-3 py-1.5 bg-primary text-primary-foreground rounded-lg text-sm font-medium cursor-pointer hover:bg-primary/90 transition-colors">
+                      <RotateCcw className="w-4 h-4" /> Riprova
+                      <input type="file" accept="image/*" capture="environment" onChange={handleScanPhoto} className="hidden" />
+                    </label>
+                    <button onClick={resetScan} className="flex items-center gap-1.5 px-3 py-1.5 bg-card border border-white/10 rounded-lg text-sm font-medium text-muted-foreground hover:bg-white/5 transition-colors">
+                      <X className="w-4 h-4" /> Esci
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {isFormOpen && (
         <div className="bg-card rounded-2xl p-6 border border-white/10 shadow-xl animate-in fade-in slide-in-from-top-4">
