@@ -380,12 +380,17 @@ export function FishingForecastCard({stazioneKey}:{stazioneKey:string}) {
             </div>
             <div className="bg-background rounded-2xl p-4 border border-white/5">
               <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold mb-3">Andamento orario</p>
-              <div className="flex items-end gap-0.5 h-20">
+              <div className="flex items-end gap-0.5" style={{height:"72px"}}>
                 {hourlyScores.map((v,h)=>(
-                  <div key={h} className="flex-1 flex flex-col items-center gap-0.5 group">
-                    <div className={cn("w-full rounded-sm transition-colors",
-                        h===now?"bg-primary":"bg-primary/25 group-hover:bg-primary/50")}
-                      style={{height:`${Math.max(8,v)}%`}}/>
+                  <div key={h}
+                    className={cn("flex-1 rounded-sm transition-colors",
+                      h===now?"bg-primary":"bg-primary/30 hover:bg-primary/50")}
+                    style={{height:`${Math.max(3, Math.round(v * 0.68))}px`}}/>
+                ))}
+              </div>
+              <div className="flex gap-0.5 mt-1">
+                {hourlyScores.map((_,h)=>(
+                  <div key={h} className="flex-1 flex justify-center">
                     {h%6===0&&<span className="text-[8px] text-muted-foreground">{h}h</span>}
                   </div>
                 ))}
