@@ -135,7 +135,7 @@ const TECNICHE=[
     cond:(s:number)=>s>=55},
   {nome:"Feeder / fondo canale",emoji:"⚖️",specie:"Cefalo · Anguilla · Sogliola · Mormora · Sparaglione",
     cond:()=>true},
-  {nome:"Bolognese / colpo",emoji:"🪝",specie:"Cefalo · Muggine · Sparaglione · Mormora",
+  {nome:"Bolognese / colpo",emoji:"🎣",specie:"Cefalo · Muggine · Sparaglione · Mormora",
     cond:()=>true},
   {nome:"Fondo notturno",emoji:"🌙",specie:"Anguilla · Spigola · Sogliola",
     cond:(_s:number,night:boolean)=>night},
@@ -146,9 +146,9 @@ const TECNICHE=[
 export function getEsche(sst:number,wmoCode:number,waveH:number){
   const turbid=waveH>0.8,warm=sst>19,rainy=wmoCode>=51&&wmoCode<=65;
   return[
-    {nome:"Cannolicchio",emoji:"🦪",motivo:"Sempre efficace alla foce, spigola e ombrina"},
-    {nome:"Coreano / Americano",emoji:"🪡",motivo:turbid?"Ottimo in acqua torbida":"Top per surfcasting foce"},
-    {nome:warm?"Vivo (sardina/acciuga)":"Arenicola",emoji:warm?"🐟":"🪱",motivo:warm?"Spigola e leccia in acqua calda":"Classico tuttofare"},
+    {nome:"Cannolicchio",emoji:"🐚",motivo:"Sempre efficace alla foce, spigola e ombrina"},
+    {nome:"Coreano / Americano",emoji:"🎣",motivo:turbid?"Ottimo in acqua torbida":"Top per surfcasting foce"},
+    {nome:warm?"Vivo (sardina/acciuga)":"Arenicola",emoji:warm?"🐟":"🐛",motivo:warm?"Spigola e leccia in acqua calda":"Classico tuttofare"},
     {nome:rainy?"Gamberetto fresco":"Trancio di cefalo",emoji:rainy?"🦐":"🐠",motivo:rainy?"Potente dopo la pioggia":"Spigola grossa, notte"},
     {nome:"Polpo / calamaretti",emoji:"🐙",motivo:"Ombrina e dentice, fondo misto"},
   ];
@@ -216,7 +216,7 @@ interface FieldState {
 const TABS=[
   {id:"dati",label:"📊 Dati"},
   {id:"tecnica",label:"🎣 Tecnica"},
-  {id:"esche",label:"🪱 Esche"},
+  {id:"esche",label:"🐛 Esche"},
   {id:"specie",label:"🐟 Specie"},
   {id:"campo",label:"🌊 Dati reali osservati"},
   {id:"ai",label:"🤖 Assistente AI"},

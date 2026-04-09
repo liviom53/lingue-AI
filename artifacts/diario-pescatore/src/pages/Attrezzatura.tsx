@@ -12,7 +12,7 @@ const STATI_COLOR: Record<string, string> = {
   "Rotte": "text-red-400 bg-red-400/10 border-red-400/20",
 };
 const TIPO_EMOJI: Record<string, string> = {
-  "Canna": "🎣", "Mulinello": "⚙️", "Esca": "🪱", "Accessorio": "🧰"
+  "Canna": "🎣", "Mulinello": "⚙️", "Esca": "🐛", "Accessorio": "🧰"
 };
 
 export default function Attrezzatura() {
