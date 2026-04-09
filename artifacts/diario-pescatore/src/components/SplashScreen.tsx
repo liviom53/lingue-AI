@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Anchor } from "lucide-react";
 
+declare const __APP_VERSION__: string;
+
 export function SplashScreen({ onComplete }: { onComplete: () => void }) {
   const [isVisible, setIsVisible] = useState(true);
 
@@ -56,7 +58,7 @@ export function SplashScreen({ onComplete }: { onComplete: () => void }) {
               className="flex items-center gap-3 mb-12"
             >
               <span className="px-3 py-1 rounded-full bg-white/10 backdrop-blur-md text-xs font-semibold text-primary uppercase tracking-widest border border-white/10">
-                v3.6
+                v{__APP_VERSION__}
               </span>
               <span className="text-muted-foreground text-sm font-medium">by Limax</span>
             </motion.div>

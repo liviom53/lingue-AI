@@ -489,4 +489,35 @@ router.post("/variants", async (req: Request, res: Response) => {
   }
 });
 
+// ── Diario del Pescatore — chat AI ──────────────────────────────────────────
+router.post("/diario", async (req: Request, res: Response) => {
+  const { messages } = req.body as {
+    messages: { role: "user" | "assistant"; content: string }[];
+  };
+  if (!messages || !Array.isArray(messages) || messages.length === 0) {
+    res.status(400).json({ error: "Missing messages" });
+    return;
+  }
+  const systemContent =
+    "Sei un esperto pescatore del Canale Fiume Portatore e della foce di Porto Badino (costa laziale, Mar Tirreno). " +
+    "Solo pesca da terra. Conosci perfettamente il canale, le specie locali (spigola, cefalo, muggine, anguilla, " +
+    "granchio blu, orata, leccia, ombrina, mormora), le tecniche (surfcasting, feeder, spinning, bolognese, fondo notturno). " +
+    "Puoi anche aiutare a registrare dati nel diario se l'utente te lo chiede. " +
+    "Rispondi SEMPRE in italiano, in modo breve (max 5 righe), pratico e amichevole.";
+  try {
+    const completion = await openrouter.chat.completions.create({
+      model: MODEL,
+      messages: [
+        { role: "system", content: systemContent },
+        ...messages,
+      ],
+    });
+    const reply =
+      completion.choices[0]?.message?.content ?? "Nessuna risposta ricevuta.";
+    res.json({ reply });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message ?? "Errore AI" });
+  }
+});
+
 export default router;

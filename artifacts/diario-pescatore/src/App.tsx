@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 
 import { AppLayout } from "./components/layout/AppLayout";
 import { SplashScreen } from "./components/SplashScreen";
+import { PwaInstallBanner } from "./components/PwaInstallBanner";
 
 const Dashboard = lazy(() => import("./pages/Dashboard"));
 const Uscite = lazy(() => import("./pages/Uscite"));
@@ -90,6 +91,7 @@ function App() {
             <Router />
           </WouterRouter>
         )}
+        {!showSplash && <PwaInstallBanner />}
         <Toaster />
       </TooltipProvider>
     </QueryClientProvider>

@@ -1,8 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { Bot, Send, Mic, MicOff, AlertCircle } from "lucide-react";
 
-const DEEPSEEK_KEY = "sk-84b89b428959461e818ad77775913978";
-
 interface Message { role: "user" | "assistant"; content: string; }
 
 declare global {
@@ -37,31 +35,16 @@ export default function AI() {
     setMessages(newMessages);
     setIsTyping(true);
     try {
-      // Send full conversation history to DeepSeek
-      const history = newMessages.map(m => ({ role: m.role, content: m.content }));
-      const res = await fetch("https://api.deepseek.com/v1/chat/completions", {
+      const res = await fetch("/api/ai/diario", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${DEEPSEEK_KEY}`
-        },
-        body: JSON.stringify({
-          model: "deepseek-chat",
-          messages: [
-            {
-              role: "system",
-              content: "Sei un esperto pescatore del Canale Fiume Portatore e della foce di Porto Badino (costa laziale, Mar Tirreno). Solo pesca da terra. Conosci perfettamente il canale, le specie locali (spigola, cefalo, muggine, anguilla, granchio blu, orata, leccia, ombrina, mormora), le tecniche (surfcasting, feeder, spinning, bolognese, fondo notturno). Puoi anche aiutare a registrare dati nel diario se l'utente te lo chiede. Rispondi SEMPRE in italiano, in modo breve (max 5 righe), pratico e amichevole."
-            },
-            ...history
-          ]
-        })
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ messages: newMessages }),
       });
       const data = await res.json();
       if (!res.ok) {
-        const msg = data.error?.message || `Errore ${res.status}: ${res.statusText}`;
-        throw new Error(msg);
+        throw new Error(data.error || `Errore ${res.status}`);
       }
-      const reply = data.choices?.[0]?.message?.content ?? "Nessuna risposta ricevuta.";
+      const reply = data.reply ?? "Nessuna risposta ricevuta.";
       setMessages(prev => [...prev, { role: "assistant", content: reply }]);
     } catch (err: any) {
       const msg = err.message || "Errore di connessione.";
@@ -104,7 +87,7 @@ export default function AI() {
         </div>
         <div>
           <h2 className="font-bold text-white leading-tight">Assistente AI</h2>
-          <p className="text-xs text-primary">DeepSeek Chat · Porto Badino</p>
+          <p className="text-xs text-primary">DeepSeek · Porto Badino</p>
         </div>
         {error && (
           <div className="ml-auto flex items-center gap-1.5 text-xs text-red-400">
@@ -163,7 +146,7 @@ export default function AI() {
           </button>
         </form>
         <p className="text-center text-[10px] text-muted-foreground/40 mt-2">
-          DeepSeek Chat · storico conversazione incluso · italiano
+          DeepSeek · storico conversazione incluso · italiano
         </p>
       </div>
     </div>
