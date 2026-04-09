@@ -13,7 +13,7 @@ declare global {
 export default function AI() {
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<Message[]>([
-    { role: "assistant", content: "Ciao Limax! Sono il tuo assistente per la pesca sul Canale Portatore. Dimmi cosa hai pescato per registrarlo, oppure chiedimi un consiglio per la prossima uscita. 🎣" }
+    { role: "assistant", content: "Ciao! Sono il tuo assistente AI per la pesca sulla costa laziale. Chiedimi previsioni, consigli su tecniche, esche e spot — oppure dimmi cosa hai pescato e lo registro nel tuo Diario. 🎣" }
   ]);
   const [isTyping, setIsTyping] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -93,7 +93,7 @@ export default function AI() {
         </div>
         <div>
           <h2 className="font-bold text-white leading-tight">Assistente AI</h2>
-          <p className="text-xs text-primary">DeepSeek · Porto Badino</p>
+          <p className="text-xs text-primary">DeepSeek · Costa Laziale</p>
         </div>
         {error && (
           <div className="ml-auto flex items-center gap-1.5 text-xs text-red-400">
@@ -144,7 +144,7 @@ export default function AI() {
             {listening ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
           </button>
           <input type="text" value={input} onChange={e => setInput(e.target.value)}
-            placeholder={listening ? "In ascolto…" : "Scrivi o parla per registrare dati…"}
+            placeholder={listening ? "In ascolto…" : "Previsioni, consigli, registra catture…"}
             className="flex-1 bg-card border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-primary transition-colors text-sm" />
           <button type="submit" disabled={!input.trim() || isTyping}
             className="p-3 bg-primary text-primary-foreground rounded-xl hover:bg-primary/90 disabled:opacity-50 transition-colors shrink-0">
