@@ -1,8 +1,7 @@
-import { useState, useRef, useCallback } from "react";
+import { useState } from "react";
 import { Link } from "wouter";
 import {
-  Anchor, Fish, MapPin, ArrowRight, Scale, ChevronDown,
-  Camera, Plus, X, Loader2
+  Anchor, Fish, MapPin, ArrowRight, Scale, ChevronDown, ScanLine
 } from "lucide-react";
 import { usciteAPI, pescatoAPI, spotAPI } from "@/hooks/use-local-data";
 import { format } from "date-fns";
@@ -10,106 +9,6 @@ import { it } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { FishingForecastCard } from "@/components/FishingForecastCard";
 import { STAZIONI, getSharedStation, setSharedStation } from "@/hooks/use-location";
-import { useToast } from "@/hooks/use-toast";
-
-/* ═══════════════════════════════════
-   SCANNER MANUALE (foto + form)
-═══════════════════════════════════ */
-function ManualScanner() {
-  const [preview, setPreview] = useState<string | null>(null);
-  const [photoData, setPhotoData] = useState<string | null>(null);
-  const [formData, setFormData] = useState({ specie: "", peso: "", lunghezza: "", spot: "", note: "" });
-  const [saving, setSaving] = useState(false);
-  const fileRef = useRef<HTMLInputElement>(null);
-  const addCattura = pescatoAPI.useAdd();
-  const { toast } = useToast();
-
-  const handlePhoto = useCallback((file: File) => {
-    const reader = new FileReader();
-    reader.onload = e => {
-      setPreview(URL.createObjectURL(file));
-      setPhotoData(e.target?.result as string);
-    };
-    reader.readAsDataURL(file);
-  }, []);
-
-  const reset = () => {
-    setPreview(null);
-    setPhotoData(null);
-    setFormData({ specie: "", peso: "", lunghezza: "", spot: "", note: "" });
-  };
-
-  const handleSave = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSaving(true);
-    try {
-      await addCattura.mutateAsync({
-        ...formData,
-        foto: photoData ?? undefined,
-        data: new Date().toISOString().split("T")[0],
-      });
-      toast({ title: `Cattura salvata! 🐟${formData.specie ? ` ${formData.specie}` : ""}` });
-      reset();
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  return (
-    <div className="bg-card rounded-3xl border border-white/5 p-5 shadow-xl">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="font-bold text-base flex items-center gap-2">
-          <Camera className="w-5 h-5 text-blue-400" />Scanner Cattura
-        </h3>
-        <span className="text-[10px] text-muted-foreground/60">foto + dati → salva nel diario</span>
-      </div>
-      <input ref={fileRef} type="file" accept="image/*" capture="environment" className="hidden"
-        onChange={e => { const f = e.target.files?.[0]; if (f) handlePhoto(f); e.target.value = ""; }} />
-
-      {!preview ? (
-        <button onClick={() => fileRef.current?.click()}
-          className="w-full flex flex-col items-center gap-3 p-8 rounded-2xl border-2 border-dashed border-white/10 hover:border-primary/40 hover:bg-primary/5 transition-all group">
-          <Camera className="w-10 h-10 text-white/20 group-hover:text-primary transition-colors" />
-          <div className="text-center">
-            <p className="text-sm font-medium text-white">Scatta o carica una foto</p>
-            <p className="text-xs text-muted-foreground mt-1">poi compila i dati e salva la cattura</p>
-          </div>
-        </button>
-      ) : (
-        <form onSubmit={handleSave} className="space-y-3">
-          <div className="relative rounded-2xl overflow-hidden">
-            <img src={preview} alt="cattura" className="w-full h-36 object-cover" />
-            <button type="button" onClick={reset}
-              className="absolute top-2 right-2 w-8 h-8 bg-black/60 rounded-full flex items-center justify-center hover:bg-black/80 transition-colors">
-              <X className="w-4 h-4 text-white" />
-            </button>
-          </div>
-          <div className="grid grid-cols-2 gap-2">
-            <input placeholder="Specie *" required value={formData.specie}
-              onChange={e => setFormData(p => ({ ...p, specie: e.target.value }))}
-              className="col-span-2 bg-background border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-primary" />
-            <input placeholder="Peso (kg)" type="number" step="0.01" value={formData.peso}
-              onChange={e => setFormData(p => ({ ...p, peso: e.target.value }))}
-              className="bg-background border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-primary" />
-            <input placeholder="Lunghezza (cm)" type="number" value={formData.lunghezza}
-              onChange={e => setFormData(p => ({ ...p, lunghezza: e.target.value }))}
-              className="bg-background border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-primary" />
-            <input placeholder="Spot" value={formData.spot}
-              onChange={e => setFormData(p => ({ ...p, spot: e.target.value }))}
-              className="col-span-2 bg-background border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-primary" />
-            <input placeholder="Note" value={formData.note}
-              onChange={e => setFormData(p => ({ ...p, note: e.target.value }))}
-              className="col-span-2 bg-background border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-primary" />
-          </div>
-          <button type="submit" disabled={saving}
-            className="w-full py-2.5 rounded-xl bg-primary text-primary-foreground font-semibold flex items-center justify-center gap-2 hover:bg-primary/90 transition-colors disabled:opacity-50 text-sm">
-            {saving ? <><Loader2 className="w-4 h-4 animate-spin" />Salvataggio…</> : <><Plus className="w-4 h-4" />Salva cattura</>}
-          </button>
-        </form>
-      )}
-    </div>
-  );
-}
 
 /* ═══════════════════════════════════
    HOME PAGE
@@ -178,7 +77,24 @@ export default function Home() {
       <FishingForecastCard stazioneKey={stazioneKey} />
 
       {/* ── SCANNER CATTURA ── */}
-      <ManualScanner />
+      <button
+        onClick={() => window.dispatchEvent(new CustomEvent("openScanner"))}
+        className="w-full bg-card rounded-3xl border border-white/5 p-5 shadow-xl text-left hover:border-primary/30 transition-all group"
+      >
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="font-bold text-base flex items-center gap-2">
+            <ScanLine className="w-5 h-5 text-blue-400" />Scanner Cattura
+          </h3>
+          <span className="text-[10px] text-muted-foreground/60">AI · foto → specie</span>
+        </div>
+        <div className="flex flex-col items-center gap-3 p-6 rounded-2xl border-2 border-dashed border-white/10 group-hover:border-primary/40 group-hover:bg-primary/5 transition-all">
+          <ScanLine className="w-9 h-9 text-white/20 group-hover:text-primary transition-colors" />
+          <div className="text-center">
+            <p className="text-sm font-medium text-white">Scatta o carica una foto</p>
+            <p className="text-xs text-muted-foreground mt-1">l'AI riconosce la specie e pre-compila i dati</p>
+          </div>
+        </div>
+      </button>
 
       {/* ── ULTIME USCITE + CATTURE ── */}
       <div className="grid md:grid-cols-2 gap-5">

@@ -207,6 +207,13 @@ function App() {
   const [showSplash, setShowSplash] = useState(true);
   const [scanOpen, setScanOpen] = useState(false);
 
+  // ── Apri scanner da eventi globali (es. Dashboard card) ──────────────────────
+  useEffect(() => {
+    const handler = () => setScanOpen(true);
+    window.addEventListener("openScanner", handler);
+    return () => window.removeEventListener("openScanner", handler);
+  }, []);
+
   // ── Admin panel ──────────────────────────────────────────────────────────────
   const [adminOpen, setAdminOpen] = useState(false);
   const [adminAuthenticated, setAdminAuthenticated] = useState(false);
