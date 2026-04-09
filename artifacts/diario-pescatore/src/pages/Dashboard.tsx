@@ -1,7 +1,7 @@
 import { useState, useRef } from "react";
 import { Link } from "wouter";
 import {
-  Anchor, MapPin, ArrowRight, Scale, ChevronDown,
+  Anchor, Fish, MapPin, ArrowRight, Scale, ChevronDown,
   ScanLine, Camera, ImageIcon, Loader2, CheckCircle, X, AlertCircle
 } from "lucide-react";
 import { usciteAPI, pescatoAPI, spotAPI } from "@/hooks/use-local-data";
