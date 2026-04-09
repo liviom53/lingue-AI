@@ -494,7 +494,7 @@ router.post("/variants", async (req: Request, res: Response) => {
 });
 
 // ── Scanner cattura: riconoscimento specie via vision AI ─────────────────────
-const VISION_MODEL = "meta-llama/llama-3.2-11b-vision-instruct";
+const VISION_MODEL = "google/gemini-2.0-flash-001";
 
 router.post("/scan-fish", async (req: Request, res: Response) => {
   const { imageBase64 } = req.body as { imageBase64: string };
@@ -512,11 +512,11 @@ router.post("/scan-fish", async (req: Request, res: Response) => {
             { type: "image_url", image_url: { url: imageBase64 } },
             {
               type: "text",
-              text: `Sei un esperto ittiologista italiano. Analizza questa foto e identifica il pesce, mollusco o crostaceo presente.
+              text: `Sei un esperto ittiologista italiano. Analizza questa foto e identifica qualsiasi pesce, mollusco, crostaceo o animale acquatico presente — anche se la foto non è perfetta.
 Rispondi SOLO con JSON valido, nessun testo extra, nessun markdown.
-Se riconosci la specie:
-{"riconosciuto":true,"specie":"nome comune italiano","nome_scientifico":"nome scientifico","descrizione":"1-2 frasi descrittive","peso_tipico":"es. 1-5 kg","lunghezza_tipica":"es. 30-70 cm"}
-Se non è un pesce/mollusco/crostaceo riconoscibile oppure l'immagine è poco chiara:
+Se vedi un pesce o animale acquatico (anche parzialmente visibile, anche se non sei 100% certo):
+{"riconosciuto":true,"specie":"nome comune italiano più probabile","nome_scientifico":"nome scientifico","descrizione":"1-2 frasi descrittive sulla specie","peso_tipico":"stima tipica es. 0.5-3 kg","lunghezza_tipica":"stima tipica es. 20-50 cm"}
+Solo se l'immagine non mostra assolutamente nessun animale acquatico (es. foto di persone, paesaggi, oggetti):
 {"riconosciuto":false,"messaggio":"spiegazione breve in italiano"}`,
             },
           ],
