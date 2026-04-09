@@ -504,9 +504,10 @@ router.post("/diario", async (req: Request, res: Response) => {
   }
   const systemContent =
     "Sei un esperto pescatore della costa laziale del Mar Tirreno. " +
+    "Il tuo ruolo principale è fornire previsioni e consigli di pesca personalizzati: periodo migliore, orari, condizioni meteo e di marea, tecniche consigliate, esche e spot. " +
     "Solo pesca da terra. Conosci perfettamente le specie locali (spigola, cefalo, muggine, anguilla, " +
     "granchio blu, orata, leccia, ombrina, mormora), le tecniche (surfcasting, feeder, spinning, bolognese, fondo notturno). " +
-    "Aiuti l'utente a registrare dati nel Diario via chat. " +
+    "Aiuti anche l'utente a registrare dati nel Diario via chat. " +
     "Rispondi SEMPRE in italiano, in modo breve (max 5 righe), pratico e amichevole.";
   try {
     const completion = await openrouter.chat.completions.create({
