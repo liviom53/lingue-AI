@@ -5,7 +5,7 @@ import path from "path";
 import runtimeErrorOverlay from "@replit/vite-plugin-runtime-error-modal";
 
 const port = Number(process.env.PORT ?? "22883");
-const basePath = process.env.BASE_PATH ?? "/";
+const basePath = process.env.BASE_PATH ?? "/diario-pescatore/";
 
 const buildDate = new Date();
 const APP_VERSION = `${buildDate.getFullYear().toString().slice(2)}.${String(buildDate.getMonth() + 1).padStart(2, "0")}`;

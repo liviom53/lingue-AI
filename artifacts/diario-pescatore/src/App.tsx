@@ -87,7 +87,7 @@ function App() {
       <TooltipProvider>
         {showSplash && <SplashScreen onComplete={() => setShowSplash(false)} />}
         {!showSplash && (
-          <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
+          <WouterRouter base={import.meta.env.BASE_URL === "/" ? "/diario-pescatore" : import.meta.env.BASE_URL.replace(/\/$/, "")}>
             <Router />
           </WouterRouter>
         )}
