@@ -58,9 +58,9 @@ export function SplashScreen({ onComplete }: { onComplete: () => void }) {
               className="flex items-center gap-3 mb-12"
             >
               <span className="px-3 py-1 rounded-full bg-white/10 backdrop-blur-md text-xs font-semibold text-primary uppercase tracking-widest border border-white/10">
-                v{__APP_VERSION__}
+                v3.5
               </span>
-              <span className="text-muted-foreground text-sm font-medium">by Limax</span>
+              <span className="text-muted-foreground text-sm font-medium">by Livio</span>
             </motion.div>
 
             <motion.p
