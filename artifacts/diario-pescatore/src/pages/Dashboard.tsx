@@ -143,7 +143,7 @@ function ScannerCard() {
 
       {(step === "ready" || step === "scanning" || step === "done") && photo && (
         <div style={{ position: "relative" }}>
-          <img src={photo} alt="cattura" style={{ width: "100%", height: "220px", objectFit: "cover", borderRadius: "14px", opacity: step === "scanning" ? 0.5 : 1 }} />
+          <img src={photo} alt="cattura" style={{ width: "100%", height: "300px", objectFit: "contain", objectPosition: "center", background: "#0a1929", borderRadius: "14px", opacity: step === "scanning" ? 0.5 : 1 }} />
           {step === "scanning" && (
             <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", color: "#38bdf8", fontSize: "0.8rem" }}>
               <Loader2 style={{ width: 28, height: 28, animation: "spin 1s linear infinite" }} />
