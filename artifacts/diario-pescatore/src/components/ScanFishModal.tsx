@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { X, Camera, Loader2, CheckCircle, ScanLine } from "lucide-react";
+import { X, Camera, ImageIcon, Loader2, CheckCircle, RefreshCw, AlertCircle, ScanLine } from "lucide-react";
 import { pescatoAPI, spotAPI } from "@/hooks/use-local-data";
 import { useToast } from "@/hooks/use-toast";
 
@@ -21,55 +21,71 @@ function matchSpecie(aiSpecie: string): string {
   return "Altra specie";
 }
 
+type Step = "choose" | "scanning" | "success" | "fail";
+
+interface ScanResult {
+  specie: string;
+  note?: string;
+}
+
 interface Props {
   open: boolean;
   onClose: () => void;
 }
 
-const empty = { specie: "", peso: "", lunghezza: "", spotId: "", note: "" };
+const emptyForm = { specie: "", peso: "", lunghezza: "", spotId: "", note: "" };
 
 export function ScanFishModal({ open, onClose }: Props) {
   const addMutation = pescatoAPI.useAdd();
   const { data: spots = [] } = spotAPI.useList();
   const { toast } = useToast();
 
+  const [step, setStep] = useState<Step>("choose");
   const [photo, setPhoto] = useState<string | null>(null);
-  const [scanning, setScanning] = useState(false);
-  const [form, setForm] = useState(empty);
-  const photoRef = useRef<HTMLInputElement>(null);
+  const [form, setForm] = useState(emptyForm);
+
+  const cameraRef = useRef<HTMLInputElement>(null);
+  const galleryRef = useRef<HTMLInputElement>(null);
+
+  function reset() {
+    setStep("choose");
+    setPhoto(null);
+    setForm(emptyForm);
+  }
 
   function handleClose() {
-    setPhoto(null);
-    setScanning(false);
-    setForm(empty);
+    reset();
     onClose();
   }
 
-  async function handlePhoto(e: React.ChangeEvent<HTMLInputElement>) {
+  async function processPhoto(base64: string) {
+    setPhoto(base64);
+    setStep("scanning");
+    try {
+      const res = await fetch("/api/ai/scan-fish", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ imageBase64: base64 }),
+      });
+      const data: any = await res.json();
+      if (data.riconosciuto && data.specie) {
+        setForm(f => ({ ...f, specie: matchSpecie(data.specie) }));
+        setStep("success");
+      } else {
+        setStep("fail");
+      }
+    } catch {
+      setStep("fail");
+    }
+  }
+
+  function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (photoRef.current) photoRef.current.value = "";
+    if (cameraRef.current) cameraRef.current.value = "";
+    if (galleryRef.current) galleryRef.current.value = "";
     const reader = new FileReader();
-    reader.onload = async () => {
-      const base64 = reader.result as string;
-      setPhoto(base64);
-      setScanning(true);
-      try {
-        const res = await fetch("/api/ai/scan-fish", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ imageBase64: base64 }),
-        });
-        const data = await res.json();
-        if (data.riconosciuto) {
-          setForm(f => ({ ...f, specie: matchSpecie(data.specie) }));
-        }
-      } catch {
-        // ignora errori scan, l'utente può selezionare manualmente
-      } finally {
-        setScanning(false);
-      }
-    };
+    reader.onload = () => processPhoto(reader.result as string);
     reader.readAsDataURL(file);
   }
 
@@ -104,6 +120,12 @@ export function ScanFishModal({ open, onClose }: Props) {
     display: "block", fontSize: "0.7rem", color: "#64748b",
     textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: "5px",
   };
+  const btnBase: React.CSSProperties = {
+    flex: 1, padding: "12px 8px", border: "none", borderRadius: "12px",
+    fontWeight: 700, fontSize: "0.85rem", cursor: "pointer",
+    display: "flex", alignItems: "center", justifyContent: "center", gap: "6px",
+    transition: "all 0.15s",
+  };
 
   return (
     <div
@@ -121,7 +143,12 @@ export function ScanFishModal({ open, onClose }: Props) {
               <ScanLine style={{ width: 17, height: 17, color: "#38bdf8" }} />
               Scanner Cattura
             </h2>
-            <p style={{ margin: "2px 0 0", fontSize: "0.72rem", color: "#475569" }}>foto + dati → salva nel diario</p>
+            <p style={{ margin: "2px 0 0", fontSize: "0.72rem", color: "#475569" }}>
+              {step === "choose" && "Scansiona o carica dalla galleria"}
+              {step === "scanning" && "Analisi in corso…"}
+              {step === "success" && "Specie riconosciuta — completa e salva"}
+              {step === "fail" && "Identificazione non riuscita"}
+            </p>
           </div>
           <button onClick={handleClose} style={{ background: "none", border: "none", color: "#64748b", cursor: "pointer", padding: "4px" }}>
             <X style={{ width: 20, height: 20 }} />
@@ -129,94 +156,122 @@ export function ScanFishModal({ open, onClose }: Props) {
         </div>
 
         {/* Body */}
-        <div style={{ padding: "16px 20px 20px", overflowY: "auto", flex: 1, display: "flex", flexDirection: "column", gap: "14px" }}>
+        <div style={{ padding: "20px", overflowY: "auto", flex: 1 }}>
 
-          {/* Foto */}
-          <div>
-            <label style={lbl}>Foto</label>
-            <label style={{ display: "block", cursor: "pointer" }}>
-              {photo ? (
-                <div style={{ position: "relative" }}>
-                  <img src={photo} alt="cattura" style={{ width: "100%", height: "160px", objectFit: "cover", borderRadius: "12px", display: "block" }} />
-                  {scanning && (
-                    <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.6)", borderRadius: "12px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "8px" }}>
-                      <Loader2 style={{ width: 28, height: 28, color: "#38bdf8", animation: "spin 1s linear infinite" }} />
-                      <span style={{ fontSize: "0.78rem", color: "#94a3b8" }}>Identificazione specie…</span>
-                    </div>
-                  )}
-                  <div style={{ position: "absolute", bottom: 8, right: 8, background: "rgba(0,0,0,0.6)", borderRadius: "8px", padding: "4px 8px", fontSize: "0.7rem", color: "#94a3b8", display: "flex", alignItems: "center", gap: "4px" }}>
-                    <Camera style={{ width: 12, height: 12 }} /> cambia
-                  </div>
-                </div>
-              ) : (
-                <div style={{ width: "100%", height: "120px", border: "2px dashed #1e3a5f", borderRadius: "12px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "8px", background: "#0a1929" }}>
-                  <Camera style={{ width: 28, height: 28, color: "#38bdf8" }} />
-                  <span style={{ fontSize: "0.8rem", color: "#64748b" }}>Scatta foto · L'AI riconosce la specie</span>
-                </div>
-              )}
-              <input ref={photoRef} type="file" accept="image/*" capture="environment" onChange={handlePhoto} style={{ display: "none" }} />
-            </label>
-          </div>
-
-          {/* Sezione cattura */}
-          <div style={{ borderTop: "1px solid #1e293b", paddingTop: "14px" }}>
-            <p style={{ margin: "0 0 12px", fontSize: "0.7rem", color: "#38bdf8", textTransform: "uppercase", letterSpacing: "0.1em", fontWeight: 700 }}>Cattura</p>
-
-            <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-              <div>
-                <label style={lbl}>Specie *</label>
-                <select
-                  value={form.specie}
-                  onChange={e => setForm(f => ({ ...f, specie: e.target.value }))}
-                  style={{ ...inp, appearance: "none" }}
-                >
-                  <option value="">Seleziona specie…</option>
-                  {SPECIE_LIST.map(s => <option key={s} value={s}>{s}</option>)}
-                </select>
+          {/* ─── STEP: CHOOSE ─── */}
+          {step === "choose" && (
+            <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+              <div style={{ width: "100%", height: "140px", border: "2px dashed #1e3a5f", borderRadius: "16px", display: "flex", alignItems: "center", justifyContent: "center", background: "#0a1929" }}>
+                <span style={{ fontSize: "0.8rem", color: "#475569" }}>Nessuna foto selezionata</span>
               </div>
-
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
-                <div>
-                  <label style={lbl}>Peso (kg)</label>
-                  <input type="number" step="0.01" min="0" placeholder="Es. 1.5" value={form.peso} onChange={e => setForm(f => ({ ...f, peso: e.target.value }))} style={inp} />
-                </div>
-                <div>
-                  <label style={lbl}>Lunghezza (cm)</label>
-                  <input type="number" step="0.1" min="0" placeholder="Es. 45" value={form.lunghezza} onChange={e => setForm(f => ({ ...f, lunghezza: e.target.value }))} style={inp} />
-                </div>
-              </div>
-
-              <div>
-                <label style={lbl}>Spot</label>
-                <select value={form.spotId} onChange={e => setForm(f => ({ ...f, spotId: e.target.value }))} style={{ ...inp, appearance: "none" }}>
-                  <option value="">Nessuno spot</option>
-                  {(spots as any[]).map((s: any) => <option key={s.id} value={s.id}>{s.nome}</option>)}
-                </select>
-              </div>
-
-              <div>
-                <label style={lbl}>Note</label>
-                <textarea placeholder="Dove, come, con quale esca…" value={form.note} onChange={e => setForm(f => ({ ...f, note: e.target.value }))} style={{ ...inp, height: "68px", resize: "none" }} />
+                <label style={{ ...btnBase, background: "linear-gradient(135deg,#0ea5e9,#0369a1)", color: "#fff", cursor: "pointer", textAlign: "center" }}>
+                  <Camera style={{ width: 17, height: 17 }} />
+                  Scansiona
+                  <input ref={cameraRef} type="file" accept="image/*" capture="environment" onChange={handleFile} style={{ display: "none" }} />
+                </label>
+                <label style={{ ...btnBase, background: "#1e293b", color: "#94a3b8", cursor: "pointer", textAlign: "center" }}>
+                  <ImageIcon style={{ width: 17, height: 17 }} />
+                  Galleria
+                  <input ref={galleryRef} type="file" accept="image/*" onChange={handleFile} style={{ display: "none" }} />
+                </label>
               </div>
             </div>
-          </div>
+          )}
 
-          {/* Salva */}
-          <button
-            onClick={handleSave}
-            disabled={!form.specie || addMutation.isPending}
-            style={{
-              display: "flex", alignItems: "center", justifyContent: "center", gap: "8px",
-              padding: "13px", border: "none", borderRadius: "13px", fontWeight: 700, fontSize: "0.93rem",
-              cursor: form.specie ? "pointer" : "not-allowed", transition: "all 0.15s",
-              background: form.specie ? "linear-gradient(135deg,#0ea5e9,#0369a1)" : "#1e293b",
-              color: form.specie ? "#fff" : "#475569",
-              boxShadow: form.specie ? "0 4px 16px rgba(14,165,233,0.25)" : "none",
-            }}
-          >
-            <CheckCircle style={{ width: 17, height: 17 }} />
-            {addMutation.isPending ? "Salvataggio…" : "Salva cattura"}
-          </button>
+          {/* ─── STEP: SCANNING ─── */}
+          {step === "scanning" && (
+            <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+              {photo && <img src={photo} alt="cattura" style={{ width: "100%", height: "160px", objectFit: "cover", borderRadius: "12px", opacity: 0.6 }} />}
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "10px", padding: "20px 0" }}>
+                <Loader2 style={{ width: 36, height: 36, color: "#38bdf8", animation: "spin 1s linear infinite" }} />
+                <span style={{ fontSize: "0.85rem", color: "#94a3b8" }}>Riconoscimento specie in corso…</span>
+              </div>
+            </div>
+          )}
+
+          {/* ─── STEP: FAIL ─── */}
+          {step === "fail" && (
+            <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+              {photo && <img src={photo} alt="cattura" style={{ width: "100%", height: "160px", objectFit: "cover", borderRadius: "12px", opacity: 0.5 }} />}
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "8px", padding: "12px", background: "#1e1a0a", border: "1px solid #854d0e", borderRadius: "12px" }}>
+                <AlertCircle style={{ width: 28, height: 28, color: "#eab308" }} />
+                <span style={{ fontSize: "0.85rem", color: "#fef08a", textAlign: "center" }}>Nessun pesce riconosciuto.<br />Riprova con una foto più chiara.</span>
+              </div>
+              <div style={{ display: "flex", gap: "10px" }}>
+                <button onClick={reset} style={{ ...btnBase, background: "#1e293b", color: "#94a3b8" }}>
+                  <RefreshCw style={{ width: 15, height: 15 }} /> Riprova
+                </button>
+                <button onClick={handleClose} style={{ ...btnBase, background: "#1e293b", color: "#94a3b8" }}>
+                  <X style={{ width: 15, height: 15 }} /> Esci
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* ─── STEP: SUCCESS ─── */}
+          {step === "success" && (
+            <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+              {photo && <img src={photo} alt="cattura" style={{ width: "100%", height: "160px", objectFit: "cover", borderRadius: "12px" }} />}
+
+              <p style={{ margin: 0, fontSize: "0.7rem", color: "#38bdf8", textTransform: "uppercase", letterSpacing: "0.1em", fontWeight: 700 }}>Cattura</p>
+
+              <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                <div>
+                  <label style={lbl}>Specie *</label>
+                  <select value={form.specie} onChange={e => setForm(f => ({ ...f, specie: e.target.value }))} style={{ ...inp, appearance: "none" }}>
+                    <option value="">Seleziona specie…</option>
+                    {SPECIE_LIST.map(s => <option key={s} value={s}>{s}</option>)}
+                  </select>
+                </div>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+                  <div>
+                    <label style={lbl}>Peso (kg)</label>
+                    <input type="number" step="0.01" min="0" placeholder="Es. 1.5" value={form.peso} onChange={e => setForm(f => ({ ...f, peso: e.target.value }))} style={inp} />
+                  </div>
+                  <div>
+                    <label style={lbl}>Lunghezza (cm)</label>
+                    <input type="number" step="0.1" min="0" placeholder="Es. 45" value={form.lunghezza} onChange={e => setForm(f => ({ ...f, lunghezza: e.target.value }))} style={inp} />
+                  </div>
+                </div>
+                <div>
+                  <label style={lbl}>Spot</label>
+                  <select value={form.spotId} onChange={e => setForm(f => ({ ...f, spotId: e.target.value }))} style={{ ...inp, appearance: "none" }}>
+                    <option value="">Nessuno spot</option>
+                    {(spots as any[]).map((s: any) => <option key={s.id} value={s.id}>{s.nome}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label style={lbl}>Note</label>
+                  <textarea placeholder="Dove, come, con quale esca…" value={form.note} onChange={e => setForm(f => ({ ...f, note: e.target.value }))} style={{ ...inp, height: "64px", resize: "none" }} />
+                </div>
+              </div>
+
+              {/* 3 bottoni */}
+              <div style={{ display: "flex", gap: "8px" }}>
+                <button onClick={reset} style={{ ...btnBase, background: "#1e293b", color: "#94a3b8", flex: "0 0 auto", padding: "12px 14px" }}>
+                  <RefreshCw style={{ width: 15, height: 15 }} /> Riprova
+                </button>
+                <button
+                  onClick={handleSave}
+                  disabled={!form.specie || addMutation.isPending}
+                  style={{
+                    ...btnBase, flex: 1,
+                    background: form.specie ? "linear-gradient(135deg,#0ea5e9,#0369a1)" : "#1e293b",
+                    color: form.specie ? "#fff" : "#475569",
+                    boxShadow: form.specie ? "0 4px 16px rgba(14,165,233,0.25)" : "none",
+                    cursor: form.specie ? "pointer" : "not-allowed",
+                  }}
+                >
+                  <CheckCircle style={{ width: 15, height: 15 }} />
+                  {addMutation.isPending ? "Salvataggio…" : "Salva cattura"}
+                </button>
+                <button onClick={handleClose} style={{ ...btnBase, background: "#1e293b", color: "#94a3b8", flex: "0 0 auto", padding: "12px 14px" }}>
+                  <X style={{ width: 15, height: 15 }} /> Esci
+                </button>
+              </div>
+            </div>
+          )}
 
         </div>
       </div>
