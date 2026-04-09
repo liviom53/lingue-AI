@@ -4,6 +4,7 @@ import { Heart, Copy, Check, Coffee, Waves, ExternalLink } from "lucide-react";
 const IBAN = "IT62U3608105138220295220310";
 const BENEFICIARIO = "Mazzocchi Livio";
 const PAYPAL_URL = "https://www.paypal.com/donate?business=livio.mazzocchi%40gmail.com&currency_code=EUR";
+const KOFI_URL = "https://ko-fi.com/liviomazzocchi";
 
 export default function Donazioni() {
   const [copied, setCopied] = useState(false);
@@ -63,6 +64,28 @@ export default function Donazioni() {
         >
           <ExternalLink className="w-4 h-4" />
           Dona con PayPal
+        </a>
+      </div>
+
+      {/* Ko-fi */}
+      <div className="bg-card border border-white/10 rounded-2xl p-5 space-y-4">
+        <div className="flex items-center gap-2">
+          <div className="w-5 h-5 flex items-center justify-center">
+            <Coffee className="w-5 h-5 text-[#FF5E5B]" />
+          </div>
+          <h2 className="font-semibold">Ko-fi</h2>
+        </div>
+        <p className="text-sm text-muted-foreground">
+          Offrimi un caffè su Ko-fi — veloce, senza commissioni per chi dona.
+        </p>
+        <a
+          href={KOFI_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center justify-center gap-2 w-full py-3 bg-[#FF5E5B] hover:bg-[#e54e4b] text-white font-semibold rounded-xl transition-colors"
+        >
+          <Coffee className="w-4 h-4" />
+          Offrimi un caffè ☕
         </a>
       </div>
 
