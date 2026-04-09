@@ -51,6 +51,15 @@ export default function VideoTemplate() {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [fsUnsupported, setFsUnsupported] = useState(false);
 
+  const stopAudio = () => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    audio.pause();
+    audio.currentTime = 0;
+    setAudioPlaying(false);
+    cancelAnimationFrame(frameRef.current);
+  };
+
   const startAudio = () => {
     const audio = audioRef.current;
     if (!audio) return;
@@ -58,6 +67,19 @@ export default function VideoTemplate() {
     audio.volume = 0.7;
     audio.play().then(() => setAudioPlaying(true)).catch(() => {});
   };
+
+  useEffect(() => {
+    const handleVisibility = () => {
+      if (document.hidden) stopAudio();
+    };
+    const handlePageHide = () => stopAudio();
+    document.addEventListener('visibilitychange', handleVisibility);
+    window.addEventListener('pagehide', handlePageHide);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibility);
+      window.removeEventListener('pagehide', handlePageHide);
+    };
+  }, []);
 
   // ── Audio analyzer loop ─────────────────────────────────────────
   useEffect(() => {
@@ -230,30 +252,16 @@ export default function VideoTemplate() {
       <audio ref={audioRef} src={`${import.meta.env.BASE_URL}audio/paulyudin-rock-490391.mp3`} loop muted />
 
       {/* ── Pulsante audio ──────────────────────────────────────── */}
-      <AnimatePresence>
-        {!audioPlaying && (
-          <motion.button
-            onClick={startAudio}
-            className="absolute top-4 right-4 z-50 flex items-center gap-2 bg-white/10 hover:bg-white/20 backdrop-blur border border-white/20 text-white text-sm font-bold px-4 py-2 rounded-full cursor-pointer"
-            initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.4 }}
-          >
-            <span>🎵</span> Avvia audio
-          </motion.button>
-        )}
-      </AnimatePresence>
-
-      <AnimatePresence>
-        {audioPlaying && (
-          <motion.div
-            className="absolute top-4 right-4 z-50 flex items-center gap-2 bg-[#fb923c]/20 border border-[#fb923c]/50 text-[#fb923c] text-xs font-black px-4 py-2 rounded-full tracking-widest uppercase"
-            initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
-          >
-            <motion.span animate={{ opacity: [1, 0.2, 1] }} transition={{ duration: 0.4, repeat: Infinity }}>▐▌</motion.span>
-            Rock ON
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <button
+        onClick={audioPlaying ? stopAudio : startAudio}
+        className={`absolute top-4 right-4 z-50 flex items-center gap-2 backdrop-blur border text-sm font-bold px-4 py-2 rounded-full cursor-pointer transition-all duration-300 ${
+          audioPlaying
+            ? 'bg-[#fb923c]/20 border-[#fb923c]/60 text-[#fb923c] hover:bg-red-500/20 hover:border-red-400/60 hover:text-red-300'
+            : 'bg-white/10 border-white/20 text-white hover:bg-white/20'
+        }`}
+      >
+        {audioPlaying ? <><span>⏹</span> Ferma audio</> : <><span>🎵</span> Avvia audio</>}
+      </button>
 
       {/* ── Background video ────────────────────────────────────── */}
       <div className="absolute inset-0 opacity-25 mix-blend-screen">
