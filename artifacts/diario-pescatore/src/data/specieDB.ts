@@ -10,9 +10,6 @@ export interface Specie {
   image_url: string;
 }
 
-const WP = (file: string) =>
-  `https://en.wikipedia.org/wiki/Special:FilePath/${encodeURIComponent(file)}?width=400`;
-
 export const specieDB: Specie[] = [
   {
     id: "spigola",
@@ -21,7 +18,7 @@ export const specieDB: Specie[] = [
     descrizione: "Predatore costiero molto amato. Si pesca a spinning o surfcasting presso foci e scogliere. Bocca grande, corpo argenteo.",
     min_taglia: 25, max_taglia: 100,
     stagione_migliore: "Autunno/Inverno", protetta: false,
-    image_url: WP("Dicentrarchus labrax.jpg")
+    image_url: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/70/Sealife%2C_Bray%2C_Ireland._%286985874908%29.jpg/330px-Sealife%2C_Bray%2C_Ireland._%286985874908%29.jpg"
   },
   {
     id: "orata",
@@ -30,7 +27,7 @@ export const specieDB: Specie[] = [
     descrizione: "Grufolatore dalle carni pregiatissime. Riconoscibile dalla fascia dorata tra gli occhi. Predilige fondali sabbiosi.",
     min_taglia: 20, max_taglia: 70,
     stagione_migliore: "Primavera/Estate", protetta: false,
-    image_url: WP("Sparus aurata.jpg")
+    image_url: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/bb/Sparus_aurata%2C_Alpes-Maritimes%2C_Provence-Alpes-C%C3%B4te_d%27Azur%2C_FR_imported_from_iNaturalist_photo_207799710.jpg/330px-Sparus_aurata%2C_Alpes-Maritimes%2C_Provence-Alpes-C%C3%B4te_d%27Azur%2C_FR_imported_from_iNaturalist_photo_207799710.jpg"
   },
   {
     id: "serra",
@@ -39,7 +36,7 @@ export const specieDB: Specie[] = [
     descrizione: "Predatore vorace, recide i terminali con i denti affilati. Caccia in branchi frenetici. Ottimo a spinning.",
     min_taglia: 30, max_taglia: 120,
     stagione_migliore: "Estate/Autunno", protetta: false,
-    image_url: WP("Pomatomus saltatrix.jpg")
+    image_url: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/de/Pomatomus_saltatrix.png/330px-Pomatomus_saltatrix.png"
   },
   {
     id: "cernia-bruna",
@@ -48,7 +45,7 @@ export const specieDB: Specie[] = [
     descrizione: "Pesce stanziale di fondale roccioso, molto longevo e a lenta crescita. Specie protetta.",
     min_taglia: 45, max_taglia: 150,
     stagione_migliore: "Estate", protetta: true,
-    image_url: WP("Epinephelus marginatus.jpg")
+    image_url: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a9/Mero_%28Epinephelus_marginatus%29%2C_Cabo_de_Palos%2C_Espa%C3%B1a%2C_2022-07-15%2C_DD_34.jpg/330px-Mero_%28Epinephelus_marginatus%29%2C_Cabo_de_Palos%2C_Espa%C3%B1a%2C_2022-07-15%2C_DD_34.jpg"
   },
   {
     id: "granchio-blu",
@@ -57,7 +54,7 @@ export const specieDB: Specie[] = [
     descrizione: "Specie aliena invasiva, estremamente aggressiva. Abbondante nei canali e foci come il Portatore.",
     min_taglia: 10, max_taglia: 25,
     stagione_migliore: "Estate/Autunno", protetta: false,
-    image_url: WP("Callinectes sapidus.jpg")
+    image_url: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/99/The_Childrens_Museum_of_Indianapolis_-_Atlantic_blue_crab.jpg/330px-The_Childrens_Museum_of_Indianapolis_-_Atlantic_blue_crab.jpg"
   },
   {
     id: "mormora",
@@ -66,7 +63,7 @@ export const specieDB: Specie[] = [
     descrizione: "Pesce di fondale sabbioso, tipica preda del surfcasting estivo. Corpo argenteo con bande verticali scure.",
     min_taglia: 20, max_taglia: 45,
     stagione_migliore: "Estate", protetta: false,
-    image_url: WP("Lithognathus mormyrus.jpg")
+    image_url: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/49/Mormora.jpg/330px-Mormora.jpg"
   },
   {
     id: "sarago-pizzuto",
@@ -75,7 +72,7 @@ export const specieDB: Specie[] = [
     descrizione: "Labbra carnose e muso appuntito. Erbivoro-onnivoro, si pesca a fondo con mazzancolla o coreano. Combattivo.",
     min_taglia: 18, max_taglia: 60,
     stagione_migliore: "Primavera/Estate", protetta: false,
-    image_url: WP("Diplodus puntazzo.jpg")
+    image_url: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6d/Diplodus_puntazzo_87357945.jpg/330px-Diplodus_puntazzo_87357945.jpg"
   },
   {
     id: "sarago-fasciato",
@@ -84,7 +81,7 @@ export const specieDB: Specie[] = [
     descrizione: "Bande nere caratteristiche. Vive in branchi su praterie e fondali misti. Si pesca con cannolicchio o arenicola.",
     min_taglia: 18, max_taglia: 45,
     stagione_migliore: "Tutto l'anno", protetta: false,
-    image_url: WP("Diplodus vulgaris.jpg")
+    image_url: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/42/Mojarra_%28Diplodus_vulgaris%29%2C_Parque_natural_de_la_Arr%C3%A1bida%2C_Portugal%2C_2020-07-31%2C_DD_20.jpg/330px-Mojarra_%28Diplodus_vulgaris%29%2C_Parque_natural_de_la_Arr%C3%A1bida%2C_Portugal%2C_2020-07-31%2C_DD_20.jpg"
   },
   {
     id: "sarago-maggiore",
@@ -93,7 +90,7 @@ export const specieDB: Specie[] = [
     descrizione: "Il sarago più comune e combattivo. Bande verticali scure su fondo argenteo. Si pesca con cannolicchio e mitilo.",
     min_taglia: 18, max_taglia: 55,
     stagione_migliore: "Primavera/Estate", protetta: false,
-    image_url: WP("Diplodus sargus.jpg")
+    image_url: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2c/Sargo_com%C3%BAn_%28Diplodus_sargus%29%2C_Madeira%2C_Portugal%2C_2019-05-31%2C_DD_29.jpg/330px-Sargo_com%C3%BAn_%28Diplodus_sargus%29%2C_Madeira%2C_Portugal%2C_2019-05-31%2C_DD_29.jpg"
   },
   {
     id: "sarago-testa-nera",
@@ -102,7 +99,7 @@ export const specieDB: Specie[] = [
     descrizione: "Il più grande dei saraghi, con grosse bande verticali. Vive su fondali rocciosi profondi. Molto ricercato.",
     min_taglia: 25, max_taglia: 55,
     stagione_migliore: "Autunno/Inverno", protetta: false,
-    image_url: WP("Diplodus cervinus.jpg")
+    image_url: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e6/Sargo_real_%28Diplodus_cervinus%29%2C_franja_marina_Teno-Rasca%2C_Tenerife%2C_Espa%C3%B1a%2C_2022-01-09%2C_DD_49.jpg/330px-Sargo_real_%28Diplodus_cervinus%29%2C_franja_marina_Teno-Rasca%2C_Tenerife%2C_Espa%C3%B1a%2C_2022-01-09%2C_DD_49.jpg"
   },
   {
     id: "sparaglione",
@@ -111,7 +108,7 @@ export const specieDB: Specie[] = [
     descrizione: "Il più piccolo dei saraghi, con anello nero alla radice della coda. Comunissimo nei canali e nelle foci.",
     min_taglia: 12, max_taglia: 25,
     stagione_migliore: "Primavera/Estate", protetta: false,
-    image_url: WP("Diplodus annularis.jpg")
+    image_url: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d8/Diplodus_annularis_Minorca.jpg/330px-Diplodus_annularis_Minorca.jpg"
   },
   {
     id: "cefalo",
@@ -120,7 +117,7 @@ export const specieDB: Specie[] = [
     descrizione: "Abbondantissimo nei canali. Erbivoro selettivo, difficile da ingannare. Si pesca a bolognese con pane e polenta.",
     min_taglia: 20, max_taglia: 80,
     stagione_migliore: "Tutto l'anno", protetta: false,
-    image_url: WP("Mugil cephalus.jpg")
+    image_url: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dc/M%C3%BAjol_%28Mugil_cephalus%29%2C_Parque_natural_de_la_Arr%C3%A1bida%2C_Portugal%2C_2021-09-09%2C_DD_25.jpg/330px-M%C3%BAjol_%28Mugil_cephalus%29%2C_Parque_natural_de_la_Arr%C3%A1bida%2C_Portugal%2C_2021-09-09%2C_DD_25.jpg"
   },
   {
     id: "leccia-stella",
@@ -129,7 +126,7 @@ export const specieDB: Specie[] = [
     descrizione: "Pesce piatto e velocissimo, si avvicina a riva d'estate. Combattivo e ottimo commestibile. Si pesca a spinning leggero.",
     min_taglia: 15, max_taglia: 50,
     stagione_migliore: "Estate", protetta: false,
-    image_url: WP("Trachinotus ovatus.jpg")
+    image_url: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ea/Trachinotus_ovatus_Alonissos.jpg/330px-Trachinotus_ovatus_Alonissos.jpg"
   },
   {
     id: "ombrina",
@@ -138,7 +135,7 @@ export const specieDB: Specie[] = [
     descrizione: "Piccolo barbiglio sotto la mandibola. Pesce di fondale sabbioso, si pesca al surfcasting con saraghina.",
     min_taglia: 30, max_taglia: 100,
     stagione_migliore: "Estate/Autunno", protetta: false,
-    image_url: WP("Umbrina cirrosa.jpg")
+    image_url: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b8/Umbrina_cirrosa_Acquario_di_Genova.jpg/330px-Umbrina_cirrosa_Acquario_di_Genova.jpg"
   },
   {
     id: "sogliola",
@@ -147,7 +144,7 @@ export const specieDB: Specie[] = [
     descrizione: "Pesce piatto di fondale sabbioso, notturno. Si pesca di notte con arenicola o coreano sul fondo.",
     min_taglia: 20, max_taglia: 60,
     stagione_migliore: "Primavera/Estate", protetta: false,
-    image_url: WP("Solea solea.jpg")
+    image_url: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cd/Solea_solea_1.jpg/330px-Solea_solea_1.jpg"
   },
   {
     id: "anguilla",
@@ -156,7 +153,7 @@ export const specieDB: Specie[] = [
     descrizione: "Pesce migratore catadromico, vive nel fango dei fondali. Si pesca di notte con trancio di cefalo o lombrichi.",
     min_taglia: 30, max_taglia: 130,
     stagione_migliore: "Autunno/Inverno", protetta: false,
-    image_url: WP("Anguilla anguilla.jpg")
+    image_url: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/58/Anguilla_anguilla.jpg/330px-Anguilla_anguilla.jpg"
   },
   {
     id: "palamita",
@@ -165,7 +162,7 @@ export const specieDB: Specie[] = [
     descrizione: "Tonnetto costiero velocissimo, si pesca a traina o spinning con cucchiaino. Carni rosse e gustose.",
     min_taglia: 25, max_taglia: 80,
     stagione_migliore: "Estate/Autunno", protetta: false,
-    image_url: WP("Sarda sarda.jpg")
+    image_url: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/bf/Sarda_sarda.jpg/330px-Sarda_sarda.jpg"
   },
   {
     id: "sgombro",
@@ -174,16 +171,16 @@ export const specieDB: Specie[] = [
     descrizione: "Pesce azzurro abbondante e voracissimo. Si pesca a sabiki o con piccoli cucchiaini. Carni grasse e nutrienti.",
     min_taglia: 18, max_taglia: 50,
     stagione_migliore: "Primavera/Estate", protetta: false,
-    image_url: WP("Scomber scombrus.jpg")
+    image_url: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7f/Scomber_scombrus_217326414.jpg/330px-Scomber_scombrus_217326414.jpg"
   },
   {
     id: "lanzardo",
     nome: "Lanzardo",
     scientifico: "Scomber colias",
-    descrizione: "Simile allo sgombro ma con macchie sui fianchi. Molto abbondante in autunno, si pesca a sabiki o colpetti.",
+    descrizione: "Simile allo sgombro ma con macchie sui fianchi. Molto abbondante in autunno, si pesca a sabiki.",
     min_taglia: 18, max_taglia: 45,
     stagione_migliore: "Autunno", protetta: false,
-    image_url: WP("Scomber colias.jpg")
+    image_url: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b2/Lanzardo_2.jpg/330px-Lanzardo_2.jpg"
   },
   {
     id: "ricciola",
@@ -192,7 +189,7 @@ export const specieDB: Specie[] = [
     descrizione: "Grande pelagico molto combattivo. Fascia gialla longitudinale sul fianco. Si pesca a spinning con artificiali o vivo.",
     min_taglia: 40, max_taglia: 190,
     stagione_migliore: "Estate/Autunno", protetta: false,
-    image_url: WP("Seriola dumerili.jpg")
+    image_url: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/71/Pez_lim%C3%B3n_%28Seriola_dumerili%29%2C_Madeira%2C_Portugal%2C_2019-05-31%2C_DD_31.jpg/330px-Pez_lim%C3%B3n_%28Seriola_dumerili%29%2C_Madeira%2C_Portugal%2C_2019-05-31%2C_DD_31.jpg"
   },
   {
     id: "aguglia",
@@ -201,7 +198,7 @@ export const specieDB: Specie[] = [
     descrizione: "Corpo allungatissimo con muso a becco. Vive in superficie, si pesca a galleggiante con pesciolino vivo.",
     min_taglia: 30, max_taglia: 90,
     stagione_migliore: "Primavera/Estate", protetta: false,
-    image_url: WP("Belone belone.jpg")
+    image_url: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/31/Garfish%2C_Peloponnese%2C_Peloponnese%2C_Western_Greece_and_the_Ionian_Islands%2C_GR_imported_from_iNaturalist_photo_222165464.jpg/330px-Garfish%2C_Peloponnese%2C_Peloponnese%2C_Western_Greece_and_the_Ionian_Islands%2C_GR_imported_from_iNaturalist_photo_222165464.jpg"
   },
   {
     id: "gallinella",
@@ -210,7 +207,7 @@ export const specieDB: Specie[] = [
     descrizione: "Grandi pinne pettorali colorate di blu. Si muove sul fondale 'camminando'. Carni ottime.",
     min_taglia: 20, max_taglia: 60,
     stagione_migliore: "Estate", protetta: false,
-    image_url: WP("Chelidonichthys lucerna.jpg")
+    image_url: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6d/Chelidonichthys_lucernus_1_Luc_viatour.jpg/330px-Chelidonichthys_lucernus_1_Luc_viatour.jpg"
   },
   {
     id: "cappone",
@@ -219,7 +216,7 @@ export const specieDB: Specie[] = [
     descrizione: "Pinne pettorali con raggi liberi che usa per 'camminare'. Colore arancio-rosso. Ottimo per brodetti.",
     min_taglia: 18, max_taglia: 50,
     stagione_migliore: "Autunno", protetta: false,
-    image_url: WP("Chelidonichthys cuculus.jpg")
+    image_url: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b8/Chelidonichthys_cuculus_-_Crazy_Kew_Fish.jpg/330px-Chelidonichthys_cuculus_-_Crazy_Kew_Fish.jpg"
   },
   {
     id: "triglia-fango",
@@ -228,7 +225,7 @@ export const specieDB: Specie[] = [
     descrizione: "Pesce di fondo fangoso, riconoscibile dai due barbigli sotto la mascella. Carni squisite.",
     min_taglia: 11, max_taglia: 30,
     stagione_migliore: "Primavera/Estate", protetta: false,
-    image_url: WP("Mullus barbatus.jpg")
+    image_url: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/54/Mullus_barbatus_Paros_2.JPG/330px-Mullus_barbatus_Paros_2.JPG"
   },
   {
     id: "triglia-scoglio",
@@ -237,7 +234,7 @@ export const specieDB: Specie[] = [
     descrizione: "Bande longitudinali gialle. Vive su fondali rocciosi. Colorazione vivace, carni eccellenti.",
     min_taglia: 11, max_taglia: 40,
     stagione_migliore: "Estate", protetta: false,
-    image_url: WP("Mullus surmuletus.jpg")
+    image_url: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6a/Mullus_surmuletus%2C_Bouches-du-Rh%C3%B4ne%2C_Provence-Alpes-C%C3%B4te_d%27Azur%2C_FR_imported_from_iNaturalist_photo_277193780_%28cropped%29.jpg/330px-Mullus_surmuletus%2C_Bouches-du-Rh%C3%B4ne%2C_Provence-Alpes-C%C3%B4te_d%27Azur%2C_FR_imported_from_iNaturalist_photo_277193780_%28cropped%29.jpg"
   },
   {
     id: "scorfano",
@@ -246,7 +243,7 @@ export const specieDB: Specie[] = [
     descrizione: "Pesce mimetico su fondali rocciosi. Spine velenose — maneggiare con cura! Carni bianche eccellenti per zuppe.",
     min_taglia: 25, max_taglia: 50,
     stagione_migliore: "Autunno/Inverno", protetta: false,
-    image_url: WP("Scorpaena scrofa.jpg")
+    image_url: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/60/Red_Scorpionfish_%28cropped%29.jpg/330px-Red_Scorpionfish_%28cropped%29.jpg"
   },
   {
     id: "dentice",
@@ -255,7 +252,7 @@ export const specieDB: Specie[] = [
     descrizione: "Re dei fondali rocciosi, combattivo e prelibato. Denti canini evidenti. Si pesca a fondo con vivi o a spinning.",
     min_taglia: 30, max_taglia: 100,
     stagione_migliore: "Primavera/Estate", protetta: false,
-    image_url: WP("Dentex dentex.jpg")
+    image_url: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/92/Dentex_dentex_Canary.jpg/330px-Dentex_dentex_Canary.jpg"
   },
   {
     id: "pagro",
@@ -264,7 +261,7 @@ export const specieDB: Specie[] = [
     descrizione: "Simile al dentice ma con pinne rosse. Vive su fondali rocciosi. Carni eccellenti, molto ricercato.",
     min_taglia: 25, max_taglia: 75,
     stagione_migliore: "Primavera/Estate", protetta: false,
-    image_url: WP("Pagrus pagrus.jpg")
+    image_url: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9b/Pagrus_pagrus_579910017_%28cropped%29.jpg/330px-Pagrus_pagrus_579910017_%28cropped%29.jpg"
   },
   {
     id: "pagello-fragolino",
@@ -273,7 +270,7 @@ export const specieDB: Specie[] = [
     descrizione: "Corpo rosato con macchia scura all'ascella della pinna. Pesce di fondo su sabbia e ghiaia. Ottimo al forno.",
     min_taglia: 15, max_taglia: 50,
     stagione_migliore: "Primavera/Estate", protetta: false,
-    image_url: WP("Pagellus erythrinus.jpg")
+    image_url: "https://upload.wikimedia.org/wikipedia/commons/9/9c/Pagellus_erythrinus_RO.jpg"
   },
   {
     id: "seppia",
@@ -282,7 +279,7 @@ export const specieDB: Specie[] = [
     descrizione: "Mollusco cefalopode intelligente. Si pesca a jigging con seppiolina o spinning leggero. Abbondante in primavera.",
     min_taglia: 13, max_taglia: 45,
     stagione_migliore: "Primavera", protetta: false,
-    image_url: WP("Sepia officinalis.jpg")
+    image_url: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/65/Sepia_com%C3%BAn_%28Sepia_officinalis%29%2C_Parque_natural_de_la_Arr%C3%A1bida%2C_Portugal%2C_2020-07-21%2C_DD_62.jpg/330px-Sepia_com%C3%BAn_%28Sepia_officinalis%29%2C_Parque_natural_de_la_Arr%C3%A1bida%2C_Portugal%2C_2020-07-21%2C_DD_62.jpg"
   },
   {
     id: "calamaro",
@@ -291,7 +288,7 @@ export const specieDB: Specie[] = [
     descrizione: "Cefalopode velocissimo, pesca di notte con squid jig colorato e luce subacquea. Carni tenere e versatili.",
     min_taglia: 10, max_taglia: 40,
     stagione_migliore: "Autunno/Inverno", protetta: false,
-    image_url: WP("Loligo vulgaris.jpg")
+    image_url: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Loligo_vulgaris.jpg/330px-Loligo_vulgaris.jpg"
   },
   {
     id: "polpo",
@@ -300,7 +297,7 @@ export const specieDB: Specie[] = [
     descrizione: "Maestro del mimetismo. Si pesca con polpara, traina o a vista tra le rocce. Carni saporite.",
     min_taglia: 15, max_taglia: 50,
     stagione_migliore: "Estate/Autunno", protetta: false,
-    image_url: WP("Octopus vulgaris2.jpg")
+    image_url: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/57/Octopus2.jpg/330px-Octopus2.jpg"
   },
   {
     id: "corvina",
@@ -309,7 +306,7 @@ export const specieDB: Specie[] = [
     descrizione: "Emette suoni gracchianti. Notturno, si pesca a fondo nelle foci e sugli scogli. Ottime carni.",
     min_taglia: 30, max_taglia: 80,
     stagione_migliore: "Autunno/Inverno", protetta: false,
-    image_url: WP("Sciaena umbra.jpg")
+    image_url: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3e/Corvinas_negras_%28Sciaena_umbra%29%2C_Cabo_de_Palos%2C_Espa%C3%B1a%2C_2022-07-14%2C_DD_52_%28cropped%29.jpg/330px-Corvinas_negras_%28Sciaena_umbra%29%2C_Cabo_de_Palos%2C_Espa%C3%B1a%2C_2022-07-14%2C_DD_52_%28cropped%29.jpg"
   },
   {
     id: "occhiata",
@@ -318,7 +315,7 @@ export const specieDB: Specie[] = [
     descrizione: "Macchia nera con orlatura bianca alla radice della coda. Vive in branchi vicino alla superficie.",
     min_taglia: 15, max_taglia: 35,
     stagione_migliore: "Primavera/Estate", protetta: false,
-    image_url: WP("Oblada melanura.jpg")
+    image_url: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/38/Oblada_%28Oblada_melanura%29%2C_%C4%8Airkewwa%2C_Malta%2C_Malta%2C_2021-08-24%2C_DD_26.jpg/330px-Oblada_%28Oblada_melanura%29%2C_%C4%8Airkewwa%2C_Malta%2C_Malta%2C_2021-08-24%2C_DD_26.jpg"
   },
   {
     id: "boga",
@@ -327,7 +324,7 @@ export const specieDB: Specie[] = [
     descrizione: "Piccolo pesce costiero gregario con tre striature dorate. Comunissimo, ottimo come esca viva.",
     min_taglia: 10, max_taglia: 25,
     stagione_migliore: "Tutto l'anno", protetta: false,
-    image_url: WP("Boops boops.jpg")
+    image_url: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6f/Boops_boops_Karpathos_01.JPG/330px-Boops_boops_Karpathos_01.JPG"
   },
   {
     id: "zerro",
@@ -336,16 +333,16 @@ export const specieDB: Specie[] = [
     descrizione: "Piccolo pesce a macchia azzurra sul fianco. Vive in fitti branchi. Ottimo fritto o come esca.",
     min_taglia: 10, max_taglia: 20,
     stagione_migliore: "Estate", protetta: false,
-    image_url: WP("Spicara smaris.jpg")
+    image_url: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/44/Spicara_smaris_2.jpg/330px-Spicara_smaris_2.jpg"
   },
   {
     id: "salpa",
     nome: "Salpa",
     scientifico: "Sarpa salpa",
-    descrizione: "Striature dorate longitudinali. Pesce erbivoro selettivo. Carni di scarso pregio ma combattiva.",
+    descrizione: "Striature dorate longitudinali. Pesce erbivoro selettivo. Combattiva ma carni di scarso pregio.",
     min_taglia: 15, max_taglia: 45,
     stagione_migliore: "Estate", protetta: false,
-    image_url: WP("Sarpa salpa.jpg")
+    image_url: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/74/Sarpa_salpa_.jpg/330px-Sarpa_salpa_.jpg"
   },
   {
     id: "alaccia",
@@ -354,7 +351,7 @@ export const specieDB: Specie[] = [
     descrizione: "Simile alla sardina ma con linea dorata. Abbondante in estate vicino alla costa. Ottima come esca viva.",
     min_taglia: 10, max_taglia: 25,
     stagione_migliore: "Estate", protetta: false,
-    image_url: WP("Sardinella aurita.jpg")
+    image_url: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a1/Sardinella_aurita_New_Jersey.jpg/330px-Sardinella_aurita_New_Jersey.jpg"
   },
   {
     id: "sugarello",
@@ -363,7 +360,7 @@ export const specieDB: Specie[] = [
     descrizione: "Linea laterale corazzata con scudetti. Si pesca a sabiki in banco. Buono marinato o come esca.",
     min_taglia: 15, max_taglia: 40,
     stagione_migliore: "Estate/Autunno", protetta: false,
-    image_url: WP("Trachurus trachurus.jpg")
+    image_url: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7d/Atlantic_Horse_Mackerel.jpg/330px-Atlantic_Horse_Mackerel.jpg"
   },
   {
     id: "pesce-san-pietro",
@@ -372,7 +369,7 @@ export const specieDB: Specie[] = [
     descrizione: "Macchia tonda scura sul fianco (impronta del pollice di San Pietro). Corpo compresso, ottimo da cucinare.",
     min_taglia: 25, max_taglia: 60,
     stagione_migliore: "Autunno/Inverno", protetta: false,
-    image_url: WP("Zeus faber.jpg")
+    image_url: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a6/Zeus.faber.jpg/330px-Zeus.faber.jpg"
   },
   {
     id: "lampuga",
@@ -381,7 +378,7 @@ export const specieDB: Specie[] = [
     descrizione: "Colorazione iridescente stupenda in vita. Pesce pelagico velocissimo, si pesca a traina in mare aperto.",
     min_taglia: 40, max_taglia: 180,
     stagione_migliore: "Estate/Autunno", protetta: false,
-    image_url: WP("Coryphaena hippurus.jpg")
+    image_url: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/94/Coryphaenahippurus.JPG/330px-Coryphaenahippurus.JPG"
   },
   {
     id: "musdea",
@@ -390,7 +387,7 @@ export const specieDB: Specie[] = [
     descrizione: "Pesce di fondo con barbigli sotto la mascella. Si pesca di notte in profondità. Carni bianche e delicate.",
     min_taglia: 15, max_taglia: 60,
     stagione_migliore: "Autunno/Inverno", protetta: false,
-    image_url: WP("Phycis phycis.jpg")
+    image_url: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/37/Sparidae_-_Phycis_phycis.JPG/330px-Sparidae_-_Phycis_phycis.JPG"
   },
   {
     id: "nasello",
@@ -399,7 +396,7 @@ export const specieDB: Specie[] = [
     descrizione: "Predatore di mezza acqua e di fondo. Si pesca di notte a fondo con saraghina o pesciolino.",
     min_taglia: 20, max_taglia: 100,
     stagione_migliore: "Autunno/Inverno", protetta: false,
-    image_url: WP("Merluccius merluccius.jpg")
+    image_url: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/01/Merluccius_merluccius.002_-_Aquarium_Finisterrae.JPG/330px-Merluccius_merluccius.002_-_Aquarium_Finisterrae.JPG"
   },
   {
     id: "razza",
@@ -408,7 +405,7 @@ export const specieDB: Specie[] = [
     descrizione: "Elasmobranchio di forma romboidale. Si pesca accidentalmente a fondo su sabbia. Spine sul dorso — attenzione.",
     min_taglia: 40, max_taglia: 120,
     stagione_migliore: "Autunno/Inverno", protetta: false,
-    image_url: WP("Raja clavata.jpg")
+    image_url: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/36/Raja_clavata_%28juv%29.jpg/330px-Raja_clavata_%28juv%29.jpg"
   },
   {
     id: "squatina",
@@ -417,7 +414,7 @@ export const specieDB: Specie[] = [
     descrizione: "Elasmobranchio piatto. Gravemente minacciato — rilasciare immediatamente con la massima cura.",
     min_taglia: 80, max_taglia: 180,
     stagione_migliore: "Estate", protetta: true,
-    image_url: WP("Squatina squatina.jpg")
+    image_url: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/30/Squatina_squatina_120867948.jpg/330px-Squatina_squatina_120867948.jpg"
   },
   {
     id: "murena",
@@ -426,7 +423,7 @@ export const specieDB: Specie[] = [
     descrizione: "Serpentiforme, si nasconde tra le rocce. Morso potente — maneggiare con estrema cautela. Carni bianche e buone.",
     min_taglia: 50, max_taglia: 150,
     stagione_migliore: "Estate", protetta: false,
-    image_url: WP("Muraena helena.jpg")
+    image_url: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4e/Morena_del_Mediterr%C3%A1neo_%28Muraena_helena%29%2C_Regga%2C_Gozo%2C_Malta%2C_2021-08-23%2C_DD_14.jpg/330px-Morena_del_Mediterr%C3%A1neo_%28Muraena_helena%29%2C_Regga%2C_Gozo%2C_Malta%2C_2021-08-23%2C_DD_14.jpg"
   },
   {
     id: "ghiozzo",
@@ -435,7 +432,7 @@ export const specieDB: Specie[] = [
     descrizione: "Piccolo pesce di fondo abbondante nei canali. Prima cattura per molti giovani pescatori. Ottimo fritto.",
     min_taglia: 5, max_taglia: 18,
     stagione_migliore: "Tutto l'anno", protetta: false,
-    image_url: WP("Gobius niger.jpg")
+    image_url: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2c/Gobius_niger_%28Stefano_Guerrieri%29_1.jpg/330px-Gobius_niger_%28Stefano_Guerrieri%29_1.jpg"
   },
   {
     id: "astice",
@@ -444,7 +441,7 @@ export const specieDB: Specie[] = [
     descrizione: "Crostaceo blu-nero con chele potenti. Specie protetta — taglia minima 87 mm carapace. Rilasciarlo sempre.",
     min_taglia: 87, max_taglia: 60,
     stagione_migliore: "Estate", protetta: true,
-    image_url: WP("Homarus gammarus.jpg")
+    image_url: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0b/KreeftbijDenOsse.jpg/330px-KreeftbijDenOsse.jpg"
   },
   {
     id: "aragosta",
@@ -453,7 +450,7 @@ export const specieDB: Specie[] = [
     descrizione: "Crostaceo senza chele, antenne lunghissime. Specie protetta. Pesca con nasse vietata senza licenza.",
     min_taglia: 90, max_taglia: 50,
     stagione_migliore: "Estate", protetta: true,
-    image_url: WP("Palinurus elephas.jpg")
+    image_url: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1f/Monaco.Mus%C3%A9e_oc%C3%A9anographique089.jpg/330px-Monaco.Mus%C3%A9e_oc%C3%A9anographique089.jpg"
   },
   {
     id: "tonno-rosso",
@@ -462,7 +459,7 @@ export const specieDB: Specie[] = [
     descrizione: "Il grande pelagico del Mediterraneo. Soggetto a quote, pesca sportiva regolamentata. Carni pregiatis­sime.",
     min_taglia: 115, max_taglia: 300,
     stagione_migliore: "Estate", protetta: false,
-    image_url: WP("Thunnus thynnus.jpg")
+    image_url: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/18/Bluefin-big.jpg/330px-Bluefin-big.jpg"
   },
   {
     id: "palamita-bianca",
@@ -471,6 +468,6 @@ export const specieDB: Specie[] = [
     descrizione: "Tonnetto con pinne pettorali lunghissime. Si pesca a traina in mare aperto. Carni più chiare del tonno rosso.",
     min_taglia: 40, max_taglia: 120,
     stagione_migliore: "Estate", protetta: false,
-    image_url: WP("Thunnus alalunga.jpg")
+    image_url: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/Thon_germon_%28Thunnus_alalunga%29_%28Ifremer_00764-87615%29.jpg/330px-Thon_germon_%28Thunnus_alalunga%29_%28Ifremer_00764-87615%29.jpg"
   },
 ];
