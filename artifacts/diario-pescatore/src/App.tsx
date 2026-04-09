@@ -7,6 +7,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AppLayout } from "./components/layout/AppLayout";
 import { SplashScreen } from "./components/SplashScreen";
 import { PwaInstallBanner } from "./components/PwaInstallBanner";
+import { ScanFishModal } from "./components/ScanFishModal";
 
 declare const __APP_VERSION__: string;
 
@@ -139,9 +140,9 @@ function BalloonDonation() {
   );
 }
 
-function Router({ onLogoTap }: { onLogoTap: () => void }) {
+function Router({ onLogoTap, onScanOpen }: { onLogoTap: () => void; onScanOpen: () => void }) {
   return (
-    <AppLayout onLogoTap={onLogoTap}>
+    <AppLayout onLogoTap={onLogoTap} onScanOpen={onScanOpen}>
       <BalloonDonation />
       <Suspense fallback={<PageLoader />}>
         <Switch>
@@ -204,6 +205,7 @@ function getSid() {
 
 function App() {
   const [showSplash, setShowSplash] = useState(true);
+  const [scanOpen, setScanOpen] = useState(false);
 
   // ── Admin panel ──────────────────────────────────────────────────────────────
   const [adminOpen, setAdminOpen] = useState(false);
@@ -312,7 +314,8 @@ function App() {
         {showSplash && <SplashScreen onComplete={() => setShowSplash(false)} />}
         {!showSplash && (
           <WouterRouter base={import.meta.env.BASE_URL === "/" ? "/diario-pescatore" : import.meta.env.BASE_URL.replace(/\/$/, "")}>
-            <Router onLogoTap={handleLogoTap} />
+            <Router onLogoTap={handleLogoTap} onScanOpen={() => setScanOpen(true)} />
+            <ScanFishModal open={scanOpen} onClose={() => setScanOpen(false)} />
           </WouterRouter>
         )}
         {!showSplash && <PwaInstallBanner />}

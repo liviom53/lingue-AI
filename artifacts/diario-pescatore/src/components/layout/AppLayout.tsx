@@ -3,7 +3,7 @@ import { Link, useLocation } from "wouter";
 import {
   Home, Anchor, Fish, MapPin, BookOpen, Wrench, ChefHat,
   CloudSun, Moon, LineChart, Bot, Car, Wallet, Menu, X,
-  Download, Upload, Waves, Settings, Heart
+  Download, Upload, Waves, Settings, Heart, ScanLine
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -71,7 +71,7 @@ function importData() {
   input.click();
 }
 
-export function AppLayout({ children, onLogoTap }: { children: React.ReactNode; onLogoTap?: () => void }) {
+export function AppLayout({ children, onLogoTap, onScanOpen }: { children: React.ReactNode; onLogoTap?: () => void; onScanOpen?: () => void }) {
   const [location] = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -156,10 +156,11 @@ export function AppLayout({ children, onLogoTap }: { children: React.ReactNode; 
 
         {/* SCAN FAB */}
         <button
-          onClick={() => { setIsMobileMenuOpen(true); onLogoTap?.(); }}
+          onClick={() => onScanOpen?.()}
           className="relative -top-5 flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-tr from-primary to-blue-500 shadow-[0_0_24px_hsla(175,80%,40%,0.5)] border-4 border-background text-white hover:scale-105 active:scale-95 transition-all duration-200"
+          aria-label="Scanner cattura"
         >
-          <span className="text-2xl">🎣</span>
+          <ScanLine className="w-7 h-7" />
         </button>
 
         <Link href="/previsioni" className={cn("flex flex-col items-center gap-1 p-2 transition-colors", location === "/previsioni" ? "text-primary" : "text-sidebar-foreground/50 hover:text-sidebar-foreground")}>

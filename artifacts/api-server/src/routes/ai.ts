@@ -493,6 +493,48 @@ router.post("/variants", async (req: Request, res: Response) => {
   }
 });
 
+// ── Scanner cattura: riconoscimento specie via vision AI ─────────────────────
+const VISION_MODEL = "google/gemini-2.5-flash-lite";
+
+router.post("/scan-fish", async (req: Request, res: Response) => {
+  const { imageBase64 } = req.body as { imageBase64: string };
+  if (!imageBase64) {
+    res.status(400).json({ error: "Immagine mancante" });
+    return;
+  }
+  try {
+    const completion = await openrouter.chat.completions.create({
+      model: VISION_MODEL,
+      messages: [
+        {
+          role: "user",
+          content: [
+            { type: "image_url", image_url: { url: imageBase64 } },
+            {
+              type: "text",
+              text: `Sei un esperto ittiologista italiano. Analizza questa foto e identifica il pesce, mollusco o crostaceo presente.
+Rispondi SOLO con JSON valido, nessun testo extra, nessun markdown.
+Se riconosci la specie:
+{"riconosciuto":true,"specie":"nome comune italiano","nome_scientifico":"nome scientifico","descrizione":"1-2 frasi descrittive","peso_tipico":"es. 1-5 kg","lunghezza_tipica":"es. 30-70 cm"}
+Se non è un pesce/mollusco/crostaceo riconoscibile oppure l'immagine è poco chiara:
+{"riconosciuto":false,"messaggio":"spiegazione breve in italiano"}`,
+            },
+          ],
+        },
+      ],
+    });
+    const raw = completion.choices[0]?.message?.content ?? "{}";
+    const clean = raw.replace(/^```json\s*/i, "").replace(/```$/, "").trim();
+    const jsonMatch = clean.match(/\{[\s\S]*\}/);
+    const parsed = jsonMatch
+      ? JSON.parse(jsonMatch[0])
+      : { riconosciuto: false, messaggio: "Errore di analisi" };
+    res.json(parsed);
+  } catch (err: unknown) {
+    res.status(500).json({ error: errMsg(err) });
+  }
+});
+
 // ── Open-Meteo marine: condizioni attuali ───────────────────────────────────
 const DIARIO_DEFAULT_LAT = 41.40;
 const DIARIO_DEFAULT_LON = 13.03;
