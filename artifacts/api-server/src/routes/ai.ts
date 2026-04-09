@@ -493,6 +493,37 @@ router.post("/variants", async (req: Request, res: Response) => {
   }
 });
 
+// ── Fishing advice: consiglio AI per uscita di pesca ─────────────────────────
+router.post("/fishing-advice", async (req: Request, res: Response) => {
+  const { context, spotConfig } = req.body as { context: string; spotConfig?: { nome?: string; descrizione?: string } };
+  if (!context) {
+    res.status(400).json({ error: "Contesto mancante" });
+    return;
+  }
+  const spotInfo = spotConfig?.descrizione
+    ? `Spot personalizzato — ${spotConfig.nome ?? "spot"}: ${spotConfig.descrizione}`
+    : "Zona: Porto Badino / Canale Fiume Portatore, costa laziale.";
+  try {
+    const completion = await openrouter.chat.completions.create({
+      model: MODEL,
+      messages: [
+        {
+          role: "system",
+          content: `Sei un pescatore esperto di Porto Badino (Canale Fiume Portatore, costa laziale). ${spotInfo} Solo pesca da terra. Rispondi in italiano, massimo 6 righe, molto pratico e concreto: orario migliore, esca consigliata, posizione esatta (foce / metà canale / canale interno), specie target, tecnica.`,
+        },
+        {
+          role: "user",
+          content: `Condizioni attuali: ${context}\n\nDammi il tuo consiglio per questa uscita.`,
+        },
+      ],
+    });
+    const reply = completion.choices[0]?.message?.content ?? "Nessuna risposta ricevuta.";
+    res.json({ reply });
+  } catch (err: unknown) {
+    res.status(500).json({ error: errMsg(err) });
+  }
+});
+
 // ── Scanner cattura: riconoscimento specie via vision AI ─────────────────────
 const VISION_MODEL = "google/gemini-2.0-flash-001";
 

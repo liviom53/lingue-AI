@@ -5,6 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { ChevronLeft, ChevronRight, Bot, Loader2, Wind } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { STAZIONI } from "@/hooks/use-location";
+import { loadSpotConfig } from "@/pages/Impostazioni";
 
 /* ─── WMO ─── */
 const WMO: Record<number, { label: string; emoji: string }> = {
@@ -222,7 +223,6 @@ const TABS=[
   {id:"ai",label:"🤖 Assistente AI"},
 ];
 
-const DEEPSEEK_KEY="sk-84b89b428959461e818ad77775913978";
 
 /* ─── MAIN COMPONENT ─── */
 export function FishingForecastCard({stazioneKey}:{stazioneKey:string}) {
@@ -268,24 +268,22 @@ export function FishingForecastCard({stazioneKey}:{stazioneKey:string}) {
     setAiError(null);
     const stNome=STAZIONI[stazioneKey]?.nome??"Porto Badino";
     const ctx=`Stazione: ${stNome}. Giorno: ${format(date,"EEEE d MMM",{locale:it})}. Punteggio: ${score}/100 (${label}). Vento: ${Math.round(windKn)}kn ${windDirLabel(wDir)} (${favWindDir?"favorevole alla foce":"sfavorevole"}). Onde: ${waveH.toFixed(1)}m. Temp. mare: ${sst.toFixed(1)}°C. Meteo: ${wmo(wmoCode).label}. Maree: ${tides.slice(0,3).map(t=>`${t.tipo==="alta"?"alta":"bassa"} h${t.ora}:00`).join(", ")}. Luna: ${moon.nome} ${moon.illum}%. Canale: livello ${field.level}, torbidità ${field.turbidity}, corrente ${field.current}${field.fishVisible?", pesci visibili in superficie":""}.${field.notes?` Note: ${field.notes}.`:""}`;
+    const spotConfig=loadSpotConfig();
     try{
-      const r=await fetch("https://api.deepseek.com/v1/chat/completions",{
+      const r=await fetch("/api/ai/fishing-advice",{
         method:"POST",
-        headers:{"Content-Type":"application/json","Authorization":`Bearer ${DEEPSEEK_KEY}`},
+        headers:{"Content-Type":"application/json"},
         body:JSON.stringify({
-          model:"deepseek-chat",
-          messages:[
-            {role:"system",content:"Sei un pescatore esperto di Porto Badino (Canale Fiume Portatore, costa laziale). Conosci il Portatore come le tue tasche. Solo pesca da terra. Rispondi in italiano, massimo 6 righe, molto pratico e concreto: orario migliore, esca consigliata, posizione esatta (foce / metà canale / canale interno), specie target, tecnica."},
-            {role:"user",content:`Condizioni attuali: ${ctx}\n\nDammi il tuo consiglio per questa uscita.`}
-          ]
+          context:ctx,
+          spotConfig:spotConfig??undefined,
         })
       });
       const d=await r.json();
       if(!r.ok){
-        const msg=d.error?.message||`Errore ${r.status}`;
+        const msg=d.error||`Errore ${r.status}`;
         throw new Error(msg);
       }
-      setAiReply(d.choices?.[0]?.message?.content??"Nessuna risposta ricevuta.");
+      setAiReply(d.reply??"Nessuna risposta ricevuta.");
     }catch(e:any){
       setAiError(e.message||"Errore di connessione. Controlla la rete.");
     }finally{
@@ -514,7 +512,7 @@ export function FishingForecastCard({stazioneKey}:{stazioneKey:string}) {
               <div className="text-center py-6">
                 <Bot className="w-10 h-10 text-violet-400 mx-auto mb-3"/>
                 <p className="text-sm text-muted-foreground mb-4">
-                  Analisi contestuale DeepSeek · orario · esca · posizione · specie
+                  Analisi AI contestuale · orario · esca · posizione · specie
                 </p>
               </div>
             )}
@@ -523,7 +521,7 @@ export function FishingForecastCard({stazioneKey}:{stazioneKey:string}) {
               {aiLoading?<><Loader2 className="w-4 h-4 animate-spin"/>Analisi in corso…</>
                 :<><Bot className="w-4 h-4"/>{aiReply?"Rigenera consiglio":"Chiedi al guru di Porto Badino"}</>}
             </button>
-            <p className="text-center text-[10px] text-muted-foreground/50">DeepSeek Chat · deepseek-chat</p>
+            <p className="text-center text-[10px] text-muted-foreground/50">Guru AI · powered by OpenRouter</p>
           </div>
         )}
       </div>
