@@ -9,6 +9,7 @@
 > PWA per italiani che imparano lingue straniere: traduzione in 29 lingue, pronuncia realistica, shadowing, roleplay AI, grammatica X-Ray, segnalibri, quiz Tatoeba, profilo personalizzato e supporto offline completo.
 
 Produzione: `https://web-app-creator--liviomazzocchi.replit.app/lingua-ai/`
+Landing page: `https://web-app-creator--liviomazzocchi.replit.app/lingua-ai-landing/`
 
 ---
 
@@ -198,6 +199,25 @@ Tab: 👤 Profilo · 📊 Progressi · 📖 Vocabolario
 | `POST` | `/api/ai/app-help` | Risposta AI su funzionalità dell'app |
 | `POST` | `/api/ai/lingva` | Proxy Lingva + fallback MyMemory |
 | `GET` | `/api/version` | Versione corrente (timestamp avvio server) |
+
+---
+
+## Landing page
+
+Pagina di presentazione e installazione dell'app, pensata per la condivisione:
+
+- **URL**: `https://web-app-creator--liviomazzocchi.replit.app/lingua-ai-landing/`
+- **Percorso**: `artifacts/lingua-ai-landing/`
+- QR code che punta direttamente all'app
+- Pulsante "Apri l'app" e "Copia link"
+- Istruzioni passo-passo per installare la PWA su Android e iPhone
+- Lista delle funzionalità principali
+
+Per avviarla in locale:
+
+```bash
+pnpm --filter @workspace/lingua-ai-landing run dev
+```
 
 ---
 
