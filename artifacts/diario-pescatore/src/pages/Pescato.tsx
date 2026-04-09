@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { pescatoAPI, spotAPI } from "@/hooks/use-local-data";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
@@ -36,24 +36,6 @@ export default function Pescato() {
     catchAndRelease: false, note: "", foto: ""
   });
 
-  useEffect(() => {
-    const raw = localStorage.getItem("_diario_scan_result");
-    if (raw) {
-      localStorage.removeItem("_diario_scan_result");
-      try {
-        const scan = JSON.parse(raw);
-        const today = new Date().toISOString().split("T")[0];
-        setFormData(f => ({
-          ...f,
-          specie: scan.specie || "",
-          foto: scan.foto || "",
-          data: scan.data || today,
-          note: scan.note || "",
-        }));
-        setIsFormOpen(true);
-      } catch {}
-    }
-  }, []);
 
   const resetForm = () => {
     setFormData({ data: "", specie: "", peso: "", lunghezza: "", spotId: "", catchAndRelease: false, note: "", foto: "" });
