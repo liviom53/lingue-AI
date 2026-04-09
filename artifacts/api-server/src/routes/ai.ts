@@ -5,6 +5,10 @@ const router = Router();
 
 const MODEL = "deepseek/deepseek-chat";
 
+function errMsg(err: unknown, fallback = "AI error"): string {
+  return err instanceof Error ? err.message : fallback;
+}
+
 const LANG_NAMES: Record<string, string> = {
   en: "English",
   es: "Spanish",
@@ -114,8 +118,8 @@ Respond ONLY with valid JSON in this exact format (no markdown, no extra text):
     const clean = raw.replace(/^```json\s*/i, "").replace(/```$/, "").trim();
     const parsed = JSON.parse(clean);
     res.json(parsed);
-  } catch (err: any) {
-    res.status(500).json({ error: err.message ?? "AI error" });
+  } catch (err: unknown) {
+    res.status(500).json({ error: errMsg(err) });
   }
 });
 
@@ -165,8 +169,8 @@ Rules:
     });
     const reply = completion.choices[0]?.message?.content ?? "";
     res.json({ reply });
-  } catch (err: any) {
-    res.status(500).json({ error: err.message ?? "AI error" });
+  } catch (err: unknown) {
+    res.status(500).json({ error: errMsg(err) });
   }
 });
 
@@ -204,8 +208,8 @@ Respond ONLY with valid JSON (no markdown, no extra text):
     const raw = completion.choices[0]?.message?.content ?? "{}";
     const clean = raw.replace(/^```json\s*/i, "").replace(/```$/, "").trim();
     res.json(JSON.parse(clean));
-  } catch (err: any) {
-    res.status(500).json({ error: err.message ?? "AI error" });
+  } catch (err: unknown) {
+    res.status(500).json({ error: errMsg(err) });
   }
 });
 
@@ -239,8 +243,8 @@ Respond ONLY with valid JSON (no markdown):
     const raw = completion.choices[0]?.message?.content ?? "{}";
     const clean = raw.replace(/^```json\s*/i, "").replace(/```$/, "").trim();
     res.json(JSON.parse(clean));
-  } catch (err: any) {
-    res.status(500).json({ error: err.message ?? "AI error" });
+  } catch (err: unknown) {
+    res.status(500).json({ error: errMsg(err) });
   }
 });
 
@@ -280,8 +284,8 @@ router.post("/app-help", async (req: Request, res: Response) => {
     });
     const answer = completion.choices[0]?.message?.content ?? "";
     res.json({ answer });
-  } catch (err: any) {
-    res.status(500).json({ error: err.message ?? "AI error" });
+  } catch (err: unknown) {
+    res.status(500).json({ error: errMsg(err) });
   }
 });
 
@@ -365,8 +369,8 @@ router.post("/lingva", async (req: Request, res: Response) => {
     const result = await tryMyMemory(text, targetLang);
     res.json(result);
     return;
-  } catch (mmErr: any) {
-    console.error("MyMemory fallback failed:", mmErr.message);
+  } catch (mmErr: unknown) {
+    console.error("MyMemory fallback failed:", errMsg(mmErr));
   }
 
   // 3️⃣ Tutti i provider falliti
@@ -399,8 +403,8 @@ router.post("/ipa", async (req: Request, res: Response) => {
     const raw = completion.choices[0]?.message?.content ?? "{}";
     const clean = raw.replace(/^```json\s*/i, "").replace(/```$/, "").trim();
     res.json(JSON.parse(clean));
-  } catch (err: any) {
-    res.status(500).json({ error: err.message ?? "AI error" });
+  } catch (err: unknown) {
+    res.status(500).json({ error: errMsg(err) });
   }
 });
 
@@ -450,8 +454,8 @@ router.get('/tatoeba-quiz', async (req: Request, res: Response) => {
     }
 
     res.json({ questions: pairs });
-  } catch (err: any) {
-    res.status(502).json({ error: err.message ?? 'Errore Tatoeba' });
+  } catch (err: unknown) {
+    res.status(502).json({ error: errMsg(err, "Errore Tatoeba") });
   }
 });
 
@@ -484,8 +488,8 @@ router.post("/variants", async (req: Request, res: Response) => {
     const jsonMatch = raw.match(/\{[\s\S]*\}/);
     const parsed = jsonMatch ? JSON.parse(jsonMatch[0]) : { variants: [] };
     res.json(parsed);
-  } catch (err: any) {
-    res.status(502).json({ error: err.message ?? "Errore varianti" });
+  } catch (err: unknown) {
+    res.status(502).json({ error: errMsg(err, "Errore varianti") });
   }
 });
 
@@ -515,8 +519,8 @@ router.post("/diario", async (req: Request, res: Response) => {
     const reply =
       completion.choices[0]?.message?.content ?? "Nessuna risposta ricevuta.";
     res.json({ reply });
-  } catch (err: any) {
-    res.status(500).json({ error: err.message ?? "Errore AI" });
+  } catch (err: unknown) {
+    res.status(500).json({ error: errMsg(err, "Errore AI") });
   }
 });
 
