@@ -113,7 +113,7 @@ function ScannerCard() {
     textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: "4px",
   };
 
-  const canRiconosci = step === "ready";
+  const canRiconosci = (step === "ready" || step === "done") && !addMutation.isPending;
   const canSalva = step === "done" && outcome === "success" && !!form.specie && !addMutation.isPending;
 
   return (
@@ -152,7 +152,7 @@ function ScannerCard() {
           {step === "done" && outcome === "fail" && (
             <div style={{ marginTop: "10px", display: "flex", alignItems: "center", gap: "8px", padding: "10px 14px", background: "#1e1a0a", border: "1px solid #854d0e", borderRadius: "12px", color: "#fef08a", fontSize: "0.82rem" }}>
               <AlertCircle style={{ width: 18, height: 18, color: "#eab308", flexShrink: 0 }} />
-              Nessun pesce riconosciuto. Riprova con foto più chiara.
+              Nessun pesce riconosciuto — ripremi Riconosci per ritentare.
             </div>
           )}
         </div>
