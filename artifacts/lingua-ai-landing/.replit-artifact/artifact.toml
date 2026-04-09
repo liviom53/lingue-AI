@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/lingua-ai-landing/"
+title = "Lingua AI — Installa l'app"
+version = "1.0.0"
+id = "artifacts/lingua-ai-landing"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/lingua-ai-landing/" ]
+localPort = 23645
+
+[services.development]
+run = "pnpm --filter @workspace/lingua-ai-landing run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/lingua-ai-landing", "run", "build" ]
+publicDir = "artifacts/lingua-ai-landing/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "23645"
+BASE_PATH = "/lingua-ai-landing/"
