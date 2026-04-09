@@ -46,6 +46,12 @@ export default function AI() {
       }
       const reply = data.reply ?? "Nessuna risposta ricevuta.";
       setMessages(prev => [...prev, { role: "assistant", content: reply }]);
+      const sid = localStorage.getItem("_diario_sid") ?? undefined;
+      fetch("/api/stats/track/diario_ai_call", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ session_id: sid }),
+      }).catch(() => {});
     } catch (err: any) {
       const msg = err.message || "Errore di connessione.";
       setError(msg);

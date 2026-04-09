@@ -72,51 +72,54 @@ function Router({ onLogoTap }: { onLogoTap: () => void }) {
   );
 }
 
-function getLocalStats() {
-  const keys = [
-    { key: "diario_uscite",       label: "🎣 Uscite" },
-    { key: "diario_catture",      label: "🐟 Catture" },
-    { key: "diario_spot",         label: "📍 Spot" },
-    { key: "diario_attrezzatura", label: "🔧 Attrezzatura" },
-    { key: "diario_ricette",      label: "👨‍🍳 Ricette" },
-    { key: "diario_veicoli",      label: "🚗 Veicoli" },
-    { key: "diario_finanze",      label: "💰 Registrazioni finanze" },
-  ];
-  return keys.map(({ key, label }) => {
-    try {
-      const arr = JSON.parse(localStorage.getItem(key) || "[]");
-      return { label, count: Array.isArray(arr) ? arr.length : 0 };
-    } catch {
-      return { label, count: 0 };
-    }
-  });
+interface StatRow {
+  event_name: string;
+  total: number;
+  unique_sessions: number;
+  last_24h: number;
+  last_7d: number;
+  last_30d: number;
+  prev_7d: number;
+  last_event: string | null;
 }
 
-function getLocalStorageKB() {
-  let total = 0;
-  for (let i = 0; i < localStorage.length; i++) {
-    const k = localStorage.key(i) ?? "";
-    if (k.startsWith("diario_")) {
-      total += (localStorage.getItem(k) ?? "").length;
-    }
-  }
-  return (total / 1024).toFixed(1);
+interface DailyRow {
+  event_name: string;
+  day: string;
+  count: number;
+}
+
+const EVENT_LABELS: Record<string, string> = {
+  diario_landing_view:    "🔗 Visite landing page",
+  diario_app_open:        "📱 Aperture app",
+  diario_app_installed:   "⬇️ Installazioni Android",
+  diario_ai_call:         "🤖 Chiamate AI Pescatore",
+};
+
+function getSid() {
+  let sid = localStorage.getItem("_diario_sid");
+  if (!sid) { sid = crypto.randomUUID(); localStorage.setItem("_diario_sid", sid); }
+  return sid;
 }
 
 function App() {
   const [showSplash, setShowSplash] = useState(true);
 
+  // ── Admin panel ──────────────────────────────────────────────────────────────
   const [adminOpen, setAdminOpen] = useState(false);
   const [adminAuthenticated, setAdminAuthenticated] = useState(false);
   const [adminInput, setAdminInput] = useState("");
   const [adminError, setAdminError] = useState<string | null>(null);
-  const [adminStats, setAdminStats] = useState<{ label: string; count: number }[]>([]);
-  const [adminKB, setAdminKB] = useState("0");
+  const [adminStats, setAdminStats] = useState<StatRow[]>([]);
+  const [adminDaily, setAdminDaily] = useState<DailyRow[]>([]);
+  const [adminFirstEvent, setAdminFirstEvent] = useState<string | null>(null);
+  const [adminLoading, setAdminLoading] = useState(false);
   const [confirmClear, setConfirmClear] = useState(false);
 
   const logoTapCountRef = useRef(0);
   const logoTapTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // ── Splash ───────────────────────────────────────────────────────────────────
   useEffect(() => {
     const hasSeenSplash = sessionStorage.getItem("diario_has_seen_splash");
     if (hasSeenSplash) {
@@ -126,6 +129,30 @@ function App() {
     }
   }, []);
 
+  // ── Tracking app open ────────────────────────────────────────────────────────
+  useEffect(() => {
+    const sid = getSid();
+    const SESSION_KEY = "diario_app_open_tracked";
+    if (!sessionStorage.getItem(SESSION_KEY)) {
+      sessionStorage.setItem(SESSION_KEY, "1");
+      fetch("/api/stats/track/diario_app_open", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ session_id: sid }),
+      }).catch(() => {});
+    }
+    const onInstalled = () => {
+      fetch("/api/stats/track/diario_app_installed", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ session_id: sid }),
+      }).catch(() => {});
+    };
+    window.addEventListener("appinstalled", onInstalled);
+    return () => window.removeEventListener("appinstalled", onInstalled);
+  }, []);
+
+  // ── Keyboard shortcut Ctrl+Shift+5 ──────────────────────────────────────────
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.ctrlKey && e.shiftKey && e.code === "Digit5") {
@@ -137,6 +164,7 @@ function App() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
+  // ── 7 tap sul logo ───────────────────────────────────────────────────────────
   const handleLogoTap = () => {
     logoTapCountRef.current += 1;
     if (logoTapTimerRef.current) clearTimeout(logoTapTimerRef.current);
@@ -156,28 +184,35 @@ function App() {
     setConfirmClear(false);
   };
 
-  const adminLogin = () => {
-    if (adminInput === "macolingue") {
-      setAdminStats(getLocalStats());
-      setAdminKB(getLocalStorageKB());
+  const adminLogin = async () => {
+    setAdminLoading(true);
+    setAdminError(null);
+    try {
+      const res = await fetch(`/api/stats/diario?password=${encodeURIComponent(adminInput)}`);
+      if (!res.ok) throw new Error("Password errata");
+      const data = await res.json();
+      setAdminStats(data.stats);
+      setAdminDaily(data.daily ?? []);
+      setAdminFirstEvent(data.first_event ?? null);
       setAdminAuthenticated(true);
-      setAdminError(null);
-    } else {
-      setAdminError("Password errata");
+    } catch (err: unknown) {
+      setAdminError(err instanceof Error ? err.message : "Errore");
+    } finally {
+      setAdminLoading(false);
     }
-  };
-
-  const adminRefresh = () => {
-    setAdminStats(getLocalStats());
-    setAdminKB(getLocalStorageKB());
   };
 
   const clearAllData = () => {
     const keys = ["diario_uscite", "diario_catture", "diario_spot", "diario_attrezzatura", "diario_ricette", "diario_veicoli", "diario_finanze"];
     keys.forEach(k => localStorage.removeItem(k));
-    adminRefresh();
     setConfirmClear(false);
   };
+
+  const totalEvents = adminStats.reduce((s, r) => s + Number(r.total), 0);
+  const last7Days = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(); d.setDate(d.getDate() - (6 - i));
+    return d.toISOString().split("T")[0];
+  });
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -191,6 +226,7 @@ function App() {
         {!showSplash && <PwaInstallBanner />}
         <Toaster />
 
+        {/* ── Pannello admin ───────────────────────────────────────────────── */}
         {adminOpen && (
           <div
             style={{
@@ -205,12 +241,13 @@ function App() {
               onClick={e => e.stopPropagation()}
               style={{
                 background: "#0f172a", border: "1px solid #334155",
-                borderRadius: "20px", padding: "24px", width: "100%", maxWidth: "400px",
-                maxHeight: "80vh", overflowY: "auto",
+                borderRadius: "20px", padding: "24px", width: "100%", maxWidth: "420px",
+                maxHeight: "82vh", overflowY: "auto",
               }}
             >
+              {/* Intestazione */}
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
-                <h2 style={{ margin: 0, fontSize: "1rem", fontWeight: 800, color: "#f8fafc" }}>🔐 Pannello admin</h2>
+                <h2 style={{ margin: 0, fontSize: "1rem", fontWeight: 800, color: "#f8fafc" }}>🔐 Pannello statistiche</h2>
                 <button
                   onClick={adminClose}
                   style={{ background: "none", border: "none", color: "#64748b", cursor: "pointer", fontSize: "1.2rem", lineHeight: 1 }}
@@ -219,7 +256,7 @@ function App() {
 
               {!adminAuthenticated ? (
                 <div>
-                  <p style={{ fontSize: "0.82rem", color: "#94a3b8", marginBottom: "12px" }}>Inserisci la password per accedere.</p>
+                  <p style={{ fontSize: "0.82rem", color: "#94a3b8", marginBottom: "12px" }}>Inserisci la password per vedere le statistiche.</p>
                   <input
                     type="password"
                     value={adminInput}
@@ -237,51 +274,134 @@ function App() {
                   {adminError && <p style={{ color: "#f87171", fontSize: "0.8rem", marginBottom: "10px" }}>❌ {adminError}</p>}
                   <button
                     onClick={adminLogin}
-                    disabled={!adminInput}
+                    disabled={adminLoading || !adminInput}
                     style={{
                       width: "100%", padding: "10px", borderRadius: "10px", border: "none",
-                      background: !adminInput ? "#1e293b" : "linear-gradient(135deg,#0ea5e9,#0369a1)",
-                      color: !adminInput ? "#475569" : "#fff",
-                      fontWeight: 700, cursor: !adminInput ? "not-allowed" : "pointer",
+                      background: adminLoading || !adminInput ? "#1e293b" : "linear-gradient(135deg,#0ea5e9,#0369a1)",
+                      color: adminLoading || !adminInput ? "#475569" : "#fff",
+                      fontWeight: 700, cursor: adminLoading || !adminInput ? "not-allowed" : "pointer",
                       fontSize: "0.88rem",
                     }}
                   >
-                    🔓 Accedi
+                    {adminLoading ? "Verifica…" : "🔓 Accedi"}
                   </button>
                 </div>
               ) : (
                 <div>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
+                  {/* Riepilogo */}
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "14px" }}>
                     <div>
-                      <div style={{ fontSize: "0.65rem", color: "#64748b", textTransform: "uppercase", letterSpacing: "0.05em" }}>Versione app</div>
-                      <div style={{ fontSize: "1.4rem", fontWeight: 900, color: "#0ea5e9", lineHeight: 1 }}>V{__APP_VERSION__}</div>
+                      <div style={{ fontSize: "0.7rem", color: "#64748b" }}>Totale eventi</div>
+                      <div style={{ fontSize: "1.6rem", fontWeight: 900, color: "#0ea5e9", lineHeight: 1 }}>{totalEvents}</div>
                     </div>
                     <div style={{ textAlign: "right" }}>
-                      <div style={{ fontSize: "0.65rem", color: "#64748b" }}>Storage locale</div>
-                      <div style={{ fontSize: "1.1rem", fontWeight: 700, color: "#94a3b8" }}>{adminKB} KB</div>
+                      {adminFirstEvent && (
+                        <div style={{ fontSize: "0.65rem", color: "#475569" }}>
+                          Dal {new Date(adminFirstEvent).toLocaleDateString("it-IT")}
+                        </div>
+                      )}
                       <button
-                        onClick={adminRefresh}
-                        style={{ background: "none", border: "none", color: "#60a5fa", cursor: "pointer", fontSize: "0.72rem", padding: 0, marginTop: "2px" }}
+                        onClick={adminLogin}
+                        style={{ background: "none", border: "none", color: "#60a5fa", cursor: "pointer", fontSize: "0.72rem", padding: 0 }}
                       >🔄 Aggiorna</button>
                     </div>
                   </div>
 
-                  <div style={{ display: "flex", flexDirection: "column", gap: "8px", marginBottom: "20px" }}>
-                    {adminStats.map(({ label, count }) => (
-                      <div
-                        key={label}
-                        style={{
-                          display: "flex", justifyContent: "space-between", alignItems: "center",
-                          background: "#1e293b", borderRadius: "12px", padding: "10px 14px",
-                          border: "1px solid #334155",
-                        }}
-                      >
-                        <span style={{ fontSize: "0.85rem", color: "#e2e8f0" }}>{label}</span>
-                        <span style={{ fontSize: "1.3rem", fontWeight: 900, color: count > 0 ? "#0ea5e9" : "#475569" }}>{count}</span>
-                      </div>
-                    ))}
+                  {/* Cards statistiche */}
+                  {adminStats.length === 0 ? (
+                    <p style={{ color: "#94a3b8", fontSize: "0.85rem" }}>Nessun dato ancora registrato.</p>
+                  ) : (
+                    <div style={{ display: "flex", flexDirection: "column", gap: "12px", marginBottom: "20px" }}>
+                      {adminStats.map((row) => {
+                        const trend7d = Number(row.prev_7d) === 0
+                          ? null
+                          : Math.round(((Number(row.last_7d) - Number(row.prev_7d)) / Number(row.prev_7d)) * 100);
+
+                        const dailyForEvent = last7Days.map(day => {
+                          const found = adminDaily.find(d => d.event_name === row.event_name && String(d.day)?.startsWith(day));
+                          return found ? Number(found.count) : 0;
+                        });
+                        const maxDay = Math.max(...dailyForEvent, 1);
+
+                        return (
+                          <div key={row.event_name} style={{
+                            background: "#1e293b", borderRadius: "14px", padding: "14px",
+                            border: "1px solid #334155",
+                          }}>
+                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "10px" }}>
+                              <span style={{ fontWeight: 700, fontSize: "0.85rem", color: "#f8fafc" }}>
+                                {EVENT_LABELS[row.event_name] ?? row.event_name}
+                              </span>
+                              <span style={{ fontWeight: 900, fontSize: "1.5rem", color: "#0ea5e9", lineHeight: 1 }}>{row.total}</span>
+                            </div>
+
+                            {/* Grafico 7 giorni */}
+                            <div style={{ display: "flex", gap: "3px", alignItems: "flex-end", height: "36px", marginBottom: "8px" }}>
+                              {dailyForEvent.map((count, i) => (
+                                <div key={i} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "flex-end", height: "100%" }}>
+                                  <div style={{
+                                    width: "100%", borderRadius: "3px 3px 0 0",
+                                    height: `${Math.max(count === 0 ? 4 : Math.round((count / maxDay) * 100), count === 0 ? 4 : 8)}%`,
+                                    background: count === 0
+                                      ? "#1e293b"
+                                      : i === 6
+                                        ? "linear-gradient(180deg,#0ea5e9,#0369a1)"
+                                        : "linear-gradient(180deg,#38bdf8,#0284c7)",
+                                    opacity: count === 0 ? 0.3 : 1,
+                                  }} title={`${last7Days[i]}: ${count}`} />
+                                </div>
+                              ))}
+                            </div>
+                            <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.58rem", color: "#475569", marginBottom: "8px" }}>
+                              <span>{new Date(last7Days[0]).toLocaleDateString("it-IT", { day: "numeric", month: "short" })}</span>
+                              <span>oggi</span>
+                            </div>
+
+                            {/* Metriche */}
+                            <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+                              {[
+                                { label: "Oggi", value: row.last_24h },
+                                { label: "7 giorni", value: row.last_7d },
+                                { label: "30 giorni", value: row.last_30d },
+                                { label: "Univoci", value: row.unique_sessions || "—" },
+                              ].map(({ label, value }) => (
+                                <div key={label} style={{
+                                  flex: "1", minWidth: "50px", background: "#0f172a",
+                                  borderRadius: "8px", padding: "6px 8px", textAlign: "center",
+                                  border: "1px solid #1e293b",
+                                }}>
+                                  <div style={{ fontSize: "0.65rem", color: "#475569", marginBottom: "2px" }}>{label}</div>
+                                  <div style={{ fontSize: "0.9rem", fontWeight: 700, color: "#e2e8f0" }}>{value}</div>
+                                </div>
+                              ))}
+                            </div>
+
+                            {/* Trend + ultimo evento */}
+                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "8px" }}>
+                              {trend7d !== null && (
+                                <span style={{ fontSize: "0.7rem", fontWeight: 700, color: trend7d >= 0 ? "#10b981" : "#f87171" }}>
+                                  {trend7d >= 0 ? "▲" : "▼"} {Math.abs(trend7d)}% vs 7gg prec.
+                                </span>
+                              )}
+                              {row.last_event && (
+                                <span style={{ fontSize: "0.63rem", color: "#475569" }}>
+                                  Ultimo: {new Date(row.last_event).toLocaleString("it-IT", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+
+                  {/* Versione app */}
+                  <div style={{ background: "#1e293b", borderRadius: "12px", padding: "10px 14px", marginBottom: "16px", border: "1px solid #334155", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <span style={{ fontSize: "0.82rem", color: "#64748b" }}>Versione app</span>
+                    <span style={{ fontSize: "1rem", fontWeight: 800, color: "#0ea5e9" }}>V{__APP_VERSION__}</span>
                   </div>
 
+                  {/* Zona pericolosa */}
                   <div style={{ borderTop: "1px solid #1e293b", paddingTop: "16px" }}>
                     <div style={{ fontSize: "0.72rem", color: "#64748b", marginBottom: "8px", textTransform: "uppercase", letterSpacing: "0.06em" }}>⚠️ Zona pericolosa</div>
                     {!confirmClear ? (
@@ -298,23 +418,16 @@ function App() {
                     ) : (
                       <div>
                         <p style={{ fontSize: "0.8rem", color: "#fbbf24", marginBottom: "10px" }}>
-                          Sei sicuro? Questa operazione è irreversibile e cancellerà tutte le uscite, catture, spot e altro.
+                          Sei sicuro? Questa operazione è irreversibile.
                         </p>
                         <div style={{ display: "flex", gap: "8px" }}>
                           <button
                             onClick={() => setConfirmClear(false)}
-                            style={{
-                              flex: 1, padding: "9px", borderRadius: "10px", border: "1px solid #334155",
-                              background: "#1e293b", color: "#94a3b8", cursor: "pointer", fontSize: "0.85rem",
-                            }}
+                            style={{ flex: 1, padding: "9px", borderRadius: "10px", border: "1px solid #334155", background: "#1e293b", color: "#94a3b8", cursor: "pointer", fontSize: "0.85rem" }}
                           >Annulla</button>
                           <button
                             onClick={clearAllData}
-                            style={{
-                              flex: 1, padding: "9px", borderRadius: "10px", border: "none",
-                              background: "#dc2626", color: "#fff",
-                              fontWeight: 700, cursor: "pointer", fontSize: "0.85rem",
-                            }}
+                            style={{ flex: 1, padding: "9px", borderRadius: "10px", border: "none", background: "#dc2626", color: "#fff", fontWeight: 700, cursor: "pointer", fontSize: "0.85rem" }}
                           >Sì, cancella tutto</button>
                         </div>
                       </div>
