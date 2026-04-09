@@ -1,6 +1,8 @@
 import { useState, useRef, useEffect } from "react";
-import { Bot, Send, Mic, MicOff, AlertCircle } from "lucide-react";
+import { Bot, Send, Mic, MicOff, AlertCircle, Settings } from "lucide-react";
+import { Link } from "wouter";
 import ReactMarkdown from "react-markdown";
+import { loadSpotConfig } from "./Impostazioni";
 
 interface Message { role: "user" | "assistant"; content: string; }
 
@@ -12,9 +14,15 @@ declare global {
 }
 
 export default function AI() {
+  const spotConfig = loadSpotConfig();
+  const spotLabel = spotConfig?.nome?.trim() || null;
+
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<Message[]>([
-    { role: "assistant", content: "Ciao! Sono il tuo assistente AI per la pesca sulla costa laziale. Chiedimi previsioni, consigli su tecniche, esche e spot — oppure dimmi cosa hai pescato e lo registro nel tuo Diario. 🎣" }
+    { role: "assistant", content: spotLabel
+        ? `Ciao! Sono il tuo assistente AI, specializzato su **${spotLabel}**. Chiedimi previsioni, consigli su tecniche, esche e posizionamento — oppure dimmi cosa hai pescato e lo registro nel tuo Diario. 🎣`
+        : "Ciao! Sono il tuo assistente AI per la pesca. Chiedimi previsioni, consigli su tecniche, esche e spot — oppure dimmi cosa hai pescato e lo registro nel tuo Diario. 🎣"
+    }
   ]);
   const [isTyping, setIsTyping] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -36,10 +44,11 @@ export default function AI() {
     setMessages(newMessages);
     setIsTyping(true);
     try {
+      const spotConfig = loadSpotConfig();
       const res = await fetch("/api/ai/diario", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: newMessages }),
+        body: JSON.stringify({ messages: newMessages, spotConfig }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -92,16 +101,21 @@ export default function AI() {
         <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
           <Bot className="w-5 h-5 text-primary" />
         </div>
-        <div>
+        <div className="flex-1 min-w-0">
           <h2 className="font-bold text-white leading-tight">Assistente AI</h2>
-          <p className="text-xs text-primary">DeepSeek · Costa Laziale</p>
+          <p className="text-xs text-primary truncate">
+            DeepSeek · {spotLabel ? spotLabel : "Costa Italiana"}
+          </p>
         </div>
         {error && (
-          <div className="ml-auto flex items-center gap-1.5 text-xs text-red-400">
+          <div className="flex items-center gap-1.5 text-xs text-red-400">
             <AlertCircle className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline truncate max-w-[200px]">{error}</span>
+            <span className="hidden sm:inline truncate max-w-[160px]">{error}</span>
           </div>
         )}
+        <Link href="/impostazioni" className="p-2 rounded-xl bg-white/5 hover:bg-white/10 transition-colors shrink-0" title="Configura il tuo spot">
+          <Settings className="w-4 h-4 text-muted-foreground" />
+        </Link>
       </div>
 
       {/* Chat area */}

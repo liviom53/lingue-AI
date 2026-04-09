@@ -3,7 +3,7 @@ import { Link, useLocation } from "wouter";
 import {
   Home, Anchor, Fish, MapPin, BookOpen, Wrench, ChefHat,
   CloudSun, Moon, LineChart, Bot, Car, Wallet, Menu, X,
-  Download, Upload, Waves
+  Download, Upload, Waves, Settings
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -22,6 +22,7 @@ const NAV_ITEMS = [
   { href: "/ai", label: "Assistente AI", icon: Bot, emoji: "🤖" },
   { href: "/parco-auto", label: "Parco Auto", icon: Car, emoji: "🚗" },
   { href: "/finanze", label: "Finanze", icon: Wallet, emoji: "💰" },
+  { href: "/impostazioni", label: "Impostazioni", icon: Settings, emoji: "⚙️" },
 ];
 
 const BOTTOM_NAV = [

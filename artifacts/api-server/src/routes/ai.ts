@@ -493,26 +493,26 @@ router.post("/variants", async (req: Request, res: Response) => {
   }
 });
 
-// ── Open-Meteo marine: condizioni attuali Porto Badino ──────────────────────
-const DIARIO_LAT = 41.40;
-const DIARIO_LON = 13.03;
+// ── Open-Meteo marine: condizioni attuali ───────────────────────────────────
+const DIARIO_DEFAULT_LAT = 41.40;
+const DIARIO_DEFAULT_LON = 13.03;
 
 function degreesToCompass(deg: number): string {
   const dirs = ["N", "NE", "E", "SE", "S", "SO", "O", "NO"];
   return dirs[Math.round(deg / 45) % 8];
 }
 
-async function fetchMarineContext(): Promise<string> {
+async function fetchMarineContext(lat = DIARIO_DEFAULT_LAT, lon = DIARIO_DEFAULT_LON): Promise<string> {
   try {
     const [marineRes, weatherRes] = await Promise.all([
       fetch(
-        `https://marine-api.open-meteo.com/v1/marine?latitude=${DIARIO_LAT}&longitude=${DIARIO_LON}` +
+        `https://marine-api.open-meteo.com/v1/marine?latitude=${lat}&longitude=${lon}` +
         `&current=wave_height,wave_direction,wave_period,wind_wave_height,swell_wave_height,swell_wave_direction,sea_surface_temperature` +
         `&timezone=Europe%2FRome`,
         { signal: AbortSignal.timeout(5000) }
       ),
       fetch(
-        `https://api.open-meteo.com/v1/forecast?latitude=${DIARIO_LAT}&longitude=${DIARIO_LON}` +
+        `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}` +
         `&current=temperature_2m,wind_speed_10m,wind_direction_10m,wind_gusts_10m,weather_code` +
         `&timezone=Europe%2FRome`,
         { signal: AbortSignal.timeout(5000) }
@@ -547,39 +547,46 @@ async function fetchMarineContext(): Promise<string> {
 }
 
 // ── Diario del Pescatore — chat AI ──────────────────────────────────────────
+interface SpotConfig {
+  nome?: string;
+  descrizione?: string;
+  lat?: string;
+  lon?: string;
+}
+
 router.post("/diario", async (req: Request, res: Response) => {
-  const { messages } = req.body as {
+  const { messages, spotConfig } = req.body as {
     messages: { role: "user" | "assistant"; content: string }[];
+    spotConfig?: SpotConfig | null;
   };
   if (!messages || !Array.isArray(messages) || messages.length === 0) {
     res.status(400).json({ error: "Missing messages" });
     return;
   }
 
-  const marineCtx = await fetchMarineContext();
+  const customLat = spotConfig?.lat ? parseFloat(spotConfig.lat) : NaN;
+  const customLon = spotConfig?.lon ? parseFloat(spotConfig.lon) : NaN;
+  const useLat = isNaN(customLat) ? DIARIO_DEFAULT_LAT : customLat;
+  const useLon = isNaN(customLon) ? DIARIO_DEFAULT_LON : customLon;
+
+  const marineCtx = await fetchMarineContext(useLat, useLon);
+
+  const hasSpot = spotConfig && (spotConfig.nome?.trim() || spotConfig.descrizione?.trim());
+
+  const spotSection = hasSpot
+    ? `\nSPOT DELL'UTENTE${spotConfig.nome?.trim() ? ` — ${spotConfig.nome.trim()}` : ""}:\n${spotConfig.descrizione?.trim() || "Nessuna descrizione aggiuntiva."}\n`
+    : "";
 
   const systemContent =
-    "Sei un esperto pescatore della costa laziale del Mar Tirreno, specializzato nel tratto di Porto Badino (Terracina, LT). " +
+    "Sei un esperto pescatore del Mar Tirreno e della costa italiana. " +
     "Il tuo ruolo principale è fornire previsioni e consigli di pesca personalizzati: " +
     "periodo migliore, orari, condizioni meteo e di marea, tecniche, esche e posizionamento preciso. " +
-    "Solo pesca da terra.\n\n" +
-
-    "SPOT PRINCIPALE — Porto Badino, Terracina (LT):\n" +
-    "- Foce del Fiume Portatore: il canale sfocia in mare formando una foce con profondità che va da 4-5 metri nell'interno a circa 2 metri scarsi alla foce.\n" +
-    "- Si pesca sul canale alla foce e, quando consentito, in spiaggia.\n" +
-    "- L'acqua in superficie è sempre poco limpida per via del canale.\n" +
-    "- Presenza massiccia di granchi blu che disturbano molto la pesca e danneggiano le esche.\n" +
-    "- Tanti cefali stanziali nel canale; la loro presenza richiama regolarmente i pesci serra.\n" +
-    "- Specie catturabili: serra, spigola, mormora, ombrina, sogliola, anguilla, cefalo, muggine, pescetti vari e granchi.\n\n" +
-
-    "TECNICHE CONSIGLIATE PER QUESTO SPOT:\n" +
-    "- Fondo notturno e feeder per spigola, ombrina, sogliola, anguilla alla foce del canale.\n" +
-    "- Spinning e artificiali (minnow, softbait) per il serra seguendo i branchi di cefali.\n" +
-    "- Surfcasting in spiaggia per mormora e ombrina su fondali sabbiosi.\n" +
-    "- Esche naturali (gamberetti, polpo, calamaretti, vermi, bigattino) per cefali e spigole.\n" +
-    "- Attenzione ai granchi blu: usare ami robusti, terminali rinforzati e rifare spesso la pastura.\n\n" +
-
-    "Aiuti anche l'utente a registrare dati nel Diario via chat. " +
+    "Solo pesca da terra." +
+    (hasSpot
+      ? "\n\nL'utente ha configurato il suo spot principale. Usa questa conoscenza per dare consigli precisi e mirati." + spotSection
+      : "\n\nL'utente non ha ancora configurato il suo spot. Dai consigli generici sulla pesca in mare dalla riva, " +
+        "e suggerisci di configurare il proprio spot nelle Impostazioni dell'app per consigli più precisi.") +
+    "\n\nAiuti anche l'utente a registrare dati nel Diario via chat. " +
     "Rispondi SEMPRE in italiano, in modo conciso e pratico. Usa i dati meteo-marini reali quando disponibili." +
     marineCtx;
 
