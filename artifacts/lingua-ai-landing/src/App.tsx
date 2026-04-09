@@ -67,12 +67,16 @@ export default function App() {
 
         {/* Hero */}
         <div style={{ textAlign: 'center', padding: '32px 0 24px' }}>
-          <div style={{ fontSize: '4rem', marginBottom: '8px' }}>🌐</div>
+          <img
+            src="/lingua-ai-landing/icon-192.png"
+            alt="Lingue & AI"
+            style={{ width: '80px', height: '80px', borderRadius: '20px', marginBottom: '12px', boxShadow: '0 8px 32px #a855f766' }}
+          />
           <h1 style={{ margin: '0 0 8px', fontSize: '2rem', fontWeight: 900,
             background: 'linear-gradient(90deg, #fb923c, #a855f7)',
             WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
           }}>
-            Lingua AI
+            Lingue &amp; AI
           </h1>
           <p style={{ margin: 0, fontSize: '1rem', color: '#94a3b8', lineHeight: 1.5 }}>
             Impara 29+ lingue con AI, pronuncia IPA,<br />shadowing e molto altro — gratis.
@@ -193,7 +197,7 @@ export default function App() {
 
         {/* Footer */}
         <div style={{ textAlign: 'center', fontSize: '0.75rem', color: '#475569' }}>
-          <p style={{ margin: '0 0 4px' }}>Lingua AI — Sviluppato da Livio Mazzocchi</p>
+          <p style={{ margin: '0 0 4px' }}>Lingue &amp; AI — Sviluppato da Livio Mazzocchi</p>
           <p style={{ margin: 0 }}>Gratuito · Nessun account richiesto · PWA</p>
         </div>
       </div>
