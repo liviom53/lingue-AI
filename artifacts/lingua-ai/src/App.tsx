@@ -374,7 +374,7 @@ export default function App() {
   // ── Scorciatoia tastiera admin: Ctrl+Shift+A ────────────────────────────────
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.ctrlKey && e.shiftKey && e.key === 'A') {
+      if (e.ctrlKey && e.shiftKey && e.code === 'Digit5') {
         e.preventDefault();
         setAdminOpen(true);
       }

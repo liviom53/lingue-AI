@@ -7,7 +7,7 @@ function getPool() {
   return new pg.Pool({ connectionString: process.env.DATABASE_URL });
 }
 
-const STATS_PASSWORD = process.env.STATS_PASSWORD ?? "lingue2025";
+const STATS_PASSWORD = process.env.STATS_PASSWORD ?? "macolingue";
 
 router.post("/track/:event", async (req, res) => {
   const { event } = req.params;
