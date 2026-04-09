@@ -77,24 +77,29 @@ export default function Home() {
       <FishingForecastCard stazioneKey={stazioneKey} />
 
       {/* ── SCANNER CATTURA ── */}
-      <button
-        onClick={() => window.dispatchEvent(new CustomEvent("openScanner"))}
-        className="w-full bg-card rounded-3xl border border-white/5 p-5 shadow-xl text-left hover:border-primary/30 transition-all group"
-      >
+      <div className="bg-card rounded-3xl border border-white/5 p-5 shadow-xl">
         <div className="flex items-center justify-between mb-3">
           <h3 className="font-bold text-base flex items-center gap-2">
             <ScanLine className="w-5 h-5 text-blue-400" />Scanner Cattura
           </h3>
           <span className="text-[10px] text-muted-foreground/60">AI · foto → specie</span>
         </div>
-        <div className="flex flex-col items-center gap-3 p-6 rounded-2xl border-2 border-dashed border-white/10 group-hover:border-primary/40 group-hover:bg-primary/5 transition-all">
-          <ScanLine className="w-9 h-9 text-white/20 group-hover:text-primary transition-colors" />
-          <div className="text-center">
-            <p className="text-sm font-medium text-white">Scatta o carica una foto</p>
-            <p className="text-xs text-muted-foreground mt-1">l'AI riconosce la specie e pre-compila i dati</p>
-          </div>
+        <div className="grid grid-cols-2 gap-3">
+          <button
+            onClick={() => window.dispatchEvent(new CustomEvent("openScanner", { detail: "camera" }))}
+            className="flex items-center justify-center gap-2 py-4 rounded-2xl font-bold text-sm text-white transition-all"
+            style={{ background: "linear-gradient(135deg,#0ea5e9,#0369a1)" }}
+          >
+            <ScanLine className="w-4 h-4" />Scansiona
+          </button>
+          <button
+            onClick={() => window.dispatchEvent(new CustomEvent("openScanner", { detail: "gallery" }))}
+            className="flex items-center justify-center gap-2 py-4 rounded-2xl font-bold text-sm text-slate-300 bg-slate-800 hover:bg-slate-700 transition-all"
+          >
+            <Fish className="w-4 h-4" />Galleria
+          </button>
         </div>
-      </button>
+      </div>
 
       {/* ── ULTIME USCITE + CATTURE ── */}
       <div className="grid md:grid-cols-2 gap-5">
