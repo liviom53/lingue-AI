@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Link } from "wouter";
 import {
-  Anchor, Fish, MapPin, ArrowRight, Scale, ChevronDown, ScanLine
+  Anchor, MapPin, ArrowRight, Scale, ChevronDown,
+  ScanLine, Camera, ImageIcon, Loader2, CheckCircle, X, AlertCircle
 } from "lucide-react";
 import { usciteAPI, pescatoAPI, spotAPI } from "@/hooks/use-local-data";
 import { format } from "date-fns";
@@ -9,6 +10,197 @@ import { it } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { FishingForecastCard } from "@/components/FishingForecastCard";
 import { STAZIONI, getSharedStation, setSharedStation } from "@/hooks/use-location";
+import { useToast } from "@/hooks/use-toast";
+
+const SPECIE_LIST = [
+  "Spigola/Branzino","Orata","Pesce Serra","Ombrina","Mormora","Sarago",
+  "Sparaglione","Cefalo/Muggine","Leccia stella","Sogliola","Anguilla",
+  "Granchio blu","Pagello fragolino","Palamita","Sgombro","Ricciola",
+  "Aguglia","Gallinella","Triglia","Scorfano","Dentice","Seppie",
+  "Calamaro","Polpo","Cernia bruna","Altra specie",
+];
+
+function matchSpecie(ai: string) {
+  const n = ai.toLowerCase().trim();
+  for (const s of SPECIE_LIST) {
+    if (s === "Altra specie") continue;
+    if (s.toLowerCase().split("/").some(p => n.includes(p) || p.includes(n))) return s;
+  }
+  return "Altra specie";
+}
+
+type ScanStep = "idle" | "ready" | "scanning" | "done";
+
+function ScannerCard() {
+  const [step, setStep] = useState<ScanStep>("idle");
+  const [photo, setPhoto] = useState<string | null>(null);
+  const [outcome, setOutcome] = useState<"success" | "fail" | null>(null);
+  const [form, setForm] = useState({ specie: "", peso: "", lunghezza: "", note: "" });
+  const cameraRef = useRef<HTMLInputElement>(null);
+  const galleryRef = useRef<HTMLInputElement>(null);
+  const addMutation = pescatoAPI.useAdd();
+  const { toast } = useToast();
+
+  function reset() {
+    setStep("idle"); setPhoto(null); setOutcome(null);
+    setForm({ specie: "", peso: "", lunghezza: "", note: "" });
+    if (cameraRef.current) cameraRef.current.value = "";
+    if (galleryRef.current) galleryRef.current.value = "";
+  }
+
+  function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => { setPhoto(reader.result as string); setStep("ready"); };
+    reader.readAsDataURL(file);
+  }
+
+  async function handleRiconosci() {
+    if (!photo) return;
+    setStep("scanning");
+    try {
+      const res = await fetch("/api/ai/scan-fish", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ imageBase64: photo }),
+      });
+      const data: any = await res.json();
+      if (data.riconosciuto && data.specie) {
+        setForm(f => ({ ...f, specie: matchSpecie(data.specie) }));
+        setOutcome("success");
+      } else {
+        setOutcome("fail");
+      }
+    } catch {
+      setOutcome("fail");
+    }
+    setStep("done");
+  }
+
+  function handleSalva() {
+    if (!form.specie) return;
+    addMutation.mutate({
+      specie: form.specie, peso: form.peso, lunghezza: form.lunghezza,
+      note: form.note, foto: photo ?? "", spotId: "",
+      data: new Date().toISOString().split("T")[0], catchAndRelease: false,
+    } as any, {
+      onSuccess: () => { toast({ title: "Cattura salvata! 🎣" }); reset(); },
+    });
+  }
+
+  const inp: React.CSSProperties = {
+    width: "100%", background: "#0a1929", border: "1px solid #1e3a5f",
+    borderRadius: "10px", padding: "9px 12px", color: "#f0f9ff",
+    fontSize: "0.85rem", outline: "none", boxSizing: "border-box",
+  };
+  const lbl: React.CSSProperties = {
+    display: "block", fontSize: "0.68rem", color: "#64748b",
+    textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: "4px",
+  };
+
+  const canRiconosci = step === "ready";
+  const canSalva = step === "done" && outcome === "success" && !!form.specie && !addMutation.isPending;
+
+  return (
+    <div style={{ background: "#0f172a", border: "1px solid #1e3a5f", borderRadius: "24px", padding: "20px", display: "flex", flexDirection: "column", gap: "14px" }}>
+
+      {/* Header */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <span style={{ fontWeight: 800, fontSize: "0.95rem", color: "#f8fafc", display: "flex", alignItems: "center", gap: "8px" }}>
+          <ScanLine style={{ width: 17, height: 17, color: "#38bdf8" }} />Scanner Cattura
+        </span>
+        <span style={{ fontSize: "0.68rem", color: "#475569" }}>AI · foto → specie</span>
+      </div>
+
+      {/* Photo area */}
+      {step === "idle" && (
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+          <label style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "7px", padding: "14px", borderRadius: "14px", fontWeight: 700, fontSize: "0.85rem", color: "#fff", background: "linear-gradient(135deg,#0ea5e9,#0369a1)", cursor: "pointer" }}>
+            <Camera style={{ width: 16, height: 16 }} />Scansiona
+            <input ref={cameraRef} type="file" accept="image/*" capture="environment" onChange={handleFile} style={{ display: "none" }} />
+          </label>
+          <label style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "7px", padding: "14px", borderRadius: "14px", fontWeight: 700, fontSize: "0.85rem", color: "#94a3b8", background: "#1e293b", cursor: "pointer" }}>
+            <ImageIcon style={{ width: 16, height: 16 }} />Galleria
+            <input ref={galleryRef} type="file" accept="image/*" onChange={handleFile} style={{ display: "none" }} />
+          </label>
+        </div>
+      )}
+
+      {(step === "ready" || step === "scanning" || step === "done") && photo && (
+        <div style={{ position: "relative" }}>
+          <img src={photo} alt="cattura" style={{ width: "100%", height: "150px", objectFit: "cover", borderRadius: "14px", opacity: step === "scanning" ? 0.5 : 1 }} />
+          {step === "scanning" && (
+            <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", color: "#38bdf8", fontSize: "0.8rem" }}>
+              <Loader2 style={{ width: 28, height: 28, animation: "spin 1s linear infinite" }} />
+            </div>
+          )}
+          {step === "done" && outcome === "fail" && (
+            <div style={{ marginTop: "10px", display: "flex", alignItems: "center", gap: "8px", padding: "10px 14px", background: "#1e1a0a", border: "1px solid #854d0e", borderRadius: "12px", color: "#fef08a", fontSize: "0.82rem" }}>
+              <AlertCircle style={{ width: 18, height: 18, color: "#eab308", flexShrink: 0 }} />
+              Nessun pesce riconosciuto. Riprova con foto più chiara.
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Form fields — solo su successo */}
+      {step === "done" && outcome === "success" && (
+        <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+          <div>
+            <label style={lbl}>Specie *</label>
+            <select value={form.specie} onChange={e => setForm(f => ({ ...f, specie: e.target.value }))} style={{ ...inp, appearance: "none" as any }}>
+              <option value="">Seleziona specie…</option>
+              {SPECIE_LIST.map(s => <option key={s} value={s}>{s}</option>)}
+            </select>
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+            <div>
+              <label style={lbl}>Peso (kg)</label>
+              <input type="number" step="0.01" min="0" placeholder="Es. 1.5" value={form.peso} onChange={e => setForm(f => ({ ...f, peso: e.target.value }))} style={inp} />
+            </div>
+            <div>
+              <label style={lbl}>Lunghezza (cm)</label>
+              <input type="number" step="0.1" min="0" placeholder="Es. 45" value={form.lunghezza} onChange={e => setForm(f => ({ ...f, lunghezza: e.target.value }))} style={inp} />
+            </div>
+          </div>
+          <div>
+            <label style={lbl}>Note</label>
+            <textarea placeholder="Dove, come, con quale esca…" value={form.note} onChange={e => setForm(f => ({ ...f, note: e.target.value }))} style={{ ...inp, height: "56px", resize: "none" as any }} />
+          </div>
+        </div>
+      )}
+
+      {/* 3 bottoni sempre visibili */}
+      <div style={{ display: "flex", gap: "8px" }}>
+        <button
+          onClick={handleRiconosci}
+          disabled={!canRiconosci || step === "scanning"}
+          style={{ flex: 1, padding: "12px 8px", border: "none", borderRadius: "12px", fontWeight: 700, fontSize: "0.82rem", cursor: canRiconosci ? "pointer" : "not-allowed", display: "flex", alignItems: "center", justifyContent: "center", gap: "6px", background: canRiconosci ? "linear-gradient(135deg,#0ea5e9,#0369a1)" : "#1e293b", color: canRiconosci ? "#fff" : "#475569" }}
+        >
+          {step === "scanning" ? <Loader2 style={{ width: 14, height: 14, animation: "spin 1s linear infinite" }} /> : <ScanLine style={{ width: 14, height: 14 }} />}
+          Riconosci
+        </button>
+        <button
+          onClick={handleSalva}
+          disabled={!canSalva}
+          style={{ flex: 1, padding: "12px 8px", border: "none", borderRadius: "12px", fontWeight: 700, fontSize: "0.82rem", cursor: canSalva ? "pointer" : "not-allowed", display: "flex", alignItems: "center", justifyContent: "center", gap: "6px", background: canSalva ? "linear-gradient(135deg,#22c55e,#16a34a)" : "#1e293b", color: canSalva ? "#fff" : "#475569" }}
+        >
+          <CheckCircle style={{ width: 14, height: 14 }} />
+          {addMutation.isPending ? "Salvataggio…" : "Salva"}
+        </button>
+        <button
+          onClick={reset}
+          style={{ flex: "0 0 auto", padding: "12px 14px", border: "none", borderRadius: "12px", fontWeight: 700, fontSize: "0.82rem", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: "6px", background: "#1e293b", color: "#94a3b8" }}
+        >
+          <X style={{ width: 14, height: 14 }} />Esci
+        </button>
+      </div>
+
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+    </div>
+  );
+}
 
 /* ═══════════════════════════════════
    HOME PAGE
@@ -77,29 +269,7 @@ export default function Home() {
       <FishingForecastCard stazioneKey={stazioneKey} />
 
       {/* ── SCANNER CATTURA ── */}
-      <div className="bg-card rounded-3xl border border-white/5 p-5 shadow-xl">
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="font-bold text-base flex items-center gap-2">
-            <ScanLine className="w-5 h-5 text-blue-400" />Scanner Cattura
-          </h3>
-          <span className="text-[10px] text-muted-foreground/60">AI · foto → specie</span>
-        </div>
-        <div className="grid grid-cols-2 gap-3">
-          <button
-            onClick={() => window.dispatchEvent(new CustomEvent("openScanner", { detail: "camera" }))}
-            className="flex items-center justify-center gap-2 py-4 rounded-2xl font-bold text-sm text-white transition-all"
-            style={{ background: "linear-gradient(135deg,#0ea5e9,#0369a1)" }}
-          >
-            <ScanLine className="w-4 h-4" />Scansiona
-          </button>
-          <button
-            onClick={() => window.dispatchEvent(new CustomEvent("openScanner", { detail: "gallery" }))}
-            className="flex items-center justify-center gap-2 py-4 rounded-2xl font-bold text-sm text-slate-300 bg-slate-800 hover:bg-slate-700 transition-all"
-          >
-            <Fish className="w-4 h-4" />Galleria
-          </button>
-        </div>
-      </div>
+      <ScannerCard />
 
       {/* ── ULTIME USCITE + CATTURE ── */}
       <div className="grid md:grid-cols-2 gap-5">
