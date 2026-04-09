@@ -3971,9 +3971,36 @@ export default function App() {
                 </a>
               </div>
 
-              {/* Bonifico bancario / Postepay */}
+              {/* PostePay */}
               <div style={{ marginTop: '16px', background: '#0f172a', borderRadius: '12px', padding: '14px', textAlign: 'left' }}>
-                <p style={{ margin: '0 0 8px', fontSize: '0.82rem', fontWeight: 700, color: '#f8fafc' }}>🏦 Bonifico / Postepay</p>
+                <p style={{ margin: '0 0 8px', fontSize: '0.82rem', fontWeight: 700, color: '#f8fafc' }}>💳 PostePay Evolution</p>
+                <p style={{ margin: '0 0 4px', fontSize: '0.75rem', color: '#94a3b8' }}>Intestatario</p>
+                <p style={{ margin: '0 0 10px', fontSize: '0.88rem', fontWeight: 600, color: '#e2e8f0' }}>Mazzocchi Livio</p>
+                <p style={{ margin: '0 0 4px', fontSize: '0.75rem', color: '#94a3b8' }}>Numero carta</p>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <code style={{
+                    fontSize: '0.8rem', fontFamily: 'monospace', letterSpacing: '0.1em',
+                    color: '#f59e0b', background: '#1e293b', borderRadius: '6px',
+                    padding: '6px 10px', flex: 1,
+                  }}>
+                    5333 1712 0435 4399
+                  </code>
+                  <button
+                    aria-label="Copia numero PostePay negli appunti"
+                    onClick={() => navigator.clipboard.writeText('5333171204354399')}
+                    style={{
+                      background: '#f59e0b22', border: '1px solid #f59e0b55', borderRadius: '8px',
+                      color: '#f59e0b', cursor: 'pointer', padding: '6px 10px', fontSize: '0.8rem', fontWeight: 700, flexShrink: 0,
+                    }}
+                  >
+                    📋 Copia
+                  </button>
+                </div>
+              </div>
+
+              {/* Bonifico bancario */}
+              <div style={{ marginTop: '10px', background: '#0f172a', borderRadius: '12px', padding: '14px', textAlign: 'left' }}>
+                <p style={{ margin: '0 0 8px', fontSize: '0.82rem', fontWeight: 700, color: '#f8fafc' }}>🏦 Bonifico bancario</p>
                 <p style={{ margin: '0 0 4px', fontSize: '0.75rem', color: '#94a3b8' }}>Intestatario</p>
                 <p style={{ margin: '0 0 10px', fontSize: '0.88rem', fontWeight: 600, color: '#e2e8f0' }}>Mazzocchi Livio</p>
                 <p style={{ margin: '0 0 4px', fontSize: '0.75rem', color: '#94a3b8' }}>IBAN</p>
