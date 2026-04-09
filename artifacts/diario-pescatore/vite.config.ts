@@ -3,6 +3,7 @@ import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import path from "path";
 import runtimeErrorOverlay from "@replit/vite-plugin-runtime-error-modal";
+import { VitePWA } from "vite-plugin-pwa";
 
 const port = Number(process.env.PORT ?? "22883");
 const basePath = process.env.BASE_PATH ?? "/diario-pescatore/";
@@ -18,6 +19,67 @@ export default defineConfig({
   plugins: [
     react(),
     tailwindcss(),
+    VitePWA({
+      registerType: "prompt",
+      injectRegister: "auto",
+      devOptions: { enabled: false },
+      base: basePath,
+      scope: basePath,
+      workbox: {
+        globPatterns: ["**/*.{js,css,html,ico,png,svg,webp,woff,woff2}"],
+        navigateFallback: "index.html",
+        navigateFallbackDenylist: [/^\/api\//, /^\/__/],
+        runtimeCaching: [
+          {
+            urlPattern: /^https:\/\/fonts\.(googleapis|gstatic)\.com\/.*/i,
+            handler: "CacheFirst",
+            options: {
+              cacheName: "diario-fonts",
+              expiration: { maxEntries: 20, maxAgeSeconds: 60 * 60 * 24 * 365 },
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
+          {
+            urlPattern: /\/api\/.*/,
+            handler: "NetworkFirst",
+            options: {
+              cacheName: "diario-api",
+              networkTimeoutSeconds: 5,
+              expiration: { maxEntries: 50, maxAgeSeconds: 60 * 5 },
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
+          {
+            urlPattern: /^https:\/\/.+\.(png|jpg|jpeg|webp|svg|gif)(\?.*)?$/i,
+            handler: "StaleWhileRevalidate",
+            options: {
+              cacheName: "diario-images",
+              expiration: { maxEntries: 60, maxAgeSeconds: 60 * 60 * 24 * 30 },
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
+        ],
+        cleanupOutdatedCaches: true,
+      },
+      manifest: {
+        name: "Diario del Pescatore",
+        short_name: "Diario Pesca",
+        description: "Il tuo compagno di pesca digitale — uscite, catture, spot e AI",
+        start_url: basePath,
+        scope: basePath,
+        lang: "it",
+        display: "standalone",
+        orientation: "portrait",
+        background_color: "#0f172a",
+        theme_color: "#0ea5e9",
+        icons: [
+          { src: "icon-192.png", sizes: "192x192", type: "image/png", purpose: "any" },
+          { src: "icon-512.png", sizes: "512x512", type: "image/png", purpose: "any" },
+          { src: "icon-192.png", sizes: "192x192", type: "image/png", purpose: "maskable" },
+          { src: "icon-512.png", sizes: "512x512", type: "image/png", purpose: "maskable" },
+        ],
+      },
+    }),
     ...(process.env.NODE_ENV !== "production" && process.env.REPL_ID !== undefined
       ? [
           runtimeErrorOverlay(),
