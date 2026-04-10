@@ -92,7 +92,7 @@ export default function Demo() {
           />
         </div>
         <p className="text-xs text-muted-foreground mt-2 text-center">
-          Premi ▶ sul video per avviarlo · 🔊 per attivare l'audio · ⛶ per il fullscreen
+          Il video parte da solo · usa i pulsanti in alto a destra per audio e schermo intero
         </p>
       </section>
 
