@@ -24,7 +24,8 @@ const SCENE_DURATIONS = {
 };
 
 export default function VideoTemplate() {
-  const { currentScene } = useVideoPlayer({ durations: SCENE_DURATIONS });
+  const [videoPaused, setVideoPaused] = useState(false);
+  const { currentScene } = useVideoPlayer({ durations: SCENE_DURATIONS, paused: videoPaused });
   const containerRef = useRef<HTMLDivElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
   const [audioPlaying, setAudioPlaying] = useState(false);
@@ -159,18 +160,35 @@ export default function VideoTemplate() {
           {audioPlaying ? 'Audio on' : 'Avvia audio'}
         </motion.button>
 
-        {/* Bottone Stop */}
-        {audioPlaying && (
-          <motion.button
-            onClick={stopAudio}
-            className="flex items-center gap-2 bg-red-500/20 backdrop-blur border border-red-400/50 text-red-300 text-sm font-bold px-4 py-2 rounded-full cursor-pointer hover:bg-red-500/35 transition-all duration-300"
-            initial={{ opacity:0, scale:0.7 }} animate={{ opacity:1, scale:1 }} exit={{ opacity:0, scale:0.7 }}
-            transition={{ duration:0.25 }}
-            style={{ fontFamily:'Inter, sans-serif' }}
-          >
-            <span>⏹</span> Stop
-          </motion.button>
-        )}
+        {/* Bottone Stop audio (solo quando audio attivo) */}
+        <AnimatePresence>
+          {audioPlaying && (
+            <motion.button
+              onClick={stopAudio}
+              className="flex items-center gap-2 bg-red-500/20 backdrop-blur border border-red-400/50 text-red-300 text-sm font-bold px-4 py-2 rounded-full cursor-pointer hover:bg-red-500/35 transition-all duration-300"
+              initial={{ opacity:0, scale:0.7 }} animate={{ opacity:1, scale:1 }} exit={{ opacity:0, scale:0.7 }}
+              transition={{ duration:0.25 }}
+              style={{ fontFamily:'Inter, sans-serif' }}
+            >
+              <span>⏹</span> Stop
+            </motion.button>
+          )}
+        </AnimatePresence>
+
+        {/* Bottone Ferma / Riprendi video */}
+        <motion.button
+          onClick={() => setVideoPaused(p => !p)}
+          className={`flex items-center gap-2 backdrop-blur border text-sm font-bold px-4 py-2 rounded-full cursor-pointer transition-all duration-300 ${
+            videoPaused
+              ? 'bg-[#f59e0b]/25 border-[#f59e0b]/60 text-[#f59e0b] hover:bg-[#f59e0b]/35'
+              : 'bg-white/10 border-white/20 text-white hover:bg-white/20'
+          }`}
+          initial={{ opacity:0, y:-10 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.4, delay:0.05 }}
+          style={{ fontFamily:'Inter, sans-serif' }}
+        >
+          <span>{videoPaused ? '▶' : '⏸'}</span>
+          {videoPaused ? 'Riprendi' : 'Ferma video'}
+        </motion.button>
 
         {/* Bottone Esci / Schermo intero */}
         <motion.button
@@ -186,6 +204,22 @@ export default function VideoTemplate() {
           {isFullscreen ? <><span>✕</span> Esci</> : <><span>⛶</span> Schermo intero</>}
         </motion.button>
       </div>
+
+      {/* Overlay pausa */}
+      <AnimatePresence>
+        {videoPaused && (
+          <motion.div
+            className="absolute inset-0 z-40 flex items-center justify-center pointer-events-none"
+            initial={{ opacity:0 }} animate={{ opacity:1 }} exit={{ opacity:0 }}
+            transition={{ duration:0.3 }}
+          >
+            <div className="bg-black/40 backdrop-blur-sm rounded-full p-8"
+              style={{ boxShadow:'0 0 60px rgba(245,158,11,0.3)' }}>
+              <span className="text-[8vw] text-[#f59e0b]" style={{ lineHeight:1 }}>⏸</span>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <AnimatePresence>
         {fsUnsupported && (

@@ -15,9 +15,10 @@ export interface UseVideoPlayerOptions {
   durations: SceneDurations;
   onVideoEnd?: () => void;
   loop?: boolean;
+  paused?: boolean;
 }
 
-export function useVideoPlayer({ durations, onVideoEnd, loop = true }: UseVideoPlayerOptions) {
+export function useVideoPlayer({ durations, onVideoEnd, loop = true, paused = false }: UseVideoPlayerOptions) {
   const sceneKeys = useRef(Object.keys(durations)).current;
   const durationsArray = useRef(Object.values(durations)).current;
   const [currentScene, setCurrentScene] = useState(0);
@@ -29,6 +30,7 @@ export function useVideoPlayer({ durations, onVideoEnd, loop = true }: UseVideoP
 
   useEffect(() => {
     if (hasEnded && !loop) return;
+    if (paused) return;
     const timer = setTimeout(() => {
       if (currentScene >= sceneKeys.length - 1) {
         if (!hasEnded) {
@@ -42,7 +44,7 @@ export function useVideoPlayer({ durations, onVideoEnd, loop = true }: UseVideoP
       }
     }, durationsArray[currentScene]);
     return () => clearTimeout(timer);
-  }, [currentScene, durationsArray, hasEnded, loop, onVideoEnd]);
+  }, [currentScene, durationsArray, hasEnded, loop, onVideoEnd, paused]);
 
   return { currentScene, currentSceneKey: sceneKeys[currentScene] };
 }
