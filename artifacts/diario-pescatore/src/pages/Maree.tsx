@@ -190,6 +190,14 @@ export default function Maree() {
           <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-primary inline-block"/>Alta marea</span>
           <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-blue-600 inline-block"/>Bassa marea</span>
         </div>
+        <div className="mt-4 space-y-2 border-t border-white/5 pt-4">
+          <p className="text-xs text-muted-foreground leading-relaxed">
+            🎣 <span className="text-white/80 font-medium">Quando pescare:</span> le 2–3 ore che precedono l'alta marea sono in genere le più produttive — il movimento dell'acqua attiva spigole, orate e mormore. Anche il cambio di marea (da alta a bassa) provoca movimento di pesce foraggio.
+          </p>
+          <p className="text-xs text-muted-foreground leading-relaxed">
+            ⚠️ <span className="text-white/80 font-medium">Nota sul modello:</span> calcolo armonico M2+K1+M4 senza dati mareografici live. Gli orari sono indicativi (±30–60 min rispetto alla realtà). Per dati ufficiali: <span className="text-primary">mareografico.ispra.it</span>
+          </p>
+        </div>
       </div>
 
       {/* Calendario mensile fasi lunari */}
@@ -220,6 +228,17 @@ export default function Maree() {
               </button>
             )
           ))}
+        </div>
+        <div className="mt-3 pt-3 border-t border-white/5 space-y-1.5">
+          <p className="text-[11px] text-muted-foreground leading-relaxed">
+            🌕🌑 <span className="text-white/80 font-medium">Luna Piena / Luna Nuova</span> → maree sizigiali (più ampie). Pesca intensa, pesce più attivo.
+          </p>
+          <p className="text-[11px] text-muted-foreground leading-relaxed">
+            🌓🌗 <span className="text-white/80 font-medium">Quarti</span> → maree di quadratura (più calme). Pesca più selettiva, prediligere alba e tramonto.
+          </p>
+          <p className="text-[11px] text-muted-foreground leading-relaxed">
+            Tocca un giorno per vedere il grafico maree di quella data.
+          </p>
         </div>
       </div>
     </div>
