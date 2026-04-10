@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils";
 const NAV_ITEMS = [
   { href: "/", label: "Home", icon: Home, emoji: "🏠" },
   { href: "/uscite", label: "Uscite", icon: Anchor, emoji: "⚓" },
-  { href: "/pescato", label: "Pescato", icon: Fish, emoji: "🐟" },
+  { href: "/pescato", label: "Pescato", icon: Fish, emoji: "🐠" },
   { href: "/spot", label: "Spot", icon: MapPin, emoji: "📍" },
   { href: "/specie", label: "Specie", icon: BookOpen, emoji: "🐟" },
   { href: "/attrezzatura", label: "Attrezzatura", icon: Wrench, emoji: "🔧" },
