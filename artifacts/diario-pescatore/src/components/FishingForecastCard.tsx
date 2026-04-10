@@ -215,12 +215,12 @@ interface FieldState {
 }
 
 const TABS=[
-  {id:"dati",label:"📊 Dati"},
-  {id:"tecnica",label:"🎣 Tecnica"},
-  {id:"esche",label:"🐛 Esche"},
-  {id:"specie",label:"🐟 Specie"},
-  {id:"campo",label:"🌊 Dati reali osservati"},
-  {id:"ai",label:"🤖 Assistente AI"},
+  {id:"dati",emoji:"📊",label:"Dati",fullLabel:"📊 Dati"},
+  {id:"tecnica",emoji:"🎣",label:"Tecnica",fullLabel:"🎣 Tecnica"},
+  {id:"esche",emoji:"🐛",label:"Esche",fullLabel:"🐛 Esche"},
+  {id:"specie",emoji:"🐟",label:"Specie",fullLabel:"🐟 Specie"},
+  {id:"campo",emoji:"🌊",label:"Osservati",fullLabel:"🌊 Dati reali osservati"},
+  {id:"ai",emoji:"🤖",label:"AI",fullLabel:"🤖 Assistente AI"},
 ];
 
 
@@ -342,12 +342,19 @@ export function FishingForecastCard({stazioneKey}:{stazioneKey:string}) {
       </div>
 
       {/* ── TABS ── */}
-      <div className="flex overflow-x-auto no-scrollbar border-b border-white/5 bg-background/30">
+      {/* Mobile: griglia 3×2 (tutto visibile senza scorrere). Desktop: riga scrollabile. */}
+      <div className="grid grid-cols-3 md:flex md:overflow-x-auto no-scrollbar border-b border-white/5 bg-background/30">
         {TABS.map(t=>(
           <button key={t.id} onClick={()=>setActiveTab(t.id)}
-            className={cn("px-4 py-3 text-xs font-semibold whitespace-nowrap border-b-2 transition-colors shrink-0",
-              activeTab===t.id?"border-primary text-primary bg-primary/5":"border-transparent text-muted-foreground hover:text-white hover:bg-white/5")}>
-            {t.label}
+            className={cn(
+              "border-b-2 transition-colors font-semibold",
+              "flex flex-col items-center gap-0.5 px-2 py-2.5 text-[10px] leading-tight text-center",
+              "md:flex-row md:px-4 md:py-3 md:text-xs md:whitespace-nowrap md:shrink-0 md:gap-0",
+              activeTab===t.id?"border-primary text-primary bg-primary/5":"border-transparent text-muted-foreground hover:text-white hover:bg-white/5"
+            )}>
+            <span className="text-base md:hidden">{t.emoji}</span>
+            <span className="md:hidden">{t.label}</span>
+            <span className="hidden md:inline">{t.fullLabel}</span>
           </button>
         ))}
       </div>
