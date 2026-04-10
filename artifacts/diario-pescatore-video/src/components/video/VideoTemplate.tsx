@@ -29,6 +29,8 @@ const SCENE_DURATIONS = {
   outro:       13000,
 };
 
+const isInIframe = (() => { try { return window.self !== window.top; } catch { return true; } })();
+
 export default function VideoTemplate() {
   const [videoPaused, setVideoPaused] = useState(false);
   const [resetKey, setResetKey] = useState(0);
@@ -261,28 +263,39 @@ export default function VideoTemplate() {
           {videoPaused ? 'Riprendi' : 'Ferma video'}
         </motion.button>
 
-        {/* Bottone Registra */}
-        <motion.button
-          onClick={recState !== 'preparing' && recState !== 'recording' ? handleRecord : undefined}
-          disabled={recState === 'preparing' || recState === 'recording'}
-          className={`flex items-center gap-2 backdrop-blur border text-sm font-bold px-4 py-2 rounded-full transition-all duration-300 ${
-            recState === 'recording' ? 'bg-red-500/30 border-red-400/70 text-red-300 cursor-default animate-pulse'
-            : recState === 'done' ? 'bg-emerald-500/25 border-emerald-400/60 text-emerald-300 cursor-pointer'
-            : recState === 'preparing' ? 'bg-purple-500/20 border-purple-400/50 text-purple-300 cursor-default'
-            : recState === 'unsupported' ? 'bg-amber-500/20 border-amber-400/50 text-amber-300 cursor-pointer'
-            : recState === 'cancelled' ? 'bg-amber-500/20 border-amber-400/50 text-amber-300 cursor-pointer'
-            : 'bg-purple-500/20 border-purple-400/50 text-purple-300 hover:bg-purple-500/35 cursor-pointer'
-          }`}
-          initial={{ opacity:0, y:-10 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.4, delay:0.08 }}
-          style={{ fontFamily:'Inter, sans-serif' }}
-        >
-          {recState === 'recording' && <><span>⏺</span> {fmtTime(recTimer)} — Registrazione in corso</>}
-          {recState === 'preparing' && <><span>⏳</span> Preparazione…</>}
-          {recState === 'done' && <><span>✅</span> Download avviato — Registra ancora</>}
-          {recState === 'unsupported' ? <><span>⚠️</span> Browser non supportato</> : null}
-          {recState === 'cancelled' && <><span>↩</span> Annullato — riprova</>}
-          {(recState === 'idle') && <><span>⏺</span> Registra video</>}
-        </motion.button>
+        {/* Bottone Registra / Apri in scheda */}
+        {isInIframe ? (
+          <motion.button
+            onClick={() => window.open(window.location.href, '_blank')}
+            className="flex items-center gap-2 bg-purple-500/20 backdrop-blur border border-purple-400/50 text-purple-300 text-sm font-bold px-4 py-2 rounded-full cursor-pointer hover:bg-purple-500/35 transition-all duration-300"
+            initial={{ opacity:0, y:-10 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.4, delay:0.08 }}
+            style={{ fontFamily:'Inter, sans-serif' }}
+          >
+            <span>↗</span> Apri per registrare
+          </motion.button>
+        ) : (
+          <motion.button
+            onClick={recState !== 'preparing' && recState !== 'recording' ? handleRecord : undefined}
+            disabled={recState === 'preparing' || recState === 'recording'}
+            className={`flex items-center gap-2 backdrop-blur border text-sm font-bold px-4 py-2 rounded-full transition-all duration-300 ${
+              recState === 'recording' ? 'bg-red-500/30 border-red-400/70 text-red-300 cursor-default animate-pulse'
+              : recState === 'done' ? 'bg-emerald-500/25 border-emerald-400/60 text-emerald-300 cursor-pointer'
+              : recState === 'preparing' ? 'bg-purple-500/20 border-purple-400/50 text-purple-300 cursor-default'
+              : recState === 'unsupported' ? 'bg-amber-500/20 border-amber-400/50 text-amber-300 cursor-pointer'
+              : recState === 'cancelled' ? 'bg-amber-500/20 border-amber-400/50 text-amber-300 cursor-pointer'
+              : 'bg-purple-500/20 border-purple-400/50 text-purple-300 hover:bg-purple-500/35 cursor-pointer'
+            }`}
+            initial={{ opacity:0, y:-10 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.4, delay:0.08 }}
+            style={{ fontFamily:'Inter, sans-serif' }}
+          >
+            {recState === 'recording' && <><span>⏺</span> {fmtTime(recTimer)} — Registrazione in corso</>}
+            {recState === 'preparing' && <><span>⏳</span> Preparazione…</>}
+            {recState === 'done' && <><span>✅</span> Download avviato — Registra ancora</>}
+            {recState === 'unsupported' && <><span>⚠️</span> Browser non supportato</>}
+            {recState === 'cancelled' && <><span>↩</span> Annullato — riprova</>}
+            {recState === 'idle' && <><span>⏺</span> Registra video</>}
+          </motion.button>
+        )}
 
         {/* Bottone Schermo intero */}
         <motion.button
