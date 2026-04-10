@@ -32,9 +32,32 @@ app.use("/api", router);
 if (process.env.NODE_ENV === "production") {
   const serverDir = path.dirname(fileURLToPath(import.meta.url));
   const root = path.resolve(serverDir, "../../..");
-  const linguaDir = path.join(root, "artifacts/lingua-ai/dist/public");
-  const diarioDir = path.join(root, "artifacts/diario-pescatore/dist/public");
+  const linguaDir        = path.join(root, "artifacts/lingua-ai/dist/public");
+  const diarioDir        = path.join(root, "artifacts/diario-pescatore/dist/public");
+  const diarioVideoDir   = path.join(root, "artifacts/diario-pescatore-video/dist/public");
+  const diarioLandingDir = path.join(root, "artifacts/diario-pescatore-landing/dist/public");
+  const linguaVideoDir   = path.join(root, "artifacts/lingua-ai-demo-video/dist/public");
+  const linguaLandingDir = path.join(root, "artifacts/lingua-ai-landing/dist/public");
 
+  // Artifact sub-paths — must come BEFORE the catch-all diario route
+  app.use("/lingua-ai-demo-video", express.static(linguaVideoDir));
+  app.get("/lingua-ai-demo-video/*splat", (_req, res) =>
+    res.sendFile(path.join(linguaVideoDir, "index.html")),
+  );
+  app.use("/lingua-ai-landing", express.static(linguaLandingDir));
+  app.get("/lingua-ai-landing/*splat", (_req, res) =>
+    res.sendFile(path.join(linguaLandingDir, "index.html")),
+  );
+  app.use("/diario-pescatore-video", express.static(diarioVideoDir));
+  app.get("/diario-pescatore-video/*splat", (_req, res) =>
+    res.sendFile(path.join(diarioVideoDir, "index.html")),
+  );
+  app.use("/diario-pescatore-landing", express.static(diarioLandingDir));
+  app.get("/diario-pescatore-landing/*splat", (_req, res) =>
+    res.sendFile(path.join(diarioLandingDir, "index.html")),
+  );
+
+  // Main apps
   app.use("/lingua-ai", express.static(linguaDir, { index: "index.html" }));
   app.get("/lingua-ai/*splat", (_req, res) =>
     res.sendFile(path.join(linguaDir, "index.html")),
