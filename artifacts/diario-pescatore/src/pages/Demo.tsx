@@ -75,28 +75,25 @@ export default function Demo() {
         </p>
       </div>
 
-      {/* Video link */}
+      {/* Video embed */}
       <section>
         <h2 className="text-base font-semibold mb-3 flex items-center gap-2">
           <span className="text-primary">▶</span> Video Tutorial
         </h2>
-        <a
-          href={videoSrc}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="group flex flex-col items-center justify-center gap-4 w-full rounded-2xl border border-white/8 bg-[#051525] hover:bg-[#0a2035] transition-colors cursor-pointer no-underline"
-          style={{ aspectRatio: "16/9" }}
-        >
-          <div className="flex flex-col items-center gap-3">
-            <div className="w-20 h-20 rounded-full bg-primary/20 border-2 border-primary/50 flex items-center justify-center group-hover:bg-primary/30 transition-colors">
-              <PlayCircle className="w-10 h-10 text-primary" />
-            </div>
-            <div className="text-center">
-              <p className="text-white font-semibold text-base">Guarda il video demo</p>
-              <p className="text-muted-foreground text-sm mt-1">Si apre in una nuova scheda · ~2 minuti</p>
-            </div>
-          </div>
-        </a>
+        <div className="relative w-full rounded-2xl overflow-hidden border border-white/8 shadow-2xl bg-[#051525]"
+          style={{ aspectRatio: "16/9" }}>
+          <iframe
+            src={videoSrc}
+            className="absolute inset-0 w-full h-full"
+            allow="autoplay; fullscreen"
+            allowFullScreen
+            title="Diario del Pescatore — Video Tutorial"
+            loading="lazy"
+          />
+        </div>
+        <p className="text-xs text-muted-foreground mt-2 text-center">
+          Il video parte da solo · usa i pulsanti in alto a destra per audio e schermo intero
+        </p>
       </section>
 
       {/* FAQ */}
