@@ -1,4 +1,4 @@
-import { useRef, useEffect, useState, useCallback } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useVideoPlayer } from '@/lib/video';
 import { Scene1 } from './video_scenes/Scene1';
@@ -30,6 +30,33 @@ const SCENE_DURATIONS = {
 };
 
 const isInIframe = (() => { try { return window.self !== window.top; } catch { return true; } })();
+
+function IframeCopyButton() {
+  const [copied, setCopied] = useState(false);
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2500);
+    } catch {
+      prompt('Copia questo link e aprilo in una nuova scheda:', window.location.href);
+    }
+  };
+  return (
+    <motion.button
+      onClick={copy}
+      className={`flex items-center gap-2 backdrop-blur border text-sm font-bold px-4 py-2 rounded-full cursor-pointer transition-all duration-300 ${
+        copied
+          ? 'bg-emerald-500/25 border-emerald-400/60 text-emerald-300'
+          : 'bg-purple-500/20 border-purple-400/50 text-purple-300 hover:bg-purple-500/35'
+      }`}
+      initial={{ opacity:0, y:-10 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.4, delay:0.08 }}
+      style={{ fontFamily:'Inter, sans-serif' }}
+    >
+      {copied ? <><span>✅</span> Link copiato!</> : <><span>↗</span> Apri in nuova scheda</>}
+    </motion.button>
+  );
+}
 
 export default function VideoTemplate() {
   const [videoPaused, setVideoPaused] = useState(false);
@@ -236,16 +263,9 @@ export default function VideoTemplate() {
           {videoPaused ? 'Avvia' : 'Ferma'}
         </motion.button>
 
-        {/* Bottone Registra / Apri in scheda */}
+        {/* Bottone Registra / Copia link se in iframe */}
         {isInIframe ? (
-          <motion.button
-            onClick={() => window.open(window.location.href, '_blank')}
-            className="flex items-center gap-2 bg-purple-500/20 backdrop-blur border border-purple-400/50 text-purple-300 text-sm font-bold px-4 py-2 rounded-full cursor-pointer hover:bg-purple-500/35 transition-all duration-300"
-            initial={{ opacity:0, y:-10 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.4, delay:0.08 }}
-            style={{ fontFamily:'Inter, sans-serif' }}
-          >
-            <span>↗</span> Apri per registrare
-          </motion.button>
+          <IframeCopyButton />
         ) : (
           <motion.button
             onClick={recState !== 'preparing' && recState !== 'recording' ? handleRecord : undefined}
