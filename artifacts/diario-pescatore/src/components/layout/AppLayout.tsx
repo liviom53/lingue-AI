@@ -85,23 +85,23 @@ export function AppLayout({ children, onLogoTap, onScanOpen }: { children: React
     <div className="flex h-screen bg-background text-foreground overflow-hidden">
 
       {/* DESKTOP SIDEBAR */}
-      <aside className="hidden md:flex flex-col w-64 bg-sidebar border-r border-sidebar-border shadow-2xl z-20 shrink-0">
-        <div className="p-5 pb-2 border-b border-sidebar-border">
-          <div className="flex items-center gap-3">
+      <aside className="hidden md:flex flex-col w-52 bg-sidebar border-r border-sidebar-border shadow-2xl z-20 shrink-0">
+        <div className="p-4 pb-2 border-b border-sidebar-border">
+          <div className="flex items-center gap-2">
             <div
-              className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-blue-600 flex items-center justify-center shadow-lg shadow-primary/20 text-xl cursor-pointer select-none"
+              className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary to-blue-600 flex items-center justify-center shadow-lg shadow-primary/20 text-lg cursor-pointer select-none shrink-0"
               onClick={onLogoTap}
             >
               🎣
             </div>
-            <div>
-              <h1 className="font-bold text-base leading-tight text-sidebar-foreground">Diario del Pescatore</h1>
+            <div className="min-w-0">
+              <h1 className="font-bold text-sm leading-tight text-sidebar-foreground truncate">Diario del Pescatore</h1>
               <p className="text-xs text-primary/80 font-medium tracking-wide uppercase">v3.5 · by Livio</p>
             </div>
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto py-3 px-2 space-y-0.5 custom-scrollbar">
+        <div className="flex-1 overflow-y-auto py-2 px-1.5 space-y-0.5 custom-scrollbar">
           {NAV_ITEMS.map((item) => {
             const Icon = item.icon;
             const isActive = location === item.href;
@@ -110,7 +110,7 @@ export function AppLayout({ children, onLogoTap, onScanOpen }: { children: React
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "flex items-center gap-3 px-3 py-2 rounded-xl transition-all duration-150 group relative text-sm",
+                  "flex items-center gap-2 px-2.5 py-1.5 rounded-xl transition-all duration-150 group relative text-sm",
                   isActive
                     ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
                     : "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
@@ -119,7 +119,7 @@ export function AppLayout({ children, onLogoTap, onScanOpen }: { children: React
                 {isActive && (
                   <span className="absolute left-0 w-1 h-5 bg-primary rounded-r-full" />
                 )}
-                <span className="text-base w-5 text-center">{item.emoji}</span>
+                <span className="text-sm w-4 text-center shrink-0">{item.emoji}</span>
                 {item.label}
               </Link>
             );
@@ -127,12 +127,12 @@ export function AppLayout({ children, onLogoTap, onScanOpen }: { children: React
         </div>
 
         {/* Export / Import */}
-        <div className="p-3 border-t border-sidebar-border space-y-1">
-          <button onClick={exportData} className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-sm text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground transition-colors">
-            <Download className="w-4 h-4" /> Esporta dati
+        <div className="p-2.5 border-t border-sidebar-border space-y-1">
+          <button onClick={exportData} className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-xl text-xs text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground transition-colors">
+            <Download className="w-3.5 h-3.5 shrink-0" /> Esporta dati
           </button>
-          <button onClick={importData} className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-sm text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground transition-colors">
-            <Upload className="w-4 h-4" /> Importa backup
+          <button onClick={importData} className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-xl text-xs text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground transition-colors">
+            <Upload className="w-3.5 h-3.5 shrink-0" /> Importa backup
           </button>
           <p className="text-xs text-center text-sidebar-foreground/30 pt-1 italic">"Ad Maiora Semper"</p>
         </div>
