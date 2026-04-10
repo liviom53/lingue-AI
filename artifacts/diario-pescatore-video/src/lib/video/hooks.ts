@@ -16,17 +16,26 @@ export interface UseVideoPlayerOptions {
   onVideoEnd?: () => void;
   loop?: boolean;
   paused?: boolean;
+  resetKey?: number;
 }
 
-export function useVideoPlayer({ durations, onVideoEnd, loop = true, paused = false }: UseVideoPlayerOptions) {
+export function useVideoPlayer({ durations, onVideoEnd, loop = true, paused = false, resetKey = 0 }: UseVideoPlayerOptions) {
   const sceneKeys = useRef(Object.keys(durations)).current;
   const durationsArray = useRef(Object.values(durations)).current;
   const [currentScene, setCurrentScene] = useState(0);
   const [hasEnded, setHasEnded] = useState(false);
+  const isMounted = useRef(false);
 
   useEffect(() => {
     window.startRecording?.();
   }, []);
+
+  useEffect(() => {
+    if (!isMounted.current) { isMounted.current = true; return; }
+    setCurrentScene(0);
+    setHasEnded(false);
+    setTimeout(() => window.startRecording?.(), 300);
+  }, [resetKey]);
 
   useEffect(() => {
     if (hasEnded && !loop) return;

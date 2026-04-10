@@ -1,4 +1,4 @@
-import { useRef, useEffect, useState } from 'react';
+import { useRef, useEffect, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useVideoPlayer } from '@/lib/video';
 import { Scene1 } from './video_scenes/Scene1';
@@ -10,6 +10,12 @@ import { Scene6 } from './video_scenes/Scene6';
 import { Scene7 } from './video_scenes/Scene7';
 import { Scene8 } from './video_scenes/Scene8';
 import { Scene9 } from './video_scenes/Scene9';
+
+type RecordingState = 'idle' | 'preparing' | 'recording' | 'done' | 'unsupported';
+
+function fmtTime(s: number) {
+  return `${String(Math.floor(s / 60)).padStart(2,'0')}:${String(s % 60).padStart(2,'0')}`;
+}
 
 const SCENE_DURATIONS = {
   intro:       13000,
@@ -25,12 +31,64 @@ const SCENE_DURATIONS = {
 
 export default function VideoTemplate() {
   const [videoPaused, setVideoPaused] = useState(false);
-  const { currentScene } = useVideoPlayer({ durations: SCENE_DURATIONS, paused: videoPaused });
+  const [resetKey, setResetKey] = useState(0);
+  const { currentScene } = useVideoPlayer({ durations: SCENE_DURATIONS, paused: videoPaused, resetKey });
   const containerRef = useRef<HTMLDivElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
   const [audioPlaying, setAudioPlaying] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [fsUnsupported, setFsUnsupported] = useState(false);
+
+  /* ── Registrazione ───────────────────────────────────────────── */
+  const [recState, setRecState] = useState<RecordingState>('idle');
+  const [recTimer, setRecTimer] = useState(0);
+  const recorderRef = useRef<MediaRecorder | null>(null);
+  const chunksRef = useRef<Blob[]>([]);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const wantRecordRef = useRef(false);
+
+  useEffect(() => {
+    window.startRecording = async () => {
+      if (!wantRecordRef.current) return;
+      const container = containerRef.current;
+      const audio = audioRef.current;
+      if (!container) return;
+      const captureFn = (container as any).captureStream ?? (container as any).mozCaptureStream;
+      if (!captureFn) { setRecState('unsupported'); wantRecordRef.current = false; return; }
+      try {
+        const videoStream: MediaStream = captureFn.call(container, 30);
+        let combined = videoStream;
+        try {
+          const audioStream: MediaStream = (audio as any).captureStream();
+          combined = new MediaStream([...videoStream.getVideoTracks(), ...audioStream.getAudioTracks()]);
+        } catch { /* audio capture non disponibile */ }
+        const mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp8,opus')
+          ? 'video/webm;codecs=vp8,opus' : 'video/webm';
+        const recorder = new MediaRecorder(combined, { mimeType });
+        chunksRef.current = [];
+        recorder.ondataavailable = e => { if (e.data.size > 0) chunksRef.current.push(e.data); };
+        recorder.onstop = () => {
+          const blob = new Blob(chunksRef.current, { type: 'video/webm' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url; a.download = 'diario-pescatore-demo.webm';
+          document.body.appendChild(a); a.click(); document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+          setRecState('done'); wantRecordRef.current = false;
+          setTimeout(() => setRecState('idle'), 4000);
+        };
+        recorder.start(1000);
+        recorderRef.current = recorder;
+        setRecState('recording'); setRecTimer(0);
+        timerRef.current = setInterval(() => setRecTimer(t => t + 1), 1000);
+      } catch { setRecState('unsupported'); wantRecordRef.current = false; }
+    };
+    window.stopRecording = () => {
+      if (recorderRef.current?.state === 'recording') recorderRef.current.stop();
+      if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null; }
+    };
+    return () => { delete window.startRecording; delete window.stopRecording; };
+  }, []);
 
   /* ── Audio ──────────────────────────────────────────────────── */
   const startAudio = () => {
@@ -47,6 +105,16 @@ export default function VideoTemplate() {
     a.pause();
     a.currentTime = 0;
     setAudioPlaying(false);
+  };
+
+  const handleRecord = () => {
+    const container = containerRef.current;
+    const captureFn = (container as any)?.captureStream ?? (container as any)?.mozCaptureStream;
+    if (!captureFn) { setRecState('unsupported'); return; }
+    wantRecordRef.current = true;
+    setRecState('preparing'); setRecTimer(0);
+    startAudio();
+    setResetKey(k => k + 1);
   };
 
   useEffect(() => {
@@ -143,7 +211,7 @@ export default function VideoTemplate() {
       </svg>
 
       {/* ── Barra controlli (top-right) ─────────────────────────── */}
-      <div className="absolute top-4 right-4 z-50 flex items-center gap-2">
+      <div className="absolute top-4 right-4 z-50 flex items-center gap-2 flex-wrap justify-end">
 
         {/* Bottone Audio */}
         <motion.button
@@ -188,6 +256,27 @@ export default function VideoTemplate() {
         >
           <span>{videoPaused ? '▶' : '⏸'}</span>
           {videoPaused ? 'Riprendi' : 'Ferma video'}
+        </motion.button>
+
+        {/* Bottone Registra */}
+        <motion.button
+          onClick={recState === 'idle' || recState === 'done' || recState === 'unsupported' ? handleRecord : undefined}
+          disabled={recState === 'preparing' || recState === 'recording'}
+          className={`flex items-center gap-2 backdrop-blur border text-sm font-bold px-4 py-2 rounded-full transition-all duration-300 ${
+            recState === 'recording' ? 'bg-red-500/30 border-red-400/70 text-red-300 cursor-default animate-pulse'
+            : recState === 'done' ? 'bg-emerald-500/25 border-emerald-400/60 text-emerald-300 cursor-default'
+            : recState === 'preparing' ? 'bg-purple-500/20 border-purple-400/50 text-purple-300 cursor-default'
+            : recState === 'unsupported' ? 'bg-amber-500/20 border-amber-400/50 text-amber-300 cursor-pointer'
+            : 'bg-purple-500/20 border-purple-400/50 text-purple-300 hover:bg-purple-500/35 cursor-pointer'
+          }`}
+          initial={{ opacity:0, y:-10 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.4, delay:0.08 }}
+          style={{ fontFamily:'Inter, sans-serif' }}
+        >
+          {recState === 'recording' && <><span>⏺</span> {fmtTime(recTimer)}</>}
+          {recState === 'preparing' && <><span>⏳</span> Avvio…</>}
+          {recState === 'done' && <><span>✅</span> Download avviato</>}
+          {recState === 'unsupported' && <><span>⚠️</span> Browser non supportato</>}
+          {(recState === 'idle') && <><span>⏺</span> Registra video</>}
         </motion.button>
 
         {/* Bottone Schermo intero */}
