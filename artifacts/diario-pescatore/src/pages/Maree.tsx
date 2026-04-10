@@ -139,7 +139,7 @@ export default function Maree() {
       <div className="bg-card rounded-2xl p-5 border border-white/5 shadow-xl">
         <h2 className="text-sm text-muted-foreground uppercase tracking-wider mb-4">Grafico Maree 24h</h2>
         {(() => {
-          const W=600, H=160, PAD=12;
+          const W=600, H=100, PAD=10;
           const minH2=Math.min(...tides.heights.map(x=>x.height));
           const maxH2=Math.max(...tides.heights.map(x=>x.height));
           const range=maxH2-minH2||0.1;
@@ -149,7 +149,7 @@ export default function Maree() {
           const fillPts=`0,${H} `+pts+` ${W},${H}`;
           const mid=toY((minH2+maxH2)/2);
           return(
-            <svg viewBox={`0 0 ${W} ${H}`} className="w-full" style={{height:160}} preserveAspectRatio="none">
+            <svg viewBox={`0 0 ${W} ${H}`} className="w-full" style={{height:100}} preserveAspectRatio="none">
               <defs>
                 <linearGradient id="waveGrad" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.35"/>
