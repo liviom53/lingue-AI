@@ -28,6 +28,7 @@ const Finanze = lazy(() => import("./pages/Finanze"));
 const Impostazioni = lazy(() => import("./pages/Impostazioni"));
 const Donazioni = lazy(() => import("./pages/Donazioni"));
 const Demo = lazy(() => import("./pages/Demo"));
+const Normative = lazy(() => import("./pages/Normative"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -164,6 +165,7 @@ function Router({ onLogoTap, onScanOpen }: { onLogoTap: () => void; onScanOpen: 
           <Route path="/impostazioni" component={Impostazioni} />
           <Route path="/donazioni" component={Donazioni} />
           <Route path="/demo" component={Demo} />
+          <Route path="/normative" component={Normative} />
           <Route>
             <div className="p-8 text-center">
               <h2 className="text-xl font-bold">404 - Pagina non trovata</h2>
