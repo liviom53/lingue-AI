@@ -244,7 +244,7 @@ export default function Home() {
         <div>
           <p className="text-primary text-sm font-semibold capitalize">{today}</p>
           <h1 className="text-3xl font-display font-bold text-white mt-0.5">
-            Bentornato, <span className="text-primary">Limax</span> 🎣
+            Bentornato, <span className="text-primary">Livio</span> 🎣
           </h1>
         </div>
 
