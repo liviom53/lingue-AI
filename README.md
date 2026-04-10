@@ -37,7 +37,7 @@ PWA completa per la gestione del diario di pesca. Funzionalità principali:
 - **Finanze** — registro spese di pesca
 - **Demo & Aiuto** — video tutorial embedded, FAQ, guide
 - **Impostazioni Spot AI** — coordinate GPS dello spot, calibrazione previsioni
-- **Admin panel** — Ctrl+Shift+5 oppure 7 tap sul logo (password: `macolingue`)
+- **Admin panel** — Ctrl+Shift+5 oppure 7 tap sul logo (accesso riservato)
 
 ### Stack
 - React + Vite + TypeScript
