@@ -201,7 +201,7 @@ export default function Maree() {
       </div>
 
       {/* Calendario mensile fasi lunari */}
-      <div className="bg-card rounded-2xl p-4 border border-white/5 shadow-xl max-w-sm">
+      <div className="bg-card rounded-2xl p-4 border border-white/5 shadow-xl">
         <h2 className="text-sm text-muted-foreground uppercase tracking-wider mb-3">
           Fasi Lunari — {MONTHS_IT[date.getMonth()]} {date.getFullYear()}
         </h2>
