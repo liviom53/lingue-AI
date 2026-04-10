@@ -1,9 +1,58 @@
 import { Router, type Request, type Response } from "express";
-import { openrouter } from "@workspace/integrations-openrouter-ai";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
 const router = Router();
 
-const MODEL = "deepseek/deepseek-chat";
+const GEMINI_API_KEY = process.env.VITE_GEMINI_API_KEY ?? process.env.GEMINI_API_KEY ?? "";
+const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
+const TEXT_MODEL = "gemini-2.0-flash";
+const VISION_MODEL_NAME = "gemini-2.0-flash";
+
+/** Genera testo con system instruction e un singolo messaggio utente */
+async function geminiText(system: string, user: string, maxTokens?: number): Promise<string> {
+  const model = genAI.getGenerativeModel({
+    model: TEXT_MODEL,
+    systemInstruction: system,
+    ...(maxTokens ? { generationConfig: { maxOutputTokens: maxTokens } } : {}),
+  });
+  const result = await model.generateContent(user);
+  return result.response.text();
+}
+
+/** Genera risposta in una chat con history (role: user/assistant → user/model) */
+async function geminiChatHistory(
+  system: string,
+  history: { role: "user" | "assistant"; content: string }[],
+): Promise<string> {
+  const model = genAI.getGenerativeModel({ model: TEXT_MODEL, systemInstruction: system });
+  const last = history[history.length - 1];
+  const prev = history.slice(0, -1);
+  const chat = model.startChat({
+    history: prev.map(m => ({
+      role: m.role === "assistant" ? "model" : "user",
+      parts: [{ text: m.content }],
+    })),
+  });
+  const result = await chat.sendMessage(last.content);
+  return result.response.text();
+}
+
+/** Analisi visiva: imageBase64 può essere data URL ("data:image/...;base64,...") oppure raw base64 */
+async function geminiVision(imageBase64: string, prompt: string): Promise<string> {
+  const model = genAI.getGenerativeModel({ model: VISION_MODEL_NAME });
+  let mimeType = "image/jpeg";
+  let data = imageBase64;
+  if (imageBase64.startsWith("data:")) {
+    const [header, payload] = imageBase64.split(",");
+    mimeType = header.split(";")[0].replace("data:", "");
+    data = payload;
+  }
+  const result = await model.generateContent([
+    { inlineData: { mimeType, data } },
+    { text: prompt },
+  ]);
+  return result.response.text();
+}
 
 function errMsg(err: unknown, fallback = "AI error"): string {
   return err instanceof Error ? err.message : fallback;
@@ -98,23 +147,16 @@ router.post("/translate", async (req: Request, res: Response) => {
   const profileCtx = buildProfileContext(userProfile);
   const levelCtx = buildLevelContext(level);
   try {
-    const completion = await openrouter.chat.completions.create({
-      model: MODEL,
-      messages: [
-        {
-          role: "system",
-          content: `You are a language tutor. Translate Italian text to ${langName} and provide a brief grammar insight.
+    const raw = await geminiText(
+      `You are a language tutor. Translate Italian text to ${langName} and provide a brief grammar insight.
 Respond ONLY with valid JSON in this exact format (no markdown, no extra text):
 {"translation":"...","pronunciation":"...","explanation":"...","example":"..."}
 - translation: the ${langName} translation
 - pronunciation: a simplified phonetic spelling of the translation that an Italian speaker can read and roughly pronounce correctly (e.g. for English "Hello" write "el-LÒ", for "Thank you" write "senk-IÙ"). Use Italian phonetic conventions. Capitalize stressed syllables. Keep it short.
 - explanation: one short sentence explaining an interesting grammar point or word choice (in Italian). If the user has a known profession or background, relate the example to it when natural.
 - example: one short additional example sentence in ${langName} using a key word from the translation${profileCtx}${levelCtx}`,
-        },
-        { role: "user", content: text },
-      ],
-    });
-    const raw = completion.choices[0]?.message?.content ?? "{}";
+      text,
+    );
     const clean = raw.replace(/^```json\s*/i, "").replace(/```$/, "").trim();
     const parsed = JSON.parse(clean);
     res.json(parsed);
@@ -160,14 +202,7 @@ Rules:
   }
 
   try {
-    const completion = await openrouter.chat.completions.create({
-      model: MODEL,
-      messages: [
-        { role: "system", content: systemContent },
-        ...messages,
-      ],
-    });
-    const reply = completion.choices[0]?.message?.content ?? "";
+    const reply = await geminiChatHistory(systemContent, messages);
     res.json({ reply });
   } catch (err: unknown) {
     res.status(500).json({ error: errMsg(err) });
@@ -186,26 +221,16 @@ router.post("/grammar", async (req: Request, res: Response) => {
   }
   const langName = LANG_NAMES[targetLang] ?? targetLang;
   try {
-    const completion = await openrouter.chat.completions.create({
-      model: MODEL,
-      messages: [
-        {
-          role: "system",
-          content: `You are a grammar expert. Analyze the given word within its ${langName} sentence context.
+    const raw = await geminiText(
+      `You are a grammar expert. Analyze the given word within its ${langName} sentence context.
 Respond ONLY with valid JSON (no markdown, no extra text):
 {"pos":"...","gender":"...","tense":"...","info":"..."}
 - pos: part of speech in Italian (e.g. "sostantivo", "verbo", "aggettivo", "avverbio", "preposizione", "articolo", "pronome")
 - gender: grammatical gender in Italian if applicable (e.g. "maschile", "femminile", "neutro", or "—" if not applicable)
 - tense: verb tense in Italian if it is a verb (e.g. "presente", "passato prossimo", "futuro", or "—" if not a verb)
 - info: one short, useful note in Italian about this word — etymology, common usage, pitfall, or interesting fact. Max 20 words.`,
-        },
-        {
-          role: "user",
-          content: `Word: "${word}"\nSentence: "${sentence ?? word}"`,
-        },
-      ],
-    });
-    const raw = completion.choices[0]?.message?.content ?? "{}";
+      `Word: "${word}"\nSentence: "${sentence ?? word}"`,
+    );
     const clean = raw.replace(/^```json\s*/i, "").replace(/```$/, "").trim();
     res.json(JSON.parse(clean));
   } catch (err: unknown) {
@@ -225,22 +250,15 @@ router.post("/shadow", async (req: Request, res: Response) => {
   const langName = LANG_NAMES[targetLang] ?? targetLang;
   const profileCtx = buildProfileContext(userProfile);
   try {
-    const completion = await openrouter.chat.completions.create({
-      model: MODEL,
-      messages: [
-        {
-          role: "system",
-          content: `You generate short practice phrases for language shadowing exercises.
+    const raw = await geminiText(
+      `You generate short practice phrases for language shadowing exercises.
 Respond ONLY with valid JSON (no markdown):
 {"phrase":"...","phonetic":"...","translation":"..."}
 - phrase: a natural, everyday ${langName} sentence of 5-10 words. Use common vocabulary. Vary the topic each time.
 - phonetic: simplified phonetic spelling using Italian phonetic conventions so an Italian can roughly pronounce it. Capitalize stressed syllables.
 - translation: the Italian translation of the phrase.${profileCtx}`,
-        },
-        { role: "user", content: "Generate a new shadowing phrase." },
-      ],
-    });
-    const raw = completion.choices[0]?.message?.content ?? "{}";
+      "Generate a new shadowing phrase.",
+    );
     const clean = raw.replace(/^```json\s*/i, "").replace(/```$/, "").trim();
     res.json(JSON.parse(clean));
   } catch (err: unknown) {
@@ -275,14 +293,7 @@ router.post("/app-help", async (req: Request, res: Response) => {
     return;
   }
   try {
-    const completion = await openrouter.chat.completions.create({
-      model: MODEL,
-      messages: [
-        { role: "system", content: APP_HELP_CONTEXT },
-        { role: "user", content: query },
-      ],
-    });
-    const answer = completion.choices[0]?.message?.content ?? "";
+    const answer = await geminiText(APP_HELP_CONTEXT, query);
     res.json({ answer });
   } catch (err: unknown) {
     res.status(500).json({ error: errMsg(err) });
@@ -387,20 +398,13 @@ router.post("/ipa", async (req: Request, res: Response) => {
   }
   const langName = LANG_NAMES[targetLang] ?? targetLang;
   try {
-    const completion = await openrouter.chat.completions.create({
-      model: MODEL,
-      messages: [
-        {
-          role: "system",
-          content: `You are a phonetics expert. Given a ${langName} phrase, respond ONLY with valid JSON (no markdown, no extra text):
+    const raw = await geminiText(
+      `You are a phonetics expert. Given a ${langName} phrase, respond ONLY with valid JSON (no markdown, no extra text):
 {"ipa":"...","syllables":"..."}
 - ipa: the IPA transcription using standard IPA symbols, enclosed in /forward slashes/
 - syllables: the phrase split into syllables with a middle dot · between them (e.g. "hel·lo wor·ld")`,
-        },
-        { role: "user", content: text },
-      ],
-    });
-    const raw = completion.choices[0]?.message?.content ?? "{}";
+      text,
+    );
     const clean = raw.replace(/^```json\s*/i, "").replace(/```$/, "").trim();
     res.json(JSON.parse(clean));
   } catch (err: unknown) {
@@ -470,21 +474,11 @@ router.post("/variants", async (req: Request, res: Response) => {
   }
   const lang = LANG_NAMES[targetLang] ?? targetLang;
   try {
-    const completion = await openrouter.chat.completions.create({
-      model: MODEL,
-      max_tokens: 300,
-      messages: [
-        {
-          role: "system",
-          content: `Sei un esperto di linguistica. L'utente ha tradotto una frase dall'italiano in ${lang}. Fornisci 2-3 varianti alternative della traduzione (es. formale, informale, colloquiale) in formato JSON. Rispondi SOLO con JSON valido, nessun testo extra.`,
-        },
-        {
-          role: "user",
-          content: `Italiano: "${text}"\nTraduzione base in ${lang}: "${translation}"\n\nFornisci 2-3 varianti. Formato: { "variants": [{ "label": "Formale", "text": "..." }, { "label": "Informale", "text": "..." }] }`,
-        },
-      ],
-    });
-    const raw = completion.choices[0]?.message?.content ?? "{}";
+    const raw = await geminiText(
+      `Sei un esperto di linguistica. L'utente ha tradotto una frase dall'italiano in ${lang}. Fornisci 2-3 varianti alternative della traduzione (es. formale, informale, colloquiale) in formato JSON. Rispondi SOLO con JSON valido, nessun testo extra.`,
+      `Italiano: "${text}"\nTraduzione base in ${lang}: "${translation}"\n\nFornisci 2-3 varianti. Formato: { "variants": [{ "label": "Formale", "text": "..." }, { "label": "Informale", "text": "..." }] }`,
+      300,
+    );
     const jsonMatch = raw.match(/\{[\s\S]*\}/);
     const parsed = jsonMatch ? JSON.parse(jsonMatch[0]) : { variants: [] };
     res.json(parsed);
@@ -504,20 +498,10 @@ router.post("/fishing-advice", async (req: Request, res: Response) => {
     ? `Spot personalizzato — ${spotConfig.nome ?? "spot"}: ${spotConfig.descrizione}`
     : "Zona: Porto Badino / Canale Fiume Portatore, costa laziale.";
   try {
-    const completion = await openrouter.chat.completions.create({
-      model: MODEL,
-      messages: [
-        {
-          role: "system",
-          content: `Sei un pescatore esperto di Porto Badino (Canale Fiume Portatore, costa laziale). ${spotInfo} Solo pesca da terra. Rispondi in italiano, massimo 6 righe, molto pratico e concreto: orario migliore, esca consigliata, posizione esatta (foce / metà canale / canale interno), specie target, tecnica.`,
-        },
-        {
-          role: "user",
-          content: `Condizioni attuali: ${context}\n\nDammi il tuo consiglio per questa uscita.`,
-        },
-      ],
-    });
-    const reply = completion.choices[0]?.message?.content ?? "Nessuna risposta ricevuta.";
+    const reply = await geminiText(
+      `Sei un pescatore esperto di Porto Badino (Canale Fiume Portatore, costa laziale). ${spotInfo} Solo pesca da terra. Rispondi in italiano, massimo 6 righe, molto pratico e concreto: orario migliore, esca consigliata, posizione esatta (foce / metà canale / canale interno), specie target, tecnica.`,
+      `Condizioni attuali: ${context}\n\nDammi il tuo consiglio per questa uscita.`,
+    );
     res.json({ reply });
   } catch (err: unknown) {
     res.status(500).json({ error: errMsg(err) });
@@ -525,7 +509,6 @@ router.post("/fishing-advice", async (req: Request, res: Response) => {
 });
 
 // ── Scanner cattura: riconoscimento specie via vision AI ─────────────────────
-const VISION_MODEL = "google/gemini-2.0-flash-001";
 
 router.post("/scan-fish", async (req: Request, res: Response) => {
   const { imageBase64 } = req.body as { imageBase64: string };
@@ -534,27 +517,15 @@ router.post("/scan-fish", async (req: Request, res: Response) => {
     return;
   }
   try {
-    const completion = await openrouter.chat.completions.create({
-      model: VISION_MODEL,
-      messages: [
-        {
-          role: "user",
-          content: [
-            { type: "image_url", image_url: { url: imageBase64 } },
-            {
-              type: "text",
-              text: `Sei un esperto ittiologista italiano. Analizza questa foto e identifica qualsiasi pesce, mollusco, crostaceo o animale acquatico presente — anche se la foto non è perfetta.
+    const raw = await geminiVision(
+      imageBase64,
+      `Sei un esperto ittiologista italiano. Analizza questa foto e identifica qualsiasi pesce, mollusco, crostaceo o animale acquatico presente — anche se la foto non è perfetta.
 Rispondi SOLO con JSON valido, nessun testo extra, nessun markdown.
 Se vedi un pesce o animale acquatico (anche parzialmente visibile, anche se non sei 100% certo):
 {"riconosciuto":true,"specie":"nome comune italiano più probabile","nome_scientifico":"nome scientifico","descrizione":"1-2 frasi descrittive sulla specie","peso_tipico":"stima tipica es. 0.5-3 kg","lunghezza_tipica":"stima tipica es. 20-50 cm"}
 Solo se l'immagine non mostra assolutamente nessun animale acquatico (es. foto di persone, paesaggi, oggetti):
 {"riconosciuto":false,"messaggio":"spiegazione breve in italiano"}`,
-            },
-          ],
-        },
-      ],
-    });
-    const raw = completion.choices[0]?.message?.content ?? "{}";
+    );
     const clean = raw.replace(/^```json\s*/i, "").replace(/```$/, "").trim();
     const jsonMatch = clean.match(/\{[\s\S]*\}/);
     const parsed = jsonMatch
@@ -664,15 +635,7 @@ router.post("/diario", async (req: Request, res: Response) => {
     marineCtx;
 
   try {
-    const completion = await openrouter.chat.completions.create({
-      model: MODEL,
-      messages: [
-        { role: "system", content: systemContent },
-        ...messages,
-      ],
-    });
-    const reply =
-      completion.choices[0]?.message?.content ?? "Nessuna risposta ricevuta.";
+    const reply = await geminiChatHistory(systemContent, messages);
     res.json({ reply });
   } catch (err: unknown) {
     res.status(500).json({ error: errMsg(err, "Errore AI") });
