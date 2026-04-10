@@ -1,0 +1,19 @@
+@import "tailwindcss";
+
+:root {
+  --color-primary: #0ea5e9;
+  --color-secondary: #f59e0b;
+  --color-bg-dark: #051525;
+  --font-display: 'Bebas Neue', sans-serif;
+  --font-body: 'Inter', sans-serif;
+}
+
+body {
+  font-family: var(--font-body);
+  background-color: var(--color-bg-dark);
+  color: white;
+}
+
+h1, h2, h3 {
+  font-family: var(--font-display);
+}
