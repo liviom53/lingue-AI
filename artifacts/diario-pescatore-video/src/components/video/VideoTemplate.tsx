@@ -78,9 +78,16 @@ export default function VideoTemplate() {
   const displayStreamRef = useRef<MediaStream | null>(null);
 
   const startMediaRecorder = (stream: MediaStream) => {
-    const mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp8,opus')
-      ? 'video/webm;codecs=vp8,opus' : 'video/webm';
-    const recorder = new MediaRecorder(stream, { mimeType });
+    const mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp9,opus')
+      ? 'video/webm;codecs=vp9,opus'
+      : MediaRecorder.isTypeSupported('video/webm;codecs=vp8,opus')
+      ? 'video/webm;codecs=vp8,opus'
+      : 'video/webm';
+    const recorder = new MediaRecorder(stream, {
+      mimeType,
+      videoBitsPerSecond: 6_000_000,  // 6 Mbps — fluido e nitido
+      audioBitsPerSecond: 192_000,    // 192 kbps audio
+    });
     chunksRef.current = [];
     recorder.ondataavailable = e => { if (e.data.size > 0) chunksRef.current.push(e.data); };
     recorder.onstop = () => {
@@ -106,6 +113,9 @@ export default function VideoTemplate() {
       const stream = displayStreamRef.current;
       displayStreamRef.current = null;
       if (!stream) return;
+      // Avvia audio sincronizzato con l'inizio della registrazione
+      const a = audioRef.current;
+      if (a) { a.muted = false; a.volume = 0.65; a.currentTime = 0; a.play().catch(() => {}); }
       startMediaRecorder(stream);
     };
     window.stopRecording = () => {
@@ -134,14 +144,26 @@ export default function VideoTemplate() {
 
   const handleRecord = async () => {
     try {
-      const stream = await navigator.mediaDevices.getDisplayMedia({
+      // Cattura solo video dallo schermo (audio lo prendiamo dall'elemento)
+      const displayStream = await navigator.mediaDevices.getDisplayMedia({
         video: { frameRate: 30 } as MediaTrackConstraints,
-        audio: true,
+        audio: false,
       });
-      displayStreamRef.current = stream;
+
+      // Cattura audio direttamente dall'elemento <audio> (nessuna selezione utente)
+      const audioEl = audioRef.current as any;
+      const audioStream: MediaStream | undefined =
+        audioEl?.captureStream?.() ?? audioEl?.mozCaptureStream?.();
+
+      const combined = audioStream
+        ? new MediaStream([...displayStream.getVideoTracks(), ...audioStream.getAudioTracks()])
+        : displayStream;
+
+      displayStreamRef.current = combined;
       wantRecordRef.current = true;
-      setRecState('preparing'); setRecTimer(0);
-      startAudio();
+      setRecState('preparing');
+      setRecTimer(0);
+      // L'audio parte in window.startRecording, sincronizzato con l'inizio della registrazione
       setResetKey(k => k + 1);
     } catch (err: unknown) {
       const name = (err as DOMException)?.name;
