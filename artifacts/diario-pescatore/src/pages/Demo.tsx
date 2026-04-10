@@ -59,8 +59,7 @@ function FaqAccordion({ items }: { items: FaqItem[] }) {
 }
 
 export default function Demo() {
-  const videoBase = import.meta.env.BASE_URL?.replace(/\/diario-pescatore\/?$/, "") || "";
-  const videoSrc = `${videoBase}/diario-pescatore-video/`;
+  const videoSrc = `${window.location.origin}/diario-pescatore-video/`;
 
   return (
     <div className="space-y-8 pb-6">
