@@ -318,10 +318,9 @@ function App() {
   // ── Splash ───────────────────────────────────────────────────────────────────
   useEffect(() => {
     const hasSeenSplash = sessionStorage.getItem("diario_has_seen_splash");
-    if (hasSeenSplash) {
-      setShowSplash(false);
-    } else {
+    if (!hasSeenSplash) {
       sessionStorage.setItem("diario_has_seen_splash", "true");
+      setShowSplash(true);
     }
   }, []);
 
