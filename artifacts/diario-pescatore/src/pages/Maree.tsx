@@ -205,12 +205,12 @@ export default function Maree() {
         <h2 className="text-sm text-muted-foreground uppercase tracking-wider mb-3">
           Fasi Lunari — {MONTHS_IT[date.getMonth()]} {date.getFullYear()}
         </h2>
-        <div className="grid grid-cols-7 gap-1 mb-1">
+        <div className="grid grid-cols-7 gap-0.5 mb-0.5">
           {["L","M","M","G","V","S","D"].map((d,i)=>(
             <div key={i} className="text-center text-[10px] text-muted-foreground font-bold py-0.5">{d}</div>
           ))}
         </div>
-        <div className="grid grid-cols-7 gap-1">
+        <div className="grid grid-cols-7 gap-0.5">
           {calendarDays.map((day,i)=>(
             day===null?(
               <div key={`e${i}`}/>
@@ -221,9 +221,9 @@ export default function Maree() {
                   const d2=String(day.d).padStart(2,"0");
                   setSelectedDate(`${date.getFullYear()}-${m}-${d2}`);
                 }}
-                className={cn("aspect-square flex flex-col items-center justify-center rounded-lg transition-all hover:bg-primary/10",
+                className={cn("flex flex-col items-center justify-center rounded-md py-1 transition-all hover:bg-primary/10",
                   day.d===date.getDate()?"bg-primary/20 border border-primary text-primary font-bold":"text-white/70")}>
-                <span className="text-base leading-none">{day.moon.emoji}</span>
+                <span className="text-sm leading-none">{day.moon.emoji}</span>
                 <span className="text-[10px] font-semibold mt-0.5">{day.d}</span>
               </button>
             )
