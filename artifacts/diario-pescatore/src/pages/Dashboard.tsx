@@ -271,14 +271,6 @@ export default function Home() {
         </div>
       </div>
 
-      {/* ── STATISTICHE ── */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <MiniStat icon={Anchor} label="Uscite" value={uscite.length} color="text-blue-400" />
-        <MiniStat icon={Fish} label="Catture" value={catture.length} color="text-primary" />
-        <MiniStat icon={Scale} label="Kg Totali" value={`${pesoTotale.toFixed(1)}`} color="text-teal-400" />
-        <MiniStat icon={MapPin} label="Spot" value={spot.length} color="text-indigo-400" />
-      </div>
-
       {/* ── CARD PREVISIONI PESCA ── */}
       <FishingForecastCard stazioneKey={stazioneKey} />
 
@@ -354,6 +346,15 @@ export default function Home() {
           </div>
         </div>
       </div>
+
+      {/* ── STATISTICHE ── */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <MiniStat icon={Anchor} label="Uscite" value={uscite.length} color="text-blue-400" />
+        <MiniStat icon={Fish} label="Catture" value={catture.length} color="text-primary" />
+        <MiniStat icon={Scale} label="Kg Totali" value={`${pesoTotale.toFixed(1)}`} color="text-teal-400" />
+        <MiniStat icon={MapPin} label="Spot" value={spot.length} color="text-indigo-400" />
+      </div>
+
     </div>
   );
 }
