@@ -1,22 +1,42 @@
 import { Router, type Request, type Response } from "express";
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { GoogleGenAI } from "@google/genai";
 
 const router = Router();
 
-const GEMINI_API_KEY = process.env.VITE_GEMINI_API_KEY ?? process.env.GEMINI_API_KEY ?? "";
-const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
-const TEXT_MODEL = "gemini-2.0-flash";
-const VISION_MODEL_NAME = "gemini-2.0-flash";
+const ai = new GoogleGenAI({
+  apiKey: process.env.AI_INTEGRATIONS_GEMINI_API_KEY ?? "",
+  httpOptions: {
+    apiVersion: "",
+    baseUrl: process.env.AI_INTEGRATIONS_GEMINI_BASE_URL ?? "https://generativelanguage.googleapis.com",
+  },
+});
 
-/** Genera testo con system instruction e un singolo messaggio utente */
+const TEXT_MODEL = "gemini-2.5-flash";
+const VISION_MODEL_NAME = "gemini-2.5-flash";
+
+/**
+ * Genera testo usando il system prompt come primo turno user→model
+ * (workaround per proxy che non supporta systemInstruction nativo)
+ */
 async function geminiText(system: string, user: string, maxTokens?: number): Promise<string> {
-  const model = genAI.getGenerativeModel({
+  const result = await ai.models.generateContent({
     model: TEXT_MODEL,
-    systemInstruction: system,
-    ...(maxTokens ? { generationConfig: { maxOutputTokens: maxTokens } } : {}),
+    contents: [
+      { role: "user", parts: [{ text: `[ISTRUZIONI DI SISTEMA]\n${system}\n[FINE ISTRUZIONI]\n\nConfermato. Seguirò queste istruzioni.` }] },
+      { role: "model", parts: [{ text: "Confermato. Seguirò queste istruzioni." }] },
+      { role: "user", parts: [{ text: user }] },
+    ],
+    ...(maxTokens ? { config: { maxOutputTokens: maxTokens } } : {}),
   });
-  const result = await model.generateContent(user);
-  return result.response.text();
+  return result.text ?? "";
+}
+
+/** Come geminiText ma estrae il JSON dalla risposta in modo robusto */
+async function geminiJSON(system: string, user: string, maxTokens?: number): Promise<string> {
+  const raw = await geminiText(system, user, maxTokens);
+  const clean = raw.replace(/^```json\s*/i, "").replace(/^```\s*/i, "").replace(/```$/m, "").trim();
+  const match = clean.match(/\{[\s\S]*\}/);
+  return match ? match[0] : clean;
 }
 
 /** Genera risposta in una chat con history (role: user/assistant → user/model) */
@@ -24,22 +44,25 @@ async function geminiChatHistory(
   system: string,
   history: { role: "user" | "assistant"; content: string }[],
 ): Promise<string> {
-  const model = genAI.getGenerativeModel({ model: TEXT_MODEL, systemInstruction: system });
   const last = history[history.length - 1];
   const prev = history.slice(0, -1);
-  const chat = model.startChat({
-    history: prev.map(m => ({
-      role: m.role === "assistant" ? "model" : "user",
-      parts: [{ text: m.content }],
-    })),
+  const result = await ai.models.generateContent({
+    model: TEXT_MODEL,
+    contents: [
+      { role: "user", parts: [{ text: `[ISTRUZIONI DI SISTEMA]\n${system}\n[FINE ISTRUZIONI]` }] },
+      { role: "model", parts: [{ text: "Confermato. Seguirò queste istruzioni." }] },
+      ...prev.map(m => ({
+        role: (m.role === "assistant" ? "model" : "user") as "model" | "user",
+        parts: [{ text: m.content }],
+      })),
+      { role: "user", parts: [{ text: last.content }] },
+    ],
   });
-  const result = await chat.sendMessage(last.content);
-  return result.response.text();
+  return result.text ?? "";
 }
 
 /** Analisi visiva: imageBase64 può essere data URL ("data:image/...;base64,...") oppure raw base64 */
 async function geminiVision(imageBase64: string, prompt: string): Promise<string> {
-  const model = genAI.getGenerativeModel({ model: VISION_MODEL_NAME });
   let mimeType = "image/jpeg";
   let data = imageBase64;
   if (imageBase64.startsWith("data:")) {
@@ -47,11 +70,13 @@ async function geminiVision(imageBase64: string, prompt: string): Promise<string
     mimeType = header.split(";")[0].replace("data:", "");
     data = payload;
   }
-  const result = await model.generateContent([
-    { inlineData: { mimeType, data } },
-    { text: prompt },
-  ]);
-  return result.response.text();
+  const result = await ai.models.generateContent({
+    model: VISION_MODEL_NAME,
+    contents: [
+      { parts: [{ inlineData: { mimeType, data } }, { text: prompt }] },
+    ],
+  });
+  return result.text ?? "";
 }
 
 function errMsg(err: unknown, fallback = "AI error"): string {
@@ -147,9 +172,9 @@ router.post("/translate", async (req: Request, res: Response) => {
   const profileCtx = buildProfileContext(userProfile);
   const levelCtx = buildLevelContext(level);
   try {
-    const raw = await geminiText(
+    const raw = await geminiJSON(
       `You are a language tutor. Translate Italian text to ${langName} and provide a brief grammar insight.
-Respond ONLY with valid JSON in this exact format (no markdown, no extra text):
+Respond with valid JSON in this exact format:
 {"translation":"...","pronunciation":"...","explanation":"...","example":"..."}
 - translation: the ${langName} translation
 - pronunciation: a simplified phonetic spelling of the translation that an Italian speaker can read and roughly pronounce correctly (e.g. for English "Hello" write "el-LÒ", for "Thank you" write "senk-IÙ"). Use Italian phonetic conventions. Capitalize stressed syllables. Keep it short.
@@ -157,8 +182,7 @@ Respond ONLY with valid JSON in this exact format (no markdown, no extra text):
 - example: one short additional example sentence in ${langName} using a key word from the translation${profileCtx}${levelCtx}`,
       text,
     );
-    const clean = raw.replace(/^```json\s*/i, "").replace(/```$/, "").trim();
-    const parsed = JSON.parse(clean);
+    const parsed = JSON.parse(raw);
     res.json(parsed);
   } catch (err: unknown) {
     res.status(500).json({ error: errMsg(err) });
@@ -221,9 +245,9 @@ router.post("/grammar", async (req: Request, res: Response) => {
   }
   const langName = LANG_NAMES[targetLang] ?? targetLang;
   try {
-    const raw = await geminiText(
+    const raw = await geminiJSON(
       `You are a grammar expert. Analyze the given word within its ${langName} sentence context.
-Respond ONLY with valid JSON (no markdown, no extra text):
+Respond with valid JSON:
 {"pos":"...","gender":"...","tense":"...","info":"..."}
 - pos: part of speech in Italian (e.g. "sostantivo", "verbo", "aggettivo", "avverbio", "preposizione", "articolo", "pronome")
 - gender: grammatical gender in Italian if applicable (e.g. "maschile", "femminile", "neutro", or "—" if not applicable)
@@ -231,8 +255,7 @@ Respond ONLY with valid JSON (no markdown, no extra text):
 - info: one short, useful note in Italian about this word — etymology, common usage, pitfall, or interesting fact. Max 20 words.`,
       `Word: "${word}"\nSentence: "${sentence ?? word}"`,
     );
-    const clean = raw.replace(/^```json\s*/i, "").replace(/```$/, "").trim();
-    res.json(JSON.parse(clean));
+    res.json(JSON.parse(raw));
   } catch (err: unknown) {
     res.status(500).json({ error: errMsg(err) });
   }
@@ -250,17 +273,16 @@ router.post("/shadow", async (req: Request, res: Response) => {
   const langName = LANG_NAMES[targetLang] ?? targetLang;
   const profileCtx = buildProfileContext(userProfile);
   try {
-    const raw = await geminiText(
+    const raw = await geminiJSON(
       `You generate short practice phrases for language shadowing exercises.
-Respond ONLY with valid JSON (no markdown):
+Respond with valid JSON:
 {"phrase":"...","phonetic":"...","translation":"..."}
 - phrase: a natural, everyday ${langName} sentence of 5-10 words. Use common vocabulary. Vary the topic each time.
 - phonetic: simplified phonetic spelling using Italian phonetic conventions so an Italian can roughly pronounce it. Capitalize stressed syllables.
 - translation: the Italian translation of the phrase.${profileCtx}`,
       "Generate a new shadowing phrase.",
     );
-    const clean = raw.replace(/^```json\s*/i, "").replace(/```$/, "").trim();
-    res.json(JSON.parse(clean));
+    res.json(JSON.parse(raw));
   } catch (err: unknown) {
     res.status(500).json({ error: errMsg(err) });
   }
@@ -398,15 +420,14 @@ router.post("/ipa", async (req: Request, res: Response) => {
   }
   const langName = LANG_NAMES[targetLang] ?? targetLang;
   try {
-    const raw = await geminiText(
-      `You are a phonetics expert. Given a ${langName} phrase, respond ONLY with valid JSON (no markdown, no extra text):
+    const raw = await geminiJSON(
+      `You are a phonetics expert. Given a ${langName} phrase, respond with valid JSON:
 {"ipa":"...","syllables":"..."}
 - ipa: the IPA transcription using standard IPA symbols, enclosed in /forward slashes/
 - syllables: the phrase split into syllables with a middle dot · between them (e.g. "hel·lo wor·ld")`,
       text,
     );
-    const clean = raw.replace(/^```json\s*/i, "").replace(/```$/, "").trim();
-    res.json(JSON.parse(clean));
+    res.json(JSON.parse(raw));
   } catch (err: unknown) {
     res.status(500).json({ error: errMsg(err) });
   }
@@ -474,8 +495,8 @@ router.post("/variants", async (req: Request, res: Response) => {
   }
   const lang = LANG_NAMES[targetLang] ?? targetLang;
   try {
-    const raw = await geminiText(
-      `Sei un esperto di linguistica. L'utente ha tradotto una frase dall'italiano in ${lang}. Fornisci 2-3 varianti alternative della traduzione (es. formale, informale, colloquiale) in formato JSON. Rispondi SOLO con JSON valido, nessun testo extra.`,
+    const raw = await geminiJSON(
+      `Sei un esperto di linguistica. L'utente ha tradotto una frase dall'italiano in ${lang}. Fornisci 2-3 varianti alternative della traduzione (es. formale, informale, colloquiale) in formato JSON.`,
       `Italiano: "${text}"\nTraduzione base in ${lang}: "${translation}"\n\nFornisci 2-3 varianti. Formato: { "variants": [{ "label": "Formale", "text": "..." }, { "label": "Informale", "text": "..." }] }`,
       300,
     );
