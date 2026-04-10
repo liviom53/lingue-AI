@@ -84,10 +84,37 @@ if (process.env.NODE_ENV === "production") {
     ws: true,
   });
 
+  const diarioVideoProxy = createProxyMiddleware({
+    target: "http://127.0.0.1:23199",
+    changeOrigin: true,
+    ws: true,
+  });
+
+  const diarioLandingProxy = createProxyMiddleware({
+    target: "http://127.0.0.1:23550",
+    changeOrigin: true,
+    ws: true,
+  });
+
+  const linguaLandingProxy = createProxyMiddleware({
+    target: "http://127.0.0.1:23645",
+    changeOrigin: true,
+    ws: true,
+  });
+
+  const linguaVideoProxy = createProxyMiddleware({
+    target: "http://127.0.0.1:23031",
+    changeOrigin: true,
+    ws: true,
+  });
+
   app.use((req: Request, res: Response, next: NextFunction) => {
-    if (req.originalUrl.startsWith("/lingua-ai")) {
-      return linguaProxy(req, res, next);
-    }
+    const url = req.originalUrl;
+    if (url.startsWith("/lingua-ai-landing")) return linguaLandingProxy(req, res, next);
+    if (url.startsWith("/lingua-ai-demo-video")) return linguaVideoProxy(req, res, next);
+    if (url.startsWith("/lingua-ai")) return linguaProxy(req, res, next);
+    if (url.startsWith("/diario-pescatore-landing")) return diarioLandingProxy(req, res, next);
+    if (url.startsWith("/diario-pescatore-video")) return diarioVideoProxy(req, res, next);
     return diarioProxy(req, res, next);
   });
 }
