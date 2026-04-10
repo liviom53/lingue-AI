@@ -210,7 +210,7 @@ function getSid() {
 }
 
 function App() {
-  const [showSplash, setShowSplash] = useState(true);
+  const [showSplash, setShowSplash] = useState(false);
   const [scanOpen, setScanOpen] = useState(false);
 
   // ── Apri scanner da eventi globali (es. Dashboard card) ──────────────────────
