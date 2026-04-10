@@ -101,7 +101,7 @@ export default function VideoTemplate() {
   return (
     <div ref={containerRef} className="relative w-full h-screen overflow-hidden bg-[#051525] text-white">
 
-      <audio ref={audioRef} src={`${import.meta.env.BASE_URL}audio/paulyudin-rock-490391.mp3`} loop muted />
+      <audio ref={audioRef} src={`${import.meta.env.BASE_URL}audio/folk-round.mp3`} loop muted />
 
       {/* ── Blob teal ──────────────────────────────────────────── */}
       <motion.div className="absolute pointer-events-none"
