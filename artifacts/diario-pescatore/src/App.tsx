@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, lazy, Suspense } from "react";
-import { Switch, Route, Router as WouterRouter, useLocation } from "wouter";
+import { Switch, Route, Router as WouterRouter, useLocation, Redirect } from "wouter";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -171,9 +171,7 @@ function Router({ onLogoTap, onScanOpen }: { onLogoTap: () => void; onScanOpen: 
           <Route path="/normative" component={Normative} />
           <Route path="/mappa-costiera" component={SpotMappa} />
           <Route>
-            <div className="p-8 text-center">
-              <h2 className="text-xl font-bold">404 - Pagina non trovata</h2>
-            </div>
+            <Redirect to="/" />
           </Route>
         </Switch>
       </Suspense>
