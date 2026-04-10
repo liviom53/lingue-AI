@@ -276,6 +276,12 @@
   }
 }
 
+/* ── Animazione rotazione (spinner aggiornamento) ──────────────────────── */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
 /* ── Palloncino donazioni ───────────────────────────────────────────────── */
 /* Ciclo palloncino: 20s nascosto, 12s visibile, 35s nascosto = 67s totale */
 @keyframes balloonShow {

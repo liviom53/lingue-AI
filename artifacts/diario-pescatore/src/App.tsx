@@ -3,6 +3,8 @@ import { Switch, Route, Router as WouterRouter, useLocation } from "wouter";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { RefreshCw } from "lucide-react";
+import { useRegisterSW } from "virtual:pwa-register/react";
 
 import { AppLayout } from "./components/layout/AppLayout";
 import { SplashScreen } from "./components/SplashScreen";
@@ -213,6 +215,86 @@ function App() {
   const [showSplash, setShowSplash] = useState(false);
   const [scanOpen, setScanOpen] = useState(false);
 
+  // ── Aggiornamento PWA (service worker) ───────────────────────────────────────
+  const {
+    needRefresh: [needRefresh],
+  } = useRegisterSW({
+    onRegistered(r) {
+      if (r) setInterval(() => r.update(), 60 * 60 * 1000);
+    },
+    onRegisterError(e) { console.warn("SW errore:", e); },
+  });
+
+  // ── Controllo versione server ─────────────────────────────────────────────────
+  const [serverNeedRefresh, setServerNeedRefresh] = useState(false);
+  const [updateStep, setUpdateStep] = useState<string | null>(null);
+  const [updateProgress, setUpdateProgress] = useState(0);
+  const [justUpdated, setJustUpdated] = useState(false);
+  const [latestVersionStr, setLatestVersionStr] = useState<string | null>(null);
+  const [runningVersionStr, setRunningVersionStr] = useState<string | null>(null);
+  const latestServerVersionRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (sessionStorage.getItem("app_just_updated") === "1") {
+      sessionStorage.removeItem("app_just_updated");
+      setJustUpdated(true);
+      setTimeout(() => setJustUpdated(false), 10000);
+    }
+    if (window.location.search.includes("_v=")) {
+      window.history.replaceState(null, "", window.location.pathname);
+    }
+  }, []);
+
+  useEffect(() => {
+    const SESSION_KEY = "diario_running_v";
+    const SESSION_VER = "diario_running_ver";
+    const savedVer = sessionStorage.getItem(SESSION_VER);
+    if (savedVer) setRunningVersionStr(savedVer);
+
+    const checkVersion = async () => {
+      try {
+        const res = await fetch("/api/version", { cache: "no-store" });
+        if (!res.ok) return;
+        const { v, version } = await res.json();
+        const latestV = String(v);
+        latestServerVersionRef.current = latestV;
+        if (version) setLatestVersionStr(version);
+        const runningV = sessionStorage.getItem(SESSION_KEY);
+        if (!runningV) {
+          sessionStorage.setItem(SESSION_KEY, latestV);
+          if (version) { sessionStorage.setItem(SESSION_VER, version); setRunningVersionStr(version); }
+          return;
+        }
+        if (runningV !== latestV) setServerNeedRefresh(true);
+      } catch { /* offline — ignora */ }
+    };
+
+    checkVersion();
+    const onVisible = () => { if (document.visibilityState === "visible") checkVersion(); };
+    document.addEventListener("visibilitychange", onVisible);
+    return () => document.removeEventListener("visibilitychange", onVisible);
+  }, []);
+
+  const forceUpdate = async () => {
+    setUpdateStep("Preparazione…");
+    setUpdateProgress(5);
+    setUpdateStep("Rimozione cache di servizio…");
+    setUpdateProgress(20);
+    try { const regs = await navigator.serviceWorker?.getRegistrations() ?? []; await Promise.all(regs.map(r => r.unregister())); } catch { /* ignora */ }
+    setUpdateStep("Pulizia cache locale…");
+    setUpdateProgress(55);
+    try { const keys = await caches.keys(); await Promise.all(keys.map(k => caches.delete(k))); } catch { /* ignora */ }
+    setUpdateStep("Salvataggio nuova versione…");
+    setUpdateProgress(80);
+    if (latestServerVersionRef.current) sessionStorage.setItem("diario_running_v", latestServerVersionRef.current);
+    if (latestVersionStr) sessionStorage.setItem("diario_running_ver", latestVersionStr);
+    sessionStorage.setItem("app_just_updated", "1");
+    setUpdateStep("Ricaricamento app…");
+    setUpdateProgress(100);
+    await new Promise(r => setTimeout(r, 600));
+    window.location.replace(window.location.origin + window.location.pathname + "?_v=" + Date.now());
+  };
+
   // ── Apri scanner da eventi globali (es. Dashboard card) ──────────────────────
   useEffect(() => {
     const handler = () => setScanOpen(true);
@@ -333,6 +415,63 @@ function App() {
         )}
         {!showSplash && <PwaInstallBanner />}
         <Toaster />
+
+        {/* ── Banner aggiornamento disponibile ────────────────────────────── */}
+        {(needRefresh || serverNeedRefresh) && !updateStep && (
+          <div role="alert" aria-live="assertive" style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 99990, background: "linear-gradient(135deg,#1e1b4b,#2e1065)", borderBottom: "1.5px solid #a855f7", padding: "12px 16px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "10px", boxShadow: "0 4px 16px rgba(168,85,247,0.3)" }}>
+            <div>
+              <p style={{ margin: 0, fontSize: "0.88rem", fontWeight: "bold", color: "#d8b4fe" }}>
+                🔄 Nuova versione disponibile{latestVersionStr ? ` — v${latestVersionStr}` : ""}
+              </p>
+              <p style={{ margin: "2px 0 0", fontSize: "0.72rem", color: "#a78bfa" }}>
+                {runningVersionStr && latestVersionStr && runningVersionStr !== latestVersionStr
+                  ? `v${runningVersionStr} → v${latestVersionStr}`
+                  : "Aggiorna per avere le ultime funzionalità"}
+              </p>
+            </div>
+            <button
+              aria-label="Aggiorna l'app alla nuova versione"
+              onClick={forceUpdate}
+              style={{ display: "flex", alignItems: "center", gap: "5px", background: "#7c3aed", color: "#fff", border: "none", borderRadius: "8px", padding: "8px 14px", cursor: "pointer", fontWeight: "bold", fontSize: "0.85rem", whiteSpace: "nowrap", boxShadow: "0 2px 8px rgba(124,58,237,0.5)", flexShrink: 0 }}
+            >
+              <RefreshCw size={14} /> Aggiorna
+            </button>
+          </div>
+        )}
+
+        {/* ── Progresso aggiornamento ─────────────────────────────────────── */}
+        {updateStep && (
+          <div role="status" aria-live="polite" style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 99990, background: "linear-gradient(135deg,#1e1b4b,#2e1065)", borderBottom: "1.5px solid #a855f7", padding: "14px 16px", boxShadow: "0 4px 16px rgba(168,85,247,0.3)" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "10px" }}>
+              <RefreshCw size={18} style={{ color: "#a78bfa", animation: "spin 1s linear infinite", flexShrink: 0 }} />
+              <div>
+                <p style={{ margin: 0, fontSize: "0.88rem", color: "#d8b4fe", fontWeight: "bold" }}>
+                  Installazione{latestVersionStr ? ` v${latestVersionStr}` : " aggiornamento"}…
+                </p>
+                <p style={{ margin: "2px 0 0", fontSize: "0.72rem", color: "#a78bfa" }}>{updateStep}</p>
+              </div>
+            </div>
+            <div style={{ background: "rgba(168,85,247,0.2)", borderRadius: "999px", height: "6px", overflow: "hidden" }}>
+              <div style={{ height: "100%", width: `${updateProgress}%`, borderRadius: "999px", background: "linear-gradient(90deg,#7c3aed,#a855f7,#c084fc)", transition: "width 0.4s ease" }} />
+            </div>
+          </div>
+        )}
+
+        {/* ── Toast conferma aggiornamento ────────────────────────────────── */}
+        {justUpdated && (
+          <div role="status" aria-live="polite" style={{ position: "fixed", bottom: "80px", left: "12px", right: "12px", zIndex: 99991, background: "linear-gradient(135deg,#052e16,#064e3b)", border: "1.5px solid #10b981", borderRadius: "14px", padding: "14px 16px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "10px", boxShadow: "0 8px 32px rgba(16,185,129,0.45)" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+              <span style={{ fontSize: "1.4rem" }}>✅</span>
+              <div>
+                <p style={{ margin: 0, fontSize: "0.88rem", fontWeight: "bold", color: "#6ee7b7" }}>
+                  App aggiornata con successo!{runningVersionStr ? ` (v${runningVersionStr})` : ""}
+                </p>
+                <p style={{ margin: "2px 0 0", fontSize: "0.72rem", color: "#34d399" }}>Stai usando l'ultima versione disponibile</p>
+              </div>
+            </div>
+            <button onClick={() => setJustUpdated(false)} style={{ background: "none", border: "none", color: "#34d399", cursor: "pointer", fontSize: "1.2rem", lineHeight: 1, padding: "4px" }}>✕</button>
+          </div>
+        )}
 
         {/* ── Pannello admin ───────────────────────────────────────────────── */}
         {adminOpen && (
