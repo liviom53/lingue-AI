@@ -193,16 +193,16 @@ export default function Maree() {
       </div>
 
       {/* Calendario mensile fasi lunari */}
-      <div className="bg-card rounded-2xl p-6 border border-white/5 shadow-xl">
-        <h2 className="text-sm text-muted-foreground uppercase tracking-wider mb-4">
+      <div className="bg-card rounded-2xl p-4 border border-white/5 shadow-xl max-w-sm">
+        <h2 className="text-sm text-muted-foreground uppercase tracking-wider mb-3">
           Fasi Lunari — {MONTHS_IT[date.getMonth()]} {date.getFullYear()}
         </h2>
-        <div className="grid grid-cols-7 gap-1.5 mb-2">
-          {["Lun","Mar","Mer","Gio","Ven","Sab","Dom"].map(d=>(
-            <div key={d} className="text-center text-xs text-muted-foreground font-bold py-1">{d}</div>
+        <div className="grid grid-cols-7 gap-1 mb-1">
+          {["L","M","M","G","V","S","D"].map((d,i)=>(
+            <div key={i} className="text-center text-[10px] text-muted-foreground font-bold py-0.5">{d}</div>
           ))}
         </div>
-        <div className="grid grid-cols-7 gap-1.5">
+        <div className="grid grid-cols-7 gap-1">
           {calendarDays.map((day,i)=>(
             day===null?(
               <div key={`e${i}`}/>
@@ -213,10 +213,10 @@ export default function Maree() {
                   const d2=String(day.d).padStart(2,"0");
                   setSelectedDate(`${date.getFullYear()}-${m}-${d2}`);
                 }}
-                className={cn("aspect-square flex flex-col items-center justify-center rounded-xl transition-all hover:bg-primary/10",
+                className={cn("aspect-square flex flex-col items-center justify-center rounded-lg transition-all hover:bg-primary/10",
                   day.d===date.getDate()?"bg-primary/20 border border-primary text-primary font-bold":"text-white/70")}>
-                <span className="text-2xl leading-none">{day.moon.emoji}</span>
-                <span className="text-xs font-semibold mt-1">{day.d}</span>
+                <span className="text-base leading-none">{day.moon.emoji}</span>
+                <span className="text-[10px] font-semibold mt-0.5">{day.d}</span>
               </button>
             )
           ))}
