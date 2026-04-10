@@ -239,50 +239,52 @@ export default function VideoTemplate() {
       </svg>
 
       {/* ── Barra controlli (top-right) ─────────────────────────── */}
-      <div className="absolute top-4 right-4 z-50 flex items-center gap-2 flex-wrap justify-end">
+      <div className="absolute top-4 right-4 z-50 flex items-center gap-2">
 
-        {/* Bottone Avvia / Ferma (audio + video insieme) */}
+        {/* Bottone Audio */}
         <motion.button
-          onClick={() => {
-            if (videoPaused) { setVideoPaused(false); startAudio(); }
-            else             { setVideoPaused(true);  stopAudio();  }
-          }}
+          onClick={audioPlaying ? stopAudio : startAudio}
+          className={`flex items-center gap-2 backdrop-blur border text-sm font-bold px-4 py-2 rounded-full cursor-pointer transition-all duration-300 ${
+            audioPlaying
+              ? 'bg-[#0ea5e9]/20 border-[#0ea5e9]/60 text-[#0ea5e9] hover:bg-red-500/20 hover:border-red-400/60 hover:text-red-300'
+              : 'bg-white/10 border-white/20 text-white hover:bg-[#0ea5e9]/20 hover:border-[#0ea5e9]/40'
+          }`}
+          initial={{ opacity:0, y:-10 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.4 }}
+          style={{ fontFamily:'Inter, sans-serif' }}
+        >
+          <span>{audioPlaying ? '🔊' : '🎵'}</span>
+          {audioPlaying ? 'Audio on' : 'Avvia audio'}
+        </motion.button>
+
+        {/* Bottone Stop audio (solo quando audio attivo) */}
+        <AnimatePresence>
+          {audioPlaying && (
+            <motion.button
+              onClick={stopAudio}
+              className="flex items-center gap-2 bg-red-500/20 backdrop-blur border border-red-400/50 text-red-300 text-sm font-bold px-4 py-2 rounded-full cursor-pointer hover:bg-red-500/35 transition-all duration-300"
+              initial={{ opacity:0, scale:0.7 }} animate={{ opacity:1, scale:1 }} exit={{ opacity:0, scale:0.7 }}
+              transition={{ duration:0.25 }}
+              style={{ fontFamily:'Inter, sans-serif' }}
+            >
+              <span>⏹</span> Stop
+            </motion.button>
+          )}
+        </AnimatePresence>
+
+        {/* Bottone Ferma / Riprendi video */}
+        <motion.button
+          onClick={() => setVideoPaused(p => !p)}
           className={`flex items-center gap-2 backdrop-blur border text-sm font-bold px-4 py-2 rounded-full cursor-pointer transition-all duration-300 ${
             videoPaused
               ? 'bg-[#f59e0b]/25 border-[#f59e0b]/60 text-[#f59e0b] hover:bg-[#f59e0b]/35'
               : 'bg-white/10 border-white/20 text-white hover:bg-white/20'
           }`}
-          initial={{ opacity:0, y:-10 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.4 }}
+          initial={{ opacity:0, y:-10 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.4, delay:0.05 }}
           style={{ fontFamily:'Inter, sans-serif' }}
         >
           <span>{videoPaused ? '▶' : '⏸'}</span>
-          {videoPaused ? 'Avvia' : 'Ferma'}
+          {videoPaused ? 'Riprendi' : 'Ferma video'}
         </motion.button>
-
-        {/* Bottone Registra (solo in tab standalone) */}
-        {!isInIframe && (
-          <motion.button
-            onClick={recState !== 'preparing' && recState !== 'recording' ? handleRecord : undefined}
-            disabled={recState === 'preparing' || recState === 'recording'}
-            className={`flex items-center gap-2 backdrop-blur border text-sm font-bold px-4 py-2 rounded-full transition-all duration-300 ${
-              recState === 'recording' ? 'bg-red-500/30 border-red-400/70 text-red-300 cursor-default animate-pulse'
-              : recState === 'done' ? 'bg-emerald-500/25 border-emerald-400/60 text-emerald-300 cursor-pointer'
-              : recState === 'preparing' ? 'bg-purple-500/20 border-purple-400/50 text-purple-300 cursor-default'
-              : recState === 'unsupported' ? 'bg-amber-500/20 border-amber-400/50 text-amber-300 cursor-pointer'
-              : recState === 'cancelled' ? 'bg-amber-500/20 border-amber-400/50 text-amber-300 cursor-pointer'
-              : 'bg-purple-500/20 border-purple-400/50 text-purple-300 hover:bg-purple-500/35 cursor-pointer'
-            }`}
-            initial={{ opacity:0, y:-10 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.4, delay:0.08 }}
-            style={{ fontFamily:'Inter, sans-serif' }}
-          >
-            {recState === 'recording' && <><span>⏺</span> {fmtTime(recTimer)} — Registrazione in corso</>}
-            {recState === 'preparing' && <><span>⏳</span> Preparazione…</>}
-            {recState === 'done' && <><span>✅</span> Download avviato — Registra ancora</>}
-            {recState === 'unsupported' && <><span>⚠️</span> Browser non supportato</>}
-            {recState === 'cancelled' && <><span>↩</span> Annullato — riprova</>}
-            {recState === 'idle' && <><span>⏺</span> Registra video</>}
-          </motion.button>
-        )}
 
         {/* Bottone Schermo intero */}
         <motion.button
@@ -293,6 +295,16 @@ export default function VideoTemplate() {
         >
           <span>{isFullscreen ? '⊡' : '⛶'}</span>
           {isFullscreen ? 'Riduci' : 'Schermo intero'}
+        </motion.button>
+
+        {/* Bottone Esci — torna all'app */}
+        <motion.button
+          onClick={() => { window.location.href = '/diario-pescatore/'; }}
+          className="flex items-center gap-2 bg-red-500/20 backdrop-blur border border-red-400/50 text-red-300 text-sm font-bold px-4 py-2 rounded-full cursor-pointer hover:bg-red-500/40 hover:border-red-400/70 hover:text-red-200 transition-all duration-300"
+          initial={{ opacity:0, y:-10 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.4, delay:0.15 }}
+          style={{ fontFamily:'Inter, sans-serif' }}
+        >
+          <span>✕</span> Esci
         </motion.button>
       </div>
 
