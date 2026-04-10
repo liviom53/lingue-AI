@@ -135,25 +135,60 @@ export default function Maree() {
         </div>
       </div>
 
-      {/* Grafico maree */}
-      <div className="bg-card rounded-2xl p-6 border border-white/5 shadow-xl">
+      {/* Grafico maree SVG */}
+      <div className="bg-card rounded-2xl p-5 border border-white/5 shadow-xl">
         <h2 className="text-sm text-muted-foreground uppercase tracking-wider mb-4">Grafico Maree 24h</h2>
-        <div className="flex items-end gap-1 h-32">
-          {tides.heights.map(({h,height})=>{
-            const normalized=(height+maxH)/(2*maxH);
-            const isHigh=tides.highs.includes(h),isLow=tides.lows.includes(h);
-            return(
-              <div key={h} className="flex-1 flex flex-col items-center gap-1">
-                <div className={cn("w-full rounded-t-sm transition-colors",isHigh?"bg-primary":isLow?"bg-blue-800":"bg-primary/30")}
-                  style={{height:`${Math.max(10,normalized*100)}%`}}/>
-                {h%6===0&&<span className="text-[8px] text-muted-foreground">{h}h</span>}
-              </div>
-            );
-          })}
-        </div>
-        <div className="flex gap-4 mt-3 text-xs text-muted-foreground">
-          <span className="flex items-center gap-1.5"><span className="w-3 h-3 bg-primary rounded-sm"/>Alta marea</span>
-          <span className="flex items-center gap-1.5"><span className="w-3 h-3 bg-blue-800 rounded-sm"/>Bassa marea</span>
+        {(() => {
+          const W=600, H=160, PAD=12;
+          const minH2=Math.min(...tides.heights.map(x=>x.height));
+          const maxH2=Math.max(...tides.heights.map(x=>x.height));
+          const range=maxH2-minH2||0.1;
+          const toY=(v:number)=>PAD+(1-(v-minH2)/range)*(H-PAD*2);
+          const toX=(i:number)=>(i/(tides.heights.length-1))*W;
+          const pts=tides.heights.map(({height},i)=>`${toX(i).toFixed(1)},${toY(height).toFixed(1)}`).join(" ");
+          const fillPts=`0,${H} `+pts+` ${W},${H}`;
+          const mid=toY((minH2+maxH2)/2);
+          return(
+            <svg viewBox={`0 0 ${W} ${H}`} className="w-full" style={{height:160}} preserveAspectRatio="none">
+              <defs>
+                <linearGradient id="waveGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.35"/>
+                  <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0.03"/>
+                </linearGradient>
+              </defs>
+              {/* Linea di mezzeria */}
+              <line x1="0" y1={mid} x2={W} y2={mid} stroke="rgba(255,255,255,0.08)" strokeDasharray="4,4"/>
+              {/* Ore ogni 6h */}
+              {[0,6,12,18,24].map(h=>{
+                const x=h===24?W:(h/24)*W;
+                return <g key={h}>
+                  <line x1={x} y1={0} x2={x} y2={H} stroke="rgba(255,255,255,0.06)"/>
+                  <text x={x+3} y={H-3} fill="rgba(255,255,255,0.35)" fontSize="18">{h}h</text>
+                </g>;
+              })}
+              {/* Area riempita */}
+              <polygon points={fillPts} fill="url(#waveGrad)"/>
+              {/* Curva */}
+              <polyline points={pts} fill="none" stroke="hsl(var(--primary))" strokeWidth="2.5" strokeLinejoin="round"/>
+              {/* Punti alta/bassa */}
+              {tides.highs.map(h=>(
+                <g key={`hi${h}`}>
+                  <circle cx={toX(h)} cy={toY(tides.heights[h].height)} r="5" fill="hsl(var(--primary))"/>
+                  <text x={toX(h)} y={toY(tides.heights[h].height)-10} textAnchor="middle" fill="hsl(var(--primary))" fontSize="16" fontWeight="bold">{h}:00</text>
+                </g>
+              ))}
+              {tides.lows.map(h=>(
+                <g key={`lo${h}`}>
+                  <circle cx={toX(h)} cy={toY(tides.heights[h].height)} r="5" fill="#1d4ed8"/>
+                  <text x={toX(h)} y={toY(tides.heights[h].height)+20} textAnchor="middle" fill="#60a5fa" fontSize="16">{h}:00</text>
+                </g>
+              ))}
+            </svg>
+          );
+        })()}
+        <div className="flex gap-4 mt-2 text-xs text-muted-foreground">
+          <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-primary inline-block"/>Alta marea</span>
+          <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-blue-600 inline-block"/>Bassa marea</span>
         </div>
       </div>
 
@@ -162,12 +197,12 @@ export default function Maree() {
         <h2 className="text-sm text-muted-foreground uppercase tracking-wider mb-4">
           Fasi Lunari — {MONTHS_IT[date.getMonth()]} {date.getFullYear()}
         </h2>
-        <div className="grid grid-cols-7 gap-1 mb-2">
+        <div className="grid grid-cols-7 gap-1.5 mb-2">
           {["Lun","Mar","Mer","Gio","Ven","Sab","Dom"].map(d=>(
-            <div key={d} className="text-center text-[10px] text-muted-foreground font-semibold py-1">{d}</div>
+            <div key={d} className="text-center text-xs text-muted-foreground font-bold py-1">{d}</div>
           ))}
         </div>
-        <div className="grid grid-cols-7 gap-1">
+        <div className="grid grid-cols-7 gap-1.5">
           {calendarDays.map((day,i)=>(
             day===null?(
               <div key={`e${i}`}/>
@@ -178,10 +213,10 @@ export default function Maree() {
                   const d2=String(day.d).padStart(2,"0");
                   setSelectedDate(`${date.getFullYear()}-${m}-${d2}`);
                 }}
-                className={cn("aspect-square flex flex-col items-center justify-center rounded-xl text-xs transition-all hover:bg-primary/10",
-                  day.d===date.getDate()?"bg-primary/20 border border-primary text-primary font-bold":"text-white/60")}>
-                <span className="text-sm">{day.moon.emoji}</span>
-                <span className="text-[9px] mt-0.5">{day.d}</span>
+                className={cn("aspect-square flex flex-col items-center justify-center rounded-xl transition-all hover:bg-primary/10",
+                  day.d===date.getDate()?"bg-primary/20 border border-primary text-primary font-bold":"text-white/70")}>
+                <span className="text-2xl leading-none">{day.moon.emoji}</span>
+                <span className="text-xs font-semibold mt-1">{day.d}</span>
               </button>
             )
           ))}
