@@ -11,7 +11,7 @@ import { Scene7 } from './video_scenes/Scene7';
 import { Scene8 } from './video_scenes/Scene8';
 import { Scene9 } from './video_scenes/Scene9';
 
-type RecordingState = 'idle' | 'preparing' | 'recording' | 'done' | 'unsupported';
+type RecordingState = 'idle' | 'preparing' | 'recording' | 'done' | 'unsupported' | 'cancelled';
 
 function fmtTime(s: number) {
   return `${String(Math.floor(s / 60)).padStart(2,'0')}:${String(s % 60).padStart(2,'0')}`;
@@ -46,42 +46,38 @@ export default function VideoTemplate() {
   const chunksRef = useRef<Blob[]>([]);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const wantRecordRef = useRef(false);
+  const displayStreamRef = useRef<MediaStream | null>(null);
+
+  const startMediaRecorder = (stream: MediaStream) => {
+    const mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp8,opus')
+      ? 'video/webm;codecs=vp8,opus' : 'video/webm';
+    const recorder = new MediaRecorder(stream, { mimeType });
+    chunksRef.current = [];
+    recorder.ondataavailable = e => { if (e.data.size > 0) chunksRef.current.push(e.data); };
+    recorder.onstop = () => {
+      stream.getTracks().forEach(t => t.stop());
+      const blob = new Blob(chunksRef.current, { type: 'video/webm' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = 'diario-pescatore-demo.webm';
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      setRecState('done'); wantRecordRef.current = false;
+      setTimeout(() => setRecState('idle'), 4000);
+    };
+    recorder.start(1000);
+    recorderRef.current = recorder;
+    setRecState('recording'); setRecTimer(0);
+    timerRef.current = setInterval(() => setRecTimer(t => t + 1), 1000);
+  };
 
   useEffect(() => {
     window.startRecording = async () => {
       if (!wantRecordRef.current) return;
-      const container = containerRef.current;
-      const audio = audioRef.current;
-      if (!container) return;
-      const captureFn = (container as any).captureStream ?? (container as any).mozCaptureStream;
-      if (!captureFn) { setRecState('unsupported'); wantRecordRef.current = false; return; }
-      try {
-        const videoStream: MediaStream = captureFn.call(container, 30);
-        let combined = videoStream;
-        try {
-          const audioStream: MediaStream = (audio as any).captureStream();
-          combined = new MediaStream([...videoStream.getVideoTracks(), ...audioStream.getAudioTracks()]);
-        } catch { /* audio capture non disponibile */ }
-        const mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp8,opus')
-          ? 'video/webm;codecs=vp8,opus' : 'video/webm';
-        const recorder = new MediaRecorder(combined, { mimeType });
-        chunksRef.current = [];
-        recorder.ondataavailable = e => { if (e.data.size > 0) chunksRef.current.push(e.data); };
-        recorder.onstop = () => {
-          const blob = new Blob(chunksRef.current, { type: 'video/webm' });
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement('a');
-          a.href = url; a.download = 'diario-pescatore-demo.webm';
-          document.body.appendChild(a); a.click(); document.body.removeChild(a);
-          URL.revokeObjectURL(url);
-          setRecState('done'); wantRecordRef.current = false;
-          setTimeout(() => setRecState('idle'), 4000);
-        };
-        recorder.start(1000);
-        recorderRef.current = recorder;
-        setRecState('recording'); setRecTimer(0);
-        timerRef.current = setInterval(() => setRecTimer(t => t + 1), 1000);
-      } catch { setRecState('unsupported'); wantRecordRef.current = false; }
+      const stream = displayStreamRef.current;
+      displayStreamRef.current = null;
+      if (!stream) return;
+      startMediaRecorder(stream);
     };
     window.stopRecording = () => {
       if (recorderRef.current?.state === 'recording') recorderRef.current.stop();
@@ -107,14 +103,21 @@ export default function VideoTemplate() {
     setAudioPlaying(false);
   };
 
-  const handleRecord = () => {
-    const container = containerRef.current;
-    const captureFn = (container as any)?.captureStream ?? (container as any)?.mozCaptureStream;
-    if (!captureFn) { setRecState('unsupported'); return; }
-    wantRecordRef.current = true;
-    setRecState('preparing'); setRecTimer(0);
-    startAudio();
-    setResetKey(k => k + 1);
+  const handleRecord = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getDisplayMedia({
+        video: { frameRate: 30 } as MediaTrackConstraints,
+        audio: true,
+      });
+      displayStreamRef.current = stream;
+      wantRecordRef.current = true;
+      setRecState('preparing'); setRecTimer(0);
+      startAudio();
+      setResetKey(k => k + 1);
+    } catch (err: unknown) {
+      const name = (err as DOMException)?.name;
+      setRecState(name === 'NotAllowedError' || name === 'AbortError' ? 'cancelled' : 'unsupported');
+    }
   };
 
   useEffect(() => {
@@ -260,22 +263,24 @@ export default function VideoTemplate() {
 
         {/* Bottone Registra */}
         <motion.button
-          onClick={recState === 'idle' || recState === 'done' || recState === 'unsupported' ? handleRecord : undefined}
+          onClick={recState !== 'preparing' && recState !== 'recording' ? handleRecord : undefined}
           disabled={recState === 'preparing' || recState === 'recording'}
           className={`flex items-center gap-2 backdrop-blur border text-sm font-bold px-4 py-2 rounded-full transition-all duration-300 ${
             recState === 'recording' ? 'bg-red-500/30 border-red-400/70 text-red-300 cursor-default animate-pulse'
-            : recState === 'done' ? 'bg-emerald-500/25 border-emerald-400/60 text-emerald-300 cursor-default'
+            : recState === 'done' ? 'bg-emerald-500/25 border-emerald-400/60 text-emerald-300 cursor-pointer'
             : recState === 'preparing' ? 'bg-purple-500/20 border-purple-400/50 text-purple-300 cursor-default'
             : recState === 'unsupported' ? 'bg-amber-500/20 border-amber-400/50 text-amber-300 cursor-pointer'
+            : recState === 'cancelled' ? 'bg-amber-500/20 border-amber-400/50 text-amber-300 cursor-pointer'
             : 'bg-purple-500/20 border-purple-400/50 text-purple-300 hover:bg-purple-500/35 cursor-pointer'
           }`}
           initial={{ opacity:0, y:-10 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.4, delay:0.08 }}
           style={{ fontFamily:'Inter, sans-serif' }}
         >
-          {recState === 'recording' && <><span>⏺</span> {fmtTime(recTimer)}</>}
-          {recState === 'preparing' && <><span>⏳</span> Avvio…</>}
-          {recState === 'done' && <><span>✅</span> Download avviato</>}
-          {recState === 'unsupported' && <><span>⚠️</span> Browser non supportato</>}
+          {recState === 'recording' && <><span>⏺</span> {fmtTime(recTimer)} — Registrazione in corso</>}
+          {recState === 'preparing' && <><span>⏳</span> Preparazione…</>}
+          {recState === 'done' && <><span>✅</span> Download avviato — Registra ancora</>}
+          {recState === 'unsupported' ? <><span>⚠️</span> Browser non supportato</> : null}
+          {recState === 'cancelled' && <><span>↩</span> Annullato — riprova</>}
           {(recState === 'idle') && <><span>⏺</span> Registra video</>}
         </motion.button>
 
