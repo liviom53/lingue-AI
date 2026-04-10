@@ -26,9 +26,43 @@ const SCENE_DURATIONS = {
 export default function VideoTemplate() {
   const { currentScene } = useVideoPlayer({ durations: SCENE_DURATIONS });
   const containerRef = useRef<HTMLDivElement>(null);
+  const audioRef = useRef<HTMLAudioElement>(null);
+  const [audioPlaying, setAudioPlaying] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [fsUnsupported, setFsUnsupported] = useState(false);
 
+  /* ── Audio ──────────────────────────────────────────────────── */
+  const startAudio = () => {
+    const a = audioRef.current;
+    if (!a) return;
+    a.muted = false;
+    a.volume = 0.65;
+    a.play().then(() => setAudioPlaying(true)).catch(() => {});
+  };
+
+  const stopAudio = () => {
+    const a = audioRef.current;
+    if (!a) return;
+    a.pause();
+    a.currentTime = 0;
+    setAudioPlaying(false);
+  };
+
+  useEffect(() => {
+    const a = audioRef.current;
+    if (!a) return;
+    const onPause = () => setAudioPlaying(false);
+    a.addEventListener('pause', onPause);
+    return () => a.removeEventListener('pause', onPause);
+  }, []);
+
+  useEffect(() => {
+    const onHide = () => stopAudio();
+    document.addEventListener('visibilitychange', onHide);
+    return () => document.removeEventListener('visibilitychange', onHide);
+  }, []);
+
+  /* ── Fullscreen ─────────────────────────────────────────────── */
   useEffect(() => {
     const onFsChange = () => {
       const doc = document as Document & { webkitFullscreenElement?: Element };
@@ -66,7 +100,9 @@ export default function VideoTemplate() {
   return (
     <div ref={containerRef} className="relative w-full h-screen overflow-hidden bg-[#051525] text-white">
 
-      {/* Blob teal galleggiante */}
+      <audio ref={audioRef} src={`${import.meta.env.BASE_URL}audio/paulyudin-rock-490391.mp3`} loop muted />
+
+      {/* ── Blob teal ──────────────────────────────────────────── */}
       <motion.div className="absolute pointer-events-none"
         style={{ width:'70vw', height:'70vw', borderRadius:'50%',
           background:'radial-gradient(circle, rgba(14,165,233,0.13), transparent 70%)',
@@ -75,7 +111,7 @@ export default function VideoTemplate() {
         transition={{ duration:14, repeat:Infinity, ease:'easeInOut' }}
       />
 
-      {/* Blob amber basso-destra */}
+      {/* ── Blob amber ─────────────────────────────────────────── */}
       <motion.div className="absolute pointer-events-none"
         style={{ width:'55vw', height:'55vw', borderRadius:'50%',
           background:'radial-gradient(circle, rgba(245,158,11,0.08), transparent 70%)',
@@ -84,12 +120,12 @@ export default function VideoTemplate() {
         transition={{ duration:18, repeat:Infinity, ease:'easeInOut', delay:4 }}
       />
 
-      {/* Griglia decorativa */}
+      {/* ── Griglia ────────────────────────────────────────────── */}
       <div className="absolute inset-0 pointer-events-none opacity-[0.018]"
         style={{ backgroundImage:'linear-gradient(rgba(255,255,255,1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,1) 1px, transparent 1px)', backgroundSize:'5vw 5vw' }}
       />
 
-      {/* Onde in basso */}
+      {/* ── Onde ────────────────────────────────────────────────── */}
       <svg className="absolute bottom-0 left-0 w-full pointer-events-none z-10"
         viewBox="0 0 1440 80" preserveAspectRatio="none"
         style={{ height:'8vh', opacity:0.12 }}>
@@ -105,24 +141,65 @@ export default function VideoTemplate() {
         />
       </svg>
 
-      {/* Pulsante fullscreen */}
-      <motion.button onClick={toggleFullscreen}
-        className="absolute bottom-10 right-4 z-50 flex items-center gap-2 bg-white/10 hover:bg-white/20 backdrop-blur border border-white/20 text-white text-xs font-bold px-3 py-2 rounded-full cursor-pointer"
-        initial={{ opacity:0, y:10 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.4 }}
-      >
-        {isFullscreen ? '✕ Esci' : '⛶ Schermo intero'}
-      </motion.button>
+      {/* ── Barra controlli (top-right) ─────────────────────────── */}
+      <div className="absolute top-4 right-4 z-50 flex items-center gap-2">
+
+        {/* Bottone Audio */}
+        <motion.button
+          onClick={audioPlaying ? stopAudio : startAudio}
+          className={`flex items-center gap-2 backdrop-blur border text-sm font-bold px-4 py-2 rounded-full cursor-pointer transition-all duration-300 ${
+            audioPlaying
+              ? 'bg-[#0ea5e9]/20 border-[#0ea5e9]/60 text-[#0ea5e9] hover:bg-red-500/20 hover:border-red-400/60 hover:text-red-300'
+              : 'bg-white/10 border-white/20 text-white hover:bg-[#0ea5e9]/20 hover:border-[#0ea5e9]/40'
+          }`}
+          initial={{ opacity:0, y:-10 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.4 }}
+          style={{ fontFamily:'Inter, sans-serif' }}
+        >
+          <span>{audioPlaying ? '🔊' : '🎵'}</span>
+          {audioPlaying ? 'Audio on' : 'Avvia audio'}
+        </motion.button>
+
+        {/* Bottone Stop */}
+        {audioPlaying && (
+          <motion.button
+            onClick={stopAudio}
+            className="flex items-center gap-2 bg-red-500/20 backdrop-blur border border-red-400/50 text-red-300 text-sm font-bold px-4 py-2 rounded-full cursor-pointer hover:bg-red-500/35 transition-all duration-300"
+            initial={{ opacity:0, scale:0.7 }} animate={{ opacity:1, scale:1 }} exit={{ opacity:0, scale:0.7 }}
+            transition={{ duration:0.25 }}
+            style={{ fontFamily:'Inter, sans-serif' }}
+          >
+            <span>⏹</span> Stop
+          </motion.button>
+        )}
+
+        {/* Bottone Esci / Schermo intero */}
+        <motion.button
+          onClick={toggleFullscreen}
+          className={`flex items-center gap-2 backdrop-blur border text-sm font-bold px-4 py-2 rounded-full cursor-pointer transition-all duration-300 ${
+            isFullscreen
+              ? 'bg-white/15 border-white/30 text-white hover:bg-red-500/20 hover:border-red-400/40 hover:text-red-200'
+              : 'bg-white/10 border-white/20 text-white hover:bg-white/20'
+          }`}
+          initial={{ opacity:0, y:-10 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.4, delay:0.1 }}
+          style={{ fontFamily:'Inter, sans-serif' }}
+        >
+          {isFullscreen ? <><span>✕</span> Esci</> : <><span>⛶</span> Schermo intero</>}
+        </motion.button>
+      </div>
 
       <AnimatePresence>
         {fsUnsupported && (
-          <motion.div className="absolute bottom-24 right-4 z-50 bg-black/70 backdrop-blur border border-white/20 text-white text-xs px-4 py-2 rounded-xl max-w-[220px] text-center"
-            initial={{ opacity:0, y:10 }} animate={{ opacity:1, y:0 }} exit={{ opacity:0, y:10 }}>
+          <motion.div
+            className="absolute top-16 right-4 z-50 bg-black/70 backdrop-blur border border-white/20 text-white text-xs px-4 py-2 rounded-xl max-w-[220px] text-center"
+            initial={{ opacity:0, y:-10 }} animate={{ opacity:1, y:0 }} exit={{ opacity:0, y:-10 }}
+            style={{ fontFamily:'Inter, sans-serif' }}
+          >
             Fullscreen non disponibile
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Scene */}
+      {/* ── Scene ───────────────────────────────────────────────── */}
       <AnimatePresence mode="popLayout">
         {currentScene === 0 && <Scene1 key="intro" />}
         {currentScene === 1 && <Scene2 key="previsioni" />}
