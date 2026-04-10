@@ -76,40 +76,54 @@ const OVERPASS_QUERY = `
 out center tags;
 `.trim();
 
+const OVERPASS_ENDPOINTS = [
+  "https://overpass-api.de/api/interpreter",
+  "https://overpass.kumi.systems/api/interpreter",
+  "https://maps.mail.ru/osm/tools/overpass/api/interpreter",
+];
+
 async function fetchOsmFeatures(): Promise<OsmFeature[]> {
-  const res = await fetch("https://overpass-api.de/api/interpreter", {
-    method: "POST",
-    body: QUERY_BODY,
-  });
-  if (!res.ok) throw new Error(`Overpass errore ${res.status}`);
-  const data = await res.json();
+  let lastError: Error = new Error("Nessun server Overpass raggiungibile");
 
-  const features: OsmFeature[] = [];
-  for (const el of data.elements) {
-    const lat = el.lat ?? el.center?.lat;
-    const lon = el.lon ?? el.center?.lon;
-    if (!lat || !lon) continue;
+  for (const endpoint of OVERPASS_ENDPOINTS) {
+    try {
+      const res = await fetch(endpoint, { method: "POST", body: QUERY_BODY });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const text = await res.text();
+      if (text.trim().startsWith("<")) throw new Error("Risposta non JSON");
+      const data = JSON.parse(text);
 
-    const tags = el.tags ?? {};
-    let type: FeatureType | null = null;
+      const features: OsmFeature[] = [];
+      for (const el of data.elements) {
+        const lat = el.lat ?? el.center?.lat;
+        const lon = el.lon ?? el.center?.lon;
+        if (!lat || !lon) continue;
 
-    if (tags.natural === "beach") type = "beach";
-    else if (tags.man_made === "breakwater") type = "breakwater";
-    else if (tags.man_made === "groyne") type = "groyne";
-    else if (tags.man_made === "pier") type = "pier";
+        const tags = el.tags ?? {};
+        let type: FeatureType | null = null;
 
-    if (!type) continue;
+        if (tags.natural === "beach") type = "beach";
+        else if (tags.man_made === "breakwater") type = "breakwater";
+        else if (tags.man_made === "groyne") type = "groyne";
+        else if (tags.man_made === "pier") type = "pier";
 
-    features.push({
-      id: el.id,
-      type,
-      lat,
-      lon,
-      name: tags.name ?? tags["name:it"] ?? TYPE_CFG[type].label,
-      tags,
-    });
+        if (!type) continue;
+
+        features.push({
+          id: el.id,
+          type,
+          lat,
+          lon,
+          name: tags.name ?? tags["name:it"] ?? TYPE_CFG[type].label,
+          tags,
+        });
+      }
+      return features;
+    } catch (e) {
+      lastError = e instanceof Error ? e : new Error(String(e));
+    }
   }
-  return features;
+  throw lastError;
 }
 
 const QUERY_BODY = `data=${encodeURIComponent(OVERPASS_QUERY)}`;
