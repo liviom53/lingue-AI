@@ -190,18 +190,25 @@ export default function VideoTemplate() {
           {videoPaused ? 'Riprendi' : 'Ferma video'}
         </motion.button>
 
-        {/* Bottone Esci / Schermo intero */}
+        {/* Bottone Schermo intero */}
         <motion.button
           onClick={toggleFullscreen}
-          className={`flex items-center gap-2 backdrop-blur border text-sm font-bold px-4 py-2 rounded-full cursor-pointer transition-all duration-300 ${
-            isFullscreen
-              ? 'bg-white/15 border-white/30 text-white hover:bg-red-500/20 hover:border-red-400/40 hover:text-red-200'
-              : 'bg-white/10 border-white/20 text-white hover:bg-white/20'
-          }`}
+          className="flex items-center gap-2 bg-white/10 backdrop-blur border border-white/20 text-white text-sm font-bold px-4 py-2 rounded-full cursor-pointer hover:bg-white/20 transition-all duration-300"
           initial={{ opacity:0, y:-10 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.4, delay:0.1 }}
           style={{ fontFamily:'Inter, sans-serif' }}
         >
-          {isFullscreen ? <><span>✕</span> Esci</> : <><span>⛶</span> Schermo intero</>}
+          <span>{isFullscreen ? '⊡' : '⛶'}</span>
+          {isFullscreen ? 'Riduci' : 'Schermo intero'}
+        </motion.button>
+
+        {/* Bottone Esci — torna all'app */}
+        <motion.button
+          onClick={() => { window.location.href = '/diario-pescatore/'; }}
+          className="flex items-center gap-2 bg-red-500/20 backdrop-blur border border-red-400/50 text-red-300 text-sm font-bold px-4 py-2 rounded-full cursor-pointer hover:bg-red-500/40 hover:border-red-400/70 hover:text-red-200 transition-all duration-300"
+          initial={{ opacity:0, y:-10 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.4, delay:0.15 }}
+          style={{ fontFamily:'Inter, sans-serif' }}
+        >
+          <span>✕</span> Esci
         </motion.button>
       </div>
 
