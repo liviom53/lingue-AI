@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useLocation } from "wouter";
 import { PlayCircle, HelpCircle, ChevronDown, ChevronUp } from "lucide-react";
 
 interface FaqItem {
@@ -59,7 +60,18 @@ function FaqAccordion({ items }: { items: FaqItem[] }) {
 }
 
 export default function Demo() {
+  const [, navigate] = useLocation();
   const videoSrc = `${window.location.origin}/diario-pescatore-video/`;
+
+  useEffect(() => {
+    const handler = (e: MessageEvent) => {
+      if (e.data?.type === 'DIARIO_NAVIGATE') {
+        navigate(e.data.path ?? '/');
+      }
+    };
+    window.addEventListener('message', handler);
+    return () => window.removeEventListener('message', handler);
+  }, [navigate]);
 
   return (
     <div className="space-y-8 pb-6">

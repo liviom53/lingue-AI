@@ -299,7 +299,13 @@ export default function VideoTemplate() {
 
         {/* Bottone Esci — torna all'app */}
         <motion.button
-          onClick={() => { (isInIframe ? window.parent : window).location.href = '/diario-pescatore/'; }}
+          onClick={() => {
+            if (isInIframe) {
+              window.parent.postMessage({ type: 'DIARIO_NAVIGATE', path: '/' }, '*');
+            } else {
+              window.location.href = '/diario-pescatore/';
+            }
+          }}
           className="flex items-center gap-2 bg-red-500/20 backdrop-blur border border-red-400/50 text-red-300 text-sm font-bold px-4 py-2 rounded-full cursor-pointer hover:bg-red-500/40 hover:border-red-400/70 hover:text-red-200 transition-all duration-300"
           initial={{ opacity:0, y:-10 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.4, delay:0.15 }}
           style={{ fontFamily:'Inter, sans-serif' }}
