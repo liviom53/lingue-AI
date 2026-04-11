@@ -100,7 +100,7 @@
 
 ### Service Worker
 - Scope: `/diario-pescatore/`
-- `navigateFallbackAllowlist: [/^\/diario-pescatore\//]` — intercetta solo i path del Diario
+- `navigateFallbackAllowlist: [/^\/diario-pescatore\//]`
 - `cleanupOutdatedCaches: true`
 - Update automatico ogni 60 minuti
 
@@ -109,13 +109,8 @@
 ## Sviluppo locale
 
 ```bash
-# Dalla root del monorepo
 pnpm install
-
-# Avvia l'API server (richiesto per proxy e AI)
 pnpm --filter @workspace/api-server run dev
-
-# Avvia il frontend
 pnpm --filter @workspace/diario-pescatore run dev
 ```
 
@@ -132,7 +127,6 @@ pnpm --filter @workspace/diario-pescatore run build
 
 - **Emoji**: usare solo Unicode ≤12 — 🐟 🎣 🐛 🐚 (evitare 🦪 🪡 🪱 🪝)
 - **localStorage**: chiave spot `_diario_spot_config`; versione `diario_running_v`
-- **Errori TS non bloccanti**: `Dashboard.tsx` riga 192, `Statistiche.tsx` riga 33
 
 ---
 
