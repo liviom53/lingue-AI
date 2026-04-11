@@ -30,7 +30,7 @@ export default defineConfig({
         clientsClaim: true,
         globPatterns: ["**/*.{js,css,html,ico,png,svg,webp,woff,woff2}"],
         navigateFallback: "index.html",
-        navigateFallbackDenylist: [/^\/api\//, /^\/__/],
+        navigateFallbackAllowlist: [/^\/diario-pescatore\//],
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/fonts\.(googleapis|gstatic)\.com\/.*/i,
