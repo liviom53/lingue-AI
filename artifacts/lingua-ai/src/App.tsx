@@ -4046,12 +4046,28 @@ export default function App() {
             ))}
           </div>
           <p style={{ margin: '0 0 6px', fontSize: '0.7rem', color: '#334155' }}>© 2026 Livio Mazzocchi — Tutti i diritti riservati</p>
-          <button
-            onClick={() => setShowPrivacy(true)}
-            style={{ background: 'none', border: 'none', color: '#475569', fontSize: '0.75rem', cursor: 'pointer', textDecoration: 'underline' }}
-          >
-            🔒 Privacy &amp; Cookie
-          </button>
+          <div style={{ display: 'flex', justifyContent: 'center', gap: '12px', flexWrap: 'wrap' }}>
+            <button
+              onClick={() => setShowPrivacy(true)}
+              style={{ background: 'none', border: 'none', color: '#475569', fontSize: '0.75rem', cursor: 'pointer', textDecoration: 'underline' }}
+            >
+              🔒 Privacy &amp; Cookie
+            </button>
+            <button
+              onClick={async () => {
+                try {
+                  const regs = await navigator.serviceWorker?.getRegistrations();
+                  if (regs) await Promise.all(regs.map(r => r.unregister()));
+                  const keys = await caches.keys();
+                  await Promise.all(keys.map(k => caches.delete(k)));
+                } catch (_) {}
+                window.location.reload();
+              }}
+              style={{ background: 'none', border: 'none', color: '#475569', fontSize: '0.75rem', cursor: 'pointer', textDecoration: 'underline' }}
+            >
+              🔄 Aggiorna app
+            </button>
+          </div>
         </footer>
 
         {/* Demo banner fisso in basso */}
