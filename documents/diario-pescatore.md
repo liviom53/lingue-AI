@@ -80,7 +80,6 @@
 
 ### Admin Panel
 - Accesso: `Ctrl+Shift+5` oppure 7 tap sul logo
-- Password: riservata
 - Funzioni: statistiche utilizzo, versione, controllo accessi
 
 ---
