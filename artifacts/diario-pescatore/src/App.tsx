@@ -51,14 +51,14 @@ function PageLoader() {
 }
 
 function BalloonDonation() {
-  const [, navigate] = useLocation();
+  const [location, navigate] = useLocation();
   const [balloonStopped, setBalloonStopped] = useState(false);
   const balloonRafRef = useRef<number | null>(null);
   const balloonRestartRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const balloonElRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (balloonStopped) return;
+    if (balloonStopped || location === "/demo") return;
     const W = window.innerWidth, H = window.innerHeight;
     const cx = W * 0.5, cy = H * 0.5;
     const ax = W * 0.38, ay = H * 0.35;
@@ -75,7 +75,9 @@ function BalloonDonation() {
     };
     balloonRafRef.current = requestAnimationFrame(tick);
     return () => { if (balloonRafRef.current) cancelAnimationFrame(balloonRafRef.current); };
-  }, [balloonStopped]);
+  }, [balloonStopped, location]);
+
+  if (location === "/demo") return null;
 
   function handleClick() {
     setBalloonStopped(true);
