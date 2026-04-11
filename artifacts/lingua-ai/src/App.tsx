@@ -1322,7 +1322,7 @@ export default function App() {
 
   // ── Demo 4: Chat AI & Roleplay ───────────────────────────────────────────
   const DEMO4_STEPS = [
-    { icon: '🤖', label: '1/5 — Domanda',       desc: 'Scrivo una domanda per il Tutor AI in giapponese...',       narration: 'Il tutor DeepSeek mi aiuta a conversare come un madrelingua.' },
+    { icon: '🤖', label: '1/5 — Domanda',       desc: 'Scrivo una domanda per il Tutor AI in giapponese...',       narration: 'Il tutor Gemini mi aiuta a conversare come un madrelingua.' },
     { icon: '🌍', label: '2/5 — Lingua',         desc: 'Seleziono il giapponese — lingua ricca di sfumature',      narration: 'Seleziono il giapponese.' },
     { icon: '🔄', label: '3/5 — Traduzione',     desc: 'Premo TRADUCI — vedo la frase in giapponese',              narration: 'Premo Traduci.' },
     { icon: '💬', label: '4/5 — Chat AI',        desc: 'Apro il Tutor AI — scelgo uno scenario roleplay',          narration: 'Apro la Chat con il Tutor AI. Posso scegliere uno scenario roleplay.' },
@@ -1784,7 +1784,7 @@ export default function App() {
                 { key: 'demo1', icon: '🌍', label: 'Demo Traduzione',   sub: 'X-Ray grammaticale',      active: false, onClick: () => startDemo(1) },
                 { key: 'demo2', icon: '🔊', label: 'Demo Pronuncia',   sub: 'IPA + audio nativo',      active: false, onClick: () => startDemo(2) },
                 { key: 'demo3', icon: '🔁', label: 'Demo Shadowing',   sub: 'Ripeti come i poliglotti', active: false, onClick: () => startDemo(3) },
-                { key: 'demo4', icon: '🤖', label: 'Demo Chat AI',     sub: 'Roleplay con DeepSeek',   active: false, onClick: () => startDemo(4) },
+                { key: 'demo4', icon: '🤖', label: 'Demo Chat AI',     sub: 'Roleplay con Gemini',   active: false, onClick: () => startDemo(4) },
                 { key: 'demo5', icon: '⭐', label: 'Demo Vocabolario', sub: 'Segnalibri & Quiz',       active: false, onClick: () => startDemo(5) },
                 { key: 'help',  icon: '❓', label: 'Aiuto',            sub: showHelp ? 'Chiudi ▲' : 'Come usare l\'app ▼',             active: showHelp,             onClick: () => setShowHelp(v => !v) },
                 { key: 'video', icon: '🎬', label: 'Funzionalità App', sub: showFunzionalitaApp ? 'Chiudi ▲' : 'Scopri il video demo ▼', active: showFunzionalitaApp, onClick: () => setShowFunzionalitaApp(v => !v) },
@@ -1975,7 +1975,7 @@ export default function App() {
                       {
                         icon: '🤖', title: 'Chat AI & Roleplay',
                         items: [
-                          'Apri "Conversa con DeepSeek" per chattare con un tutor madrelingua AI',
+                          'Apri "Conversa con Gemini" per chattare con un tutor madrelingua AI',
                           'Scegli uno scenario (bar, hotel, stazione, medico…) per un roleplay immersivo nella lingua scelta',
                           'Scegli "Conversazione libera" per parlare di qualsiasi argomento',
                           'Il tutor segnala i tuoi errori grammaticali alla fine di ogni risposta con 💡',
@@ -2079,7 +2079,7 @@ export default function App() {
                     {[
                       { icon: '🌍', label: '29+ lingue' },
                       { icon: '🔬', label: 'X-Ray grammaticale' },
-                      { icon: '🤖', label: 'AI Tutor DeepSeek' },
+                      { icon: '🤖', label: 'AI Tutor Gemini' },
                       { icon: '🔁', label: 'Shadowing' },
                       { icon: '⭐', label: 'Segnalibri & Quiz' },
                       { icon: '📤', label: 'Condivisione rapida' },
@@ -2624,7 +2624,7 @@ export default function App() {
             )}
             {aiExplanation && (
               <div style={{ marginTop: '10px', padding: '8px', backgroundColor: '#0f172a', borderRadius: '8px', border: '1px solid #fb923c' }}>
-                <p style={{ fontSize: '0.8rem', color: '#fbbf24', margin: '0 0 4px', fontWeight: 'bold' }}>🤖 DeepSeek spiega:</p>
+                <p style={{ fontSize: '0.8rem', color: '#fbbf24', margin: '0 0 4px', fontWeight: 'bold' }}>🤖 Gemini spiega:</p>
                 <p style={{ fontSize: '0.85rem', color: '#fde68a', margin: '0 0 6px' }}>{aiExplanation.explanation}</p>
                 {aiExplanation.example && (
                   <p style={{ fontSize: '0.8rem', color: '#94a3b8', margin: 0, fontStyle: 'italic' }}>
@@ -2841,7 +2841,7 @@ export default function App() {
             }}
           >
             <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <Bot aria-hidden="true" size={18} /> Conversa con DeepSeek
+              <Bot aria-hidden="true" size={18} /> Conversa con Gemini
               <span style={{
                 display: 'inline-flex', alignItems: 'center', gap: '4px',
                 background: '#fb923c22', border: '1px solid #fb923c66',
@@ -3324,7 +3324,7 @@ export default function App() {
                 {[
                   { icon: '🌍', label: '29+ lingue' },
                   { icon: '🔬', label: 'X-Ray grammaticale' },
-                  { icon: '🤖', label: 'AI Tutor DeepSeek' },
+                  { icon: '🤖', label: 'AI Tutor Gemini' },
                   { icon: '🔁', label: 'Shadowing' },
                   { icon: '⭐', label: 'Segnalibri & Quiz' },
                   { icon: '📤', label: 'Condivisione rapida' },
@@ -4123,7 +4123,7 @@ export default function App() {
 
               {[
                 { title: 'Dati salvati localmente', body: 'Il profilo utente (nome, lingua, livello) e i progressi sono salvati solo sul tuo dispositivo tramite localStorage. Non vengono mai trasmessi a nessun server esterno.' },
-                { title: 'Testi elaborati da AI', body: 'I testi che scrivi per traduzione, chat e grammatica vengono inviati a DeepSeek AI (via OpenRouter) esclusivamente per generare la risposta. Non vengono conservati o usati per addestrare modelli.' },
+                { title: 'Testi elaborati da AI', body: 'I testi che scrivi per traduzione, chat e grammatica vengono inviati a Gemini AI (Google) esclusivamente per generare la risposta. Non vengono conservati o usati per addestrare modelli.' },
                 { title: 'Lingva API', body: 'Utilizzata per traduzioni rispettose della privacy, senza tracciamento e senza necessità di API Key.' },
                 { title: 'Web Speech API (Google)', body: 'Il riconoscimento vocale (dettatura e pratica pronuncia) viene elaborato dai server di Google su Chrome ed Edge. Nessun audio viene salvato dall\'app. Su altri browser la funzione potrebbe non essere disponibile.' },
                 { title: 'Cookie', body: 'Questa app non utilizza cookie di profilazione, analytics o tracciamento di terze parti.' },
