@@ -27,6 +27,37 @@ app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
 app.use("/api/ai", checkOrigin, aiRateLimit, validateInputSize);
+
+// Cleanup page — cancella SW e cache, poi redirect a /lingua-ai/
+// Servito su /api/ path così bypassa il navigateFallback dei service worker
+app.get("/api/reset", (_req, res) => {
+  res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate");
+  res.setHeader("Content-Type", "text/html; charset=utf-8");
+  res.send(`<!DOCTYPE html>
+<html lang="it">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Aggiornamento in corso…</title>
+<style>body{margin:0;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;background:#0f172a;color:#e2e8f0;font-family:system-ui,sans-serif;text-align:center;padding:20px}h1{font-size:1.4rem;margin:0 0 8px}p{color:#94a3b8;font-size:.95rem;margin:0 0 20px}.spinner{width:40px;height:40px;border:4px solid #334155;border-top-color:#10b981;border-radius:50%;animation:spin 1s linear infinite;margin-bottom:20px}@keyframes spin{to{transform:rotate(360deg)}}</style>
+</head>
+<body>
+<div class="spinner"></div>
+<h1>Pulizia cache in corso…</h1>
+<p>L'app si aprirà automaticamente tra pochi secondi.</p>
+<script>
+(async () => {
+  try {
+    const regs = await navigator.serviceWorker.getRegistrations();
+    await Promise.all(regs.map(r => r.unregister()));
+    const keys = await caches.keys();
+    await Promise.all(keys.map(k => caches.delete(k)));
+  } catch(e) {}
+  window.location.replace('/lingua-ai/');
+})();
+</script>
+</body>
+</html>`);
+});
+
 app.use("/api", router);
 
 if (process.env.NODE_ENV === "production") {
@@ -56,35 +87,6 @@ if (process.env.NODE_ENV === "production") {
   app.get("/diario-pescatore-landing/*splat", (_req, res) =>
     res.sendFile(path.join(diarioLandingDir, "index.html")),
   );
-
-  // Cleanup page — bypasses any stale service worker (served from /api/ path so SW denylist lets it through)
-  app.get("/api/reset", (_req, res) => {
-    res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate");
-    res.setHeader("Content-Type", "text/html; charset=utf-8");
-    res.send(`<!DOCTYPE html>
-<html lang="it">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Aggiornamento in corso…</title>
-<style>body{margin:0;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;background:#0f172a;color:#e2e8f0;font-family:system-ui,sans-serif;text-align:center;padding:20px}h1{font-size:1.4rem;margin:0 0 8px}p{color:#94a3b8;font-size:.95rem;margin:0 0 20px}.spinner{width:40px;height:40px;border:4px solid #334155;border-top-color:#10b981;border-radius:50%;animation:spin 1s linear infinite;margin-bottom:20px}@keyframes spin{to{transform:rotate(360deg)}}</style>
-</head>
-<body>
-<div class="spinner"></div>
-<h1>Pulizia cache in corso…</h1>
-<p>L'app si aprirà automaticamente tra pochi secondi.</p>
-<script>
-(async () => {
-  try {
-    const regs = await navigator.serviceWorker.getRegistrations();
-    await Promise.all(regs.map(r => r.unregister()));
-    const keys = await caches.keys();
-    await Promise.all(keys.map(k => caches.delete(k)));
-  } catch(e) {}
-  window.location.replace('/lingua-ai/');
-})();
-</script>
-</body>
-</html>`);
-  });
 
   // Main apps
   app.use("/lingua-ai", express.static(linguaDir, { index: "index.html" }));
