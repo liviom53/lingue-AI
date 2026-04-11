@@ -45,16 +45,29 @@ PWA completa per la gestione del diario di pesca. Funzionalità principali:
 - Framer Motion
 - Gemini AI via `@google/genai` (endpoint proxy `/api/ai/*`)
 - localStorage per dati utente (offline-first)
+- PWA con service worker scope `/diario-pescatore/` (navigateFallbackAllowlist limitata al solo path del Diario)
 
 ---
 
 ## Lingua AI
 
-PWA per imparare 29 lingue con AI.
+PWA per imparare 29 lingue straniere con intelligenza artificiale.
 
-- Lezioni generate da Gemini
-- Flashcard, quiz, conversazione
-- Supporto PWA con installazione
+- **Traduzione** — testo e voce in 29 lingue con pronuncia realistica
+- **Conversazione** — chat con scenari reali (ristorante, aeroporto, hotel…)
+- **X-Ray grammaticale** — analisi grammaticale di qualsiasi frase
+- **Vocabolario** — flashcard con spaced repetition
+- **Quiz** — domande adattive sul livello corrente
+- **Profilo utente** — livello, lingua madre, obiettivi personalizzati
+- **AI** — Google Gemini 2.5 Flash via AI Integrations proxy
+- **PWA** — installabile su Android e iOS, funziona offline
+- **Aggiorna app** — pulsante nel footer per cancellare service worker e cache
+
+### Stack
+- React + Vite + TypeScript
+- CSS-in-JS (stili inline)
+- Gemini AI via `AI_INTEGRATIONS_GEMINI_API_KEY`
+- PWA con service worker scope `/lingua-ai/`
 
 ---
 
@@ -70,11 +83,25 @@ Express server che funge da:
 | Path | Descrizione |
 |---|---|
 | `GET /api/health` | Health check |
+| `GET /api/reset` | Cancella service worker e cache, redirect a `/lingua-ai/` |
+| `GET /api/version` | Versione corrente dell'app |
 | `POST /api/ai/identify-fish` | Identificazione specie da foto |
 | `POST /api/ai/fishing-forecast` | Previsioni pesca |
 | `POST /api/ai/chat` | Assistente AI |
 | `POST /api/ai/recipe` | Suggerimento ricette |
 | `GET /api/weather` | Dati meteo OpenMeteo |
+| `GET /api/stats` | Statistiche utilizzo (richiede password admin) |
+
+### Route statiche in produzione
+
+| Path | Artefatto |
+|---|---|
+| `/lingua-ai/` | Lingua AI PWA |
+| `/lingua-ai-landing/` | Landing Lingua AI |
+| `/lingua-ai-demo-video/` | Demo video Lingua AI |
+| `/diario-pescatore-landing/` | Landing Diario |
+| `/diario-pescatore-video/` | Video tutorial Diario |
+| `/diario-pescatore/` (catch-all) | Diario del Pescatore PWA |
 
 ---
 
@@ -84,16 +111,29 @@ Express server che funge da:
 pnpm install
 pnpm --filter @workspace/api-server run dev
 pnpm --filter @workspace/diario-pescatore run dev
+pnpm --filter @workspace/lingua-ai run dev
 # ... etc.
 ```
 
 Tutti i workflow sono configurati in Replit e si avviano automaticamente.
+
+### Build per produzione
+
+```bash
+pnpm --filter @workspace/diario-pescatore run build
+pnpm --filter @workspace/lingua-ai run build
+pnpm --filter @workspace/api-server run build
+# ... (tutti gli altri artefatti)
+```
 
 ---
 
 ## Note tecniche
 
 - **Emoji safe** (Unicode ≤12): usare 🐟 🎣 🐛 🐚 — evitare 🦪 🪡 🪱 🪝
-- **iframe cross-artifact**: usare sempre `window.location.origin + "/path/"` — mai `import.meta.env.BASE_URL` manipulation
+- **iframe cross-artifact**: usare sempre `window.location.origin + "/path/"` — mai `import.meta.env.BASE_URL` direttamente
+- **Cross-frame navigation**: usare `postMessage` — mai `window.top/parent.location.href` (sandbox error in Replit)
 - **Spot di default**: Porto Badino (lat 41.40, lon 13.03)
 - **Gemini key**: `AI_INTEGRATIONS_GEMINI_API_KEY` (Replit AI Integrations proxy)
+- **Service worker Diario**: scope e `navigateFallbackAllowlist` limitati a `/diario-pescatore/` per non intercettare altri path
+- **Reset SW**: `GET /api/reset` bypassa il SW (path `/api/` è nella denylist del SW) e pulisce tutto prima di redirigere a `/lingua-ai/`
